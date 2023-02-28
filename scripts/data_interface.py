@@ -91,7 +91,7 @@ def retrieve_uv_data(data_uv):
     
     except Exception as e:
         print(e)
-                
+        
 def main():
     
     p = Path("/Users/jonathan/0_jono_data")
@@ -105,4 +105,3 @@ def main():
     uv_data = retrieve_uv_data(data)
     
 
-main()
