@@ -78,6 +78,8 @@ def retrieve_uv_data(data_uv):
         column_names = ['mins'] + list(data_uv.get_file('DAD1.UV').ylabels)
         
         df = pd.DataFrame(data = combo_data, columns = column_names)
+        
+        df = df.set_index('mins')
 
     except Exception as e:
         print(e)

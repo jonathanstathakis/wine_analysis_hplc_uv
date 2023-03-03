@@ -1,13 +1,16 @@
 import pandas as pd
 
-def df_windower(wide_df = pd.DataFrame, dimension = str, min_val = int, max_val = int):
+def df_windower(wide_df = pd.DataFrame, dimension = str, min_val =  int, max_val = int):
+        
+    wide_df = wide_df.reset_index()
     
     try:
-    
+        
         melt_d = wide_df.melt(id_vars = 'mins', value_name = 'mAU', var_name = 'nm')
     
     except Exception as e:
         print(f"{e}")
+        return 
               
     try:
     
@@ -20,9 +23,7 @@ def df_windower(wide_df = pd.DataFrame, dimension = str, min_val = int, max_val 
               
         pivot_d = melt_d.pivot(columns = ['nm'], values = 'mAU', index = 'mins')
     
-        pivot_d = pivot_d.reset_index()
-    
     except Exception as e:
         print(f"{e}")
-    
+        
     return pivot_d
