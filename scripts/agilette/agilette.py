@@ -40,14 +40,10 @@ class Sequence:
     def __str__(self):
         return self.path.name
     
-class Data:
-    
-    def __init__(self, file_path):
-        self.path = file_path
-        self.name, self.description, self.acq_method = self.load_meta_data()
-        self.metadata = self.load_meta_data()
-        self.acq_date = self.get_acq_datetime()
-        self.sequence_name = self.sequence_name()
+class UV_Data:
+    def __init__(self, uv_file_path, name):
+        self.path = uv_file_path
+        self.data = None
 
     def extract_uv_data(self):
 
@@ -57,6 +53,16 @@ class Data:
                 uv_data = retrieve_uv_data(rb.read(str(self.path)))
 
                 return uv_data
+        
+    
+class Data:
+    
+    def __init__(self, file_path):
+        self.path = file_path
+        self.name, self.description, self.acq_method = self.load_meta_data()
+        self.metadata = self.load_meta_data()
+        self.acq_date = self.get_acq_datetime()
+        self.sequence_name = self.sequence_name()
     
     def extract_ch_data(self):
 
@@ -73,7 +79,10 @@ class Data:
         return ch_data_dict
     
     def sequence_name(self):
-        if ".sequence" in self.path.parent.name:
+        
+        # note: can only have UPPER CASE naming in Chemstation. Maybe should introduce a lower() function during data read. In fact, should probably include a data cleaning function of some kind. In the mean time, just add upper case to this if statement.
+        
+        if (".sequence" or ".SEQUENCE") in self.path.parent.name:
             return self.path.parent.name
         else:
             return "single run"
