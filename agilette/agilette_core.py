@@ -1,3 +1,9 @@
+"""
+a prototyped class definition using bits of rainbow and bits of direct XML parsing.
+
+I'll keep building it from here as my use case increases, but it is barebones atm.
+"""
+
 from pathlib import Path
 
 from bs4 import BeautifulSoup
@@ -58,7 +64,6 @@ class UV_Data:
 
 class Run_Dir:
     """
-    
     A single run directory containing signal data and metadata about the run.
 
     Use extract_uv_data(self) to get the Spectrum.
@@ -261,13 +266,6 @@ class Data_File_Dir:
         all_data_list = seq_list + run_list
         
         return(all_data_list)
-
-"""
-a prototyped class definition using bits of rainbow and bits of direct XML parsing.
-
-I'll keep building it from here as my use case increases, but it is barebones atm.
-
-"""
     
 def main():
     ag = Agilette("/Users/jonathan/0_jono_data/")
