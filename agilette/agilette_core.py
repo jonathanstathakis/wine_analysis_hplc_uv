@@ -14,23 +14,22 @@ import pandas as pd
 
 from datetime import datetime
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
 
 from scripts.core_scripts.data_interface import retrieve_uv_data
 
 class Sequence:
-    
     """
     Currently just going to contain the data files.
     """
     def __init__(self, file_path):
         self.path = file_path
-        self.data_dict = self.data_dict()
+        self.data_files = self.data_files()
 
-    def data_dict(self):
+    def data_files(self):
         
         try:
-            data_file_dict = {Data(x).name : Data(x) for x in self.path.iterdir() if x.name.endswith(".D")}
+            data_file_dict = {Run_Dir(x).name : Run_Dir(x) for x in self.path.iterdir() if x.name.endswith(".D")}
                     
         except Exception as e:
             print(f"{e}")
@@ -38,13 +37,13 @@ class Sequence:
         return data_file_dict
         
     def __str__(self):
-        return self.path.name
+        return f"{self.path.name}, {self.data_files.keys()}"
     
 class UV_Data:
-    def __init__(self, uv_file_path, name):
+    def __init__(self, uv_file_path = str):
         self.path = uv_file_path
         self.data = None
-
+        
     def extract_uv_data(self):
 
         for x in self.path.iterdir():
@@ -53,17 +52,63 @@ class UV_Data:
                 uv_data = retrieve_uv_data(rb.read(str(self.path)))
 
                 return uv_data
-        
+            
+            else:
+                print("Could not find a .UV file.")
+
+class Run_Dir:
+    """
     
-class Data:
-    
+    A single run directory containing signal data and metadata about the run.
+
+    Use extract_uv_data(self) to get the Spectrum.
+
+    To get ch data, it is useful to view each signal's wavelength and band rather than the detector name, so run self.extract_ch_data() to get a dictionary of each signal with its wavelength as the key and dataframe of the signal as value.
+    """
     def __init__(self, file_path):
         self.path = file_path
         self.name, self.description, self.acq_method = self.load_meta_data()
         self.metadata = self.load_meta_data()
         self.acq_date = self.get_acq_datetime()
         self.sequence_name = self.sequence_name()
+        self.data_files_dict = self.data_files_dicter()
+        #self.data_files_dict = self.data_files_lister()
+
+    def data_files_dicter(self):
+
+        ch_list = []
+        uv_list = []
+
+        for x in self.path.iterdir():
+            if x.name.endswith(".ch"):
+                ch_list.append(x.name)
+            if x.name.endswith(".UV"):
+
+                uv_list.append(x.name)
+
+        return {"ch_files" : ch_list, "uv_files" : uv_list}
     
+    # def detector_name_to_nm(self):
+
+    #     acq_macaml = self.path / r"acq.macaml"
+
+    #     with open(acq_macaml, 'r', encoding = 'UTF-8') as f:
+
+    #         xml_data = f.read()
+            
+    #         bsoup_xml = BeautifulSoup(xml_data, 'xml')
+            
+    #         content = bsoup_xml.Content.Section.children
+
+    #         print(content)
+    #         # return the Signal section of the acq.macaml file.
+
+    #         # spectrum is contained in <Name>Spectrum</Name>
+
+    #         # wavelength signals are contained in <Section><Name>Signals\Name><ID>Signals</ID>
+
+    #         return content
+        
     def extract_ch_data(self):
 
         ch_data_dict = {}
@@ -73,9 +118,16 @@ class Data:
             if ".ch" in x.name:
 
                 ch_data = rb.read(str(self.path)).get_file(x.name)
+
+                ch_data_signal = ch_data.metadata['signal']
+
+                data_df = pd.DataFrame(np.concatenate(
+                                            (ch_data.xlabels.reshape(-1,1),
+                                            ch_data.extract_traces().transpose()), axis = 1)
+                                            , columns = ['mins', 'mAU'])
                 
-                ch_data_dict[x.name] = np.concatenate((ch_data.xlabels.reshape(-1,1),ch_data.extract_traces().transpose()), axis = 1)
-        
+                ch_data_dict[ch_data_signal.split('=')[1][:5]] = {'signal_info' : ch_data_signal, 'data' : data_df}
+                
         return ch_data_dict
     
     def sequence_name(self):
@@ -116,7 +168,6 @@ class Data:
             
             description = bsoup_xml.find("Description").get_text()
 
-            
             if not description:
                 description = "empty"
             
@@ -135,8 +186,11 @@ class Data:
         
         return rainbow_obj
     
+    def get_uv_data(self):
+        return UV_Data(self.path)
+    
     def __str__(self):
-        return self.name
+        return f"{type(self)}\nname: {self.name}\nacq_date: {self.acq_date}\nacq_method path: {self.acq_method}\nsequence name: {self.sequence_name}\navailable data: {self.data_files_dict}"
 
 # most of the classes were prototypes in 2023-03-02_adding-sequences-to-data-table.ipynb.
 
@@ -174,18 +228,18 @@ class Data_File_Dir:
     
         self.path = dir_path
         self.single_runs = self.single_runs()
-        self.sequence_dict = self.sequence_dict()
+        self.sequences = self.sequences()
         self.all_data_files = self.all_data_files()
     
     def single_runs(self):
         
-        single_run_dict = {obj.name : Data(obj) for obj in self.path.iterdir() if obj.name.endswith(".D")}
+        single_run_dict = {obj.name : Run_Dir(obj) for obj in self.path.iterdir() if obj.name.endswith(".D")}
         
         return single_run_dict
                         
-    def sequence_dict(self):
+    def sequences(self):
         
-        sequence_dict = {obj.name : Sequence(obj) for obj in self.path.iterdir() if obj.name.endswith(".sequence")}
+        sequence_dict = {sequence_dir.name : Sequence(sequence_dir) for sequence_dir in self.path.iterdir() if sequence_dir.name.endswith(".sequence")}
         
         return sequence_dict
     
@@ -194,8 +248,8 @@ class Data_File_Dir:
         # sequences
         seq_list = []
         
-        for x in self.sequence_dict.values():
-            for y in x.data_dict.values():
+        for data_dir in self.sequences.values():
+            for y in data_dir.data_files.values():
                 seq_list.append(y)
                 
         # single runs
@@ -207,13 +261,6 @@ class Data_File_Dir:
         all_data_list = seq_list + run_list
         
         return(all_data_list)
-
-        
-        #sequence_dict[x].data_dict[y]
-        
-        #sequence_data = {x.name : x for x in sequence}
-        
-from datetime import datetime
 
 """
 a prototyped class definition using bits of rainbow and bits of direct XML parsing.
