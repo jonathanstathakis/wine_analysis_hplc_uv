@@ -2,6 +2,17 @@
 a prototyped class definition using bits of rainbow and bits of direct XML parsing.
 
 I'll keep building it from here as my use case increases, but it is barebones atm.
+
+Current Heriarchy ( 2023-03-08 ):
+- To access a single run's single signal data: 
+    Agilette(dirpath).library.single_runs["run_name"].extract_ch_data()["wavelength_nm"]["data"]
+- To access a sequence run's signal signal data:
+    Agilette(dirpath).library.sequences["sequence_name"].data_files["run_name"].extract_ch_data()["wavelength_nm"]["data"]
+- To access a sequence run's UV data:
+    Agilette.library.sequences["sequence_name"].data_files["run_name"].extract_uv_data()
+
+TODO: Add a plotting function to the Data class
+TODO: add functionality to the Library Object, i.e. a help string and print behavior, such as a list of all the contained runs and sequences.
 """
 
 from pathlib import Path
@@ -19,6 +30,8 @@ import numpy as np
 import pandas as pd
 
 from datetime import datetime
+
+import plotly.graph_objs as go
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
 
@@ -61,6 +74,37 @@ class UV_Data:
             
             else:
                 print("Could not find a .UV file.")
+
+
+class Data_Obj:
+    """
+    A class representing the actual data of a signal. It will be initialised by 'extract_ch_data()' and contain signal metadata, a df of the data with time in mins and signal in mAU, and plotting functions, specifically peak and baseline detection.
+    """
+    def __init__(self, rb_obj_file, file_path):
+        self.rb_obj_file = rb_obj_file
+        self.path = file_path
+        self.wavelength = self.rb_obj_file.metadata['signal'].split('=')[1][:5]
+        
+        x_axis = self.rb_obj_file.xlabels.reshape(-1,1) # time in mins for this data
+        y_axis = self.rb_obj_file.extract_traces().transpose()
+        self.data_df = pd.DataFrame(np.concatenate((x_axis, y_axis), axis = 1), columns = ['mins', 'mAU'])
+    
+    def plot(self, baseline = False, peak_detect = False):
+
+        # base level plot
+
+        fig = go.Figure()
+        
+        base_plot = go.Scatter(x = self.data_df['mins'], y = self.data_df['mAU'], mode = 'lines', name = f"{self.path.name} {self.wavelength}nm")
+
+        fig.add_trace(base_plot)
+
+        fig.update_layout(
+                        title = f"{self.path.name} {self.wavelength}nm",
+                        xaxis_title = "Time (mins)",
+                        yaxis_title = "Signal (mAU)")
+
+        fig.show()
 
 class Run_Dir:
     """
@@ -115,25 +159,28 @@ class Run_Dir:
     #         return content
         
     def extract_ch_data(self):
+        """
+        A function to extraact the ch data from the directory. It was necessary to implement this as a function to provide a 'switch' to parse the data, as that is a slow process.
+
+        Calling this function returns a dict whose keys are the signal wavelengths, and value is a subdict containing the specific signal's information and the data itself.
+
+        I will now be turning the subdict into its own Object so that I can add plotting functionality to it, specifically peak detection and baselines.
+        """
+
+        rb_obj = rb.read(str(self.path))
 
         ch_data_dict = {}
 
-        for x in self.path.iterdir():
+        for file in self.path.iterdir():
 
-            if ".ch" in x.name:
+            if ".ch" in file.name:
 
-                ch_data = rb.read(str(self.path)).get_file(x.name)
-
-                ch_data_signal = ch_data.metadata['signal']
-
-                data_df = pd.DataFrame(np.concatenate(
-                                            (ch_data.xlabels.reshape(-1,1),
-                                            ch_data.extract_traces().transpose()), axis = 1)
-                                            , columns = ['mins', 'mAU'])
+                ch_data = Data_Obj(rb_obj.get_file(str(file.name)), file)
                 
-                ch_data_dict[ch_data_signal.split('=')[1][:5]] = {'signal_info' : ch_data_signal, 'data' : data_df}
+                ch_data_dict[ch_data.wavelength] = ch_data
                 
         return ch_data_dict
+
     
     def sequence_name(self):
         
@@ -204,22 +251,22 @@ class Run_Dir:
 class Agilette:
     def __init__(self, path = str):
         self.path = Path(path)
-        self.data_file_dir = Data_File_Dir(self.path)
+        self.library = Library(self.path)
         
     def data_table(self):
                 # need to form dicts for each column then combine them together into the DF. Its just gna display the objects of each data object. Q is though, from what list? self.data_file_dir Also I need to find a way to get the acq date without using rainbow.
         
         
-        ids = [idx for idx, x in enumerate(self.data_file_dir.all_data_files)]
+        ids = [idx for idx, x in enumerate(self.library.all_data_files)]
         
         data_dict = {}
                    
         df = pd.DataFrame({
-                           "names" : [x.name for x in self.data_file_dir.all_data_files],
-                           "path" : [x.path for x in self.data_file_dir.all_data_files],
-                           "sequence" : [x.sequence_name for x in self.data_file_dir.all_data_files],
-                           "desc" : [x.description for x in self.data_file_dir.all_data_files]}, 
-                           index = {"acq_dates" : [x.acq_date for x in self.data_file_dir.all_data_files]}["acq_dates"])
+                           "names" : [x.name for x in self.library.all_data_files],
+                           "path" : [x.path for x in self.library.all_data_files],
+                           "sequence" : [x.sequence_name for x in self.library.all_data_files],
+                           "desc" : [x.description for x in self.library.all_data_files]}, 
+                           index = {"acq_dates" : [x.acq_date for x in self.library.all_data_files]}["acq_dates"])
         
         return df.sort_index(ascending = False)
             
@@ -227,7 +274,7 @@ class Agilette:
 
 #dict_3={k:v for d in (dict_1,dict_2) for k,v in d.items()}
 
-class Data_File_Dir:
+class Library:
 
     def __init__(self, dir_path):
     
