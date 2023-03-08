@@ -59,22 +59,28 @@ class Sequence:
         return f"{self.path.name}, {self.data_files.keys()}"
     
 class UV_Data:
+    """
+    A class representing the UV data of a run. It will be initialised by 'extract_uv_data()' and contain the UV data as a Spectrum object.
+    """
     def __init__(self, uv_file_path = str):
         self.path = uv_file_path
         self.data = None
+        self.uv_data = None
         
     def extract_uv_data(self):
 
-        for x in self.path.iterdir():
-            if ".UV" in x.name:
+        try:
+            for x in self.path.iterdir():
+                if ".UV" in x.name:
 
-                uv_data = retrieve_uv_data(rb.read(str(self.path)))
+                    uv_data = retrieve_uv_data(rb.read(str(self.path)))
 
-                return uv_data
-            
-            else:
-                print("Could not find a .UV file.")
+                    self.uv_data = uv_data
 
+                    print("uv_data extracted")
+        
+        except Exception as e:
+            print(e)
 
 class Data_Obj:
     """
@@ -252,23 +258,6 @@ class Agilette:
     def __init__(self, path = str):
         self.path = Path(path)
         self.library = Library(self.path)
-        
-    def data_table(self):
-                # need to form dicts for each column then combine them together into the DF. Its just gna display the objects of each data object. Q is though, from what list? self.data_file_dir Also I need to find a way to get the acq date without using rainbow.
-        
-        
-        ids = [idx for idx, x in enumerate(self.library.all_data_files)]
-        
-        data_dict = {}
-                   
-        df = pd.DataFrame({
-                           "names" : [x.name for x in self.library.all_data_files],
-                           "path" : [x.path for x in self.library.all_data_files],
-                           "sequence" : [x.sequence_name for x in self.library.all_data_files],
-                           "desc" : [x.description for x in self.library.all_data_files]}, 
-                           index = {"acq_dates" : [x.acq_date for x in self.library.all_data_files]}["acq_dates"])
-        
-        return df.sort_index(ascending = False)
             
 # An object to imitate the data directory that stores single run and sequence files.
 
@@ -313,6 +302,26 @@ class Library:
         all_data_list = seq_list + run_list
         
         return(all_data_list)
+    
+    def data_table(self):
+                # need to form dicts for each column then combine them together into the DF. Its just gna display the objects of each data object. Q is though, from what list? self.data_file_dir Also I need to find a way to get the acq date without using rainbow.
+        
+        
+        ids = [idx for idx, x in enumerate(self.all_data_files)]
+        
+        data_dict = {}
+                   
+        df = pd.DataFrame({
+                           "names" : [x.name for x in self.all_data_files],
+                           "path" : [x.path for x in self.all_data_files],
+                           "sequence" : [x.sequence_name for x in self.all_data_files],
+                           "ch_files" : [x.data_files_dict['ch_files'] for x in self.all_data_files],
+                           "uv_files" : [x.data_files_dict['uv_files'] for x in self.all_data_files],
+                           "method" : [x.acq_method for x in self.all_data_files],
+                           "desc" : [x.description for x in self.all_data_files]}, 
+                           index = {"acq_dates" : [x.acq_date for x in self.all_data_files]}["acq_dates"])
+        
+        return df.sort_index(ascending = False)
     
 def main():
     ag = Agilette("/Users/jonathan/0_jono_data/")
