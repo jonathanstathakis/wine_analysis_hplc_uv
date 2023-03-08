@@ -40,6 +40,8 @@ from scripts.core_scripts.data_interface import retrieve_uv_data
 class Sequence:
     """
     Currently just going to contain the data files.
+
+    todo: add start dates.
     """
     def __init__(self, file_path):
         self.path = file_path
@@ -81,6 +83,14 @@ class UV_Data:
         
         except Exception as e:
             print(e)
+    
+    def line_plot(self):
+        """
+        it appears that there is a bug around here causing certain columns not to plot, the current example being nm's from 216 - 220nm missing from a 3d line plot. No obvious reason why.
+        """
+        from scripts.core_scripts.hplc_dad_plots import plot_3d_line
+
+        plot_3d_line(self.uv_data, self.path.parent.name)
 
 class Data_Obj:
     """
@@ -215,26 +225,29 @@ class Run_Dir:
         Atm it needs to load the whole XML file to read these two tags, which seems inefficient
         but i dont know how to do it otherwise.
         """
+        try:
+            with open(self.path / r"SAMPLE.XML", 'r', encoding = 'UTF-16LE') as f:
 
-        with open(self.path / r"SAMPLE.XML", 'r', encoding = 'UTF-16LE') as f:
+                xml_data = f.read()
+                
+                bsoup_xml = BeautifulSoup(xml_data, 'xml')
+                
+                name = bsoup_xml.find("Name").get_text()
+                
+                description = bsoup_xml.find("Description").get_text()
 
-            xml_data = f.read()
-            
-            bsoup_xml = BeautifulSoup(xml_data, 'xml')
-            
-            name = bsoup_xml.find("Name").get_text()
-            
-            description = bsoup_xml.find("Description").get_text()
+                if not description:
+                    description = "empty"
+                
+                else:
+                    description = description.replace("\n", "").replace(" ", "-").strip()
+                
+                acq_method = bsoup_xml.find("ACQMethodPath").get_text()
 
-            if not description:
-                description = "empty"
-            
-            else:
-                description = description.replace("\n", "").replace(" ", "-").strip()
-            
-            acq_method = bsoup_xml.find("ACQMethodPath").get_text()
-
-        return name, description, acq_method
+            return name, description, acq_method
+        
+        except Exception as e:
+            print(f"error loading metadata from {self.path}: {e}")
     
     def rb_object(self):
         """
@@ -284,6 +297,61 @@ class Library:
         
         return sequence_dict
     
+    def combined_dict(self):
+            
+        import re
+        
+        # combine all D dirs together into a dict. To handle duplicate file names across sequences and single runs, we will add a counter to the key name.
+        
+        all_data = {}
+
+        dup_suffix = 1
+
+        loop_count = 0
+
+        for x in self.path.glob('**/*.D'):
+            
+            loop_count += 1
+            if x.name not in all_data.keys():
+
+                print(f"{x.name} is not in all_data.keys()")
+
+                print(f"{x.name} added for the first time")
+
+                all_data[x.name] = Run_Dir(x)
+                continue
+                
+            if x.name in all_data.keys():
+                print(f"{x.name} is in all_data.keys()")
+                new_name = f"{x.name}_{dup_suffix}"
+                dup_suffix += 1
+
+                print(f"renaming {x.name} as {new_name} to avoid duplicates in dict")
+    
+                all_data[new_name] = Run_Dir(x)
+
+            
+            
+            # else:
+            #     if x.name in all_data.keys() and x.is_dir():
+            #         print(x)
+            #         print(f"duplicate found {x.name}")
+
+            #         suffix += 1
+            #         print(f"dup count: {dup_count}")
+
+            #         dup_key_name = f"{x.name}_{dup_count}"
+
+            #         print(f"duplicate name {dup_key_name}")
+
+            #         all_data[f"{x.name}_{dup_count}"] = Run_Dir(x)
+
+            # print("leaving iteration")
+
+        #combined_dict = {**self.single_runs, **self.sequences.values().data_files}
+            
+        return all_data
+
     def all_data_files(self):
         
         # sequences
@@ -292,7 +360,6 @@ class Library:
         for data_dir in self.sequences.values():
             for y in data_dir.data_files.values():
                 seq_list.append(y)
-                
         # single runs
         run_list = []
         
@@ -318,10 +385,11 @@ class Library:
                            "ch_files" : [x.data_files_dict['ch_files'] for x in self.all_data_files],
                            "uv_files" : [x.data_files_dict['uv_files'] for x in self.all_data_files],
                            "method" : [x.acq_method for x in self.all_data_files],
-                           "desc" : [x.description for x in self.all_data_files]}, 
-                           index = {"acq_dates" : [x.acq_date for x in self.all_data_files]}["acq_dates"])
+                           "desc" : [x.description for x in self.all_data_files], 
+                           "acq_date" : [x.acq_date for x in self.all_data_files]
+                           })
         
-        return df.sort_index(ascending = False)
+        return df.sort_values('acq_date', ascending = False)
     
 def main():
     ag = Agilette("/Users/jonathan/0_jono_data/")

@@ -79,11 +79,6 @@ def retrieve_uv_data(data_uv):
         
         df = pd.DataFrame(data = combo_data, columns = column_names)
         
-        df = df.set_index('mins')
-
-    except Exception as e:
-        print(e)
-
 
     except Exception as e:
         print(e)
