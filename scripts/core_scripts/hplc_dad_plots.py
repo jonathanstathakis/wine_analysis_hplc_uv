@@ -1,4 +1,4 @@
-def plot_3d_line(uv_data, plot_title):
+def plot_3d_line(uv_data, plot_title = None):
     
     """
     Takes a wide format uv data df with mins as column 1 and a default index, melts it into a long format then plots a 3d line plot.
