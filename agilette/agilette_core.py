@@ -375,7 +375,7 @@ class Library:
         
         
         ids = [idx for idx, x in enumerate(self.all_data_files)]
-        
+
         data_dict = {}
                    
         df = pd.DataFrame({
