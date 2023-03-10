@@ -35,6 +35,8 @@ import plotly.graph_objs as go
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
 
+from scripts.acaml_read import signal_metadata
+
 from scripts.core_scripts.data_interface import retrieve_uv_data
 
 class Sequence:
@@ -92,18 +94,18 @@ class UV_Data:
 
         plot_3d_line(self.uv_data, self.path.parent.name)
 
-class Data_Obj:
+class Single_Signal:
     """
     A class representing the actual data of a signal. It will be initialised by 'extract_ch_data()' and contain signal metadata, a df of the data with time in mins and signal in mAU, and plotting functions, specifically peak and baseline detection.
     """
     def __init__(self, rb_obj_file, file_path):
         self.rb_obj_file = rb_obj_file
         self.path = file_path
-        self.wavelength = self.rb_obj_file.metadata['signal'].split('=')[1][:5]
-        
+    
         x_axis = self.rb_obj_file.xlabels.reshape(-1,1) # time in mins for this data
         y_axis = self.rb_obj_file.extract_traces().transpose()
         self.data_df = pd.DataFrame(np.concatenate((x_axis, y_axis), axis = 1), columns = ['mins', 'mAU'])
+
     
     def plot(self, baseline = False, peak_detect = False):
 
@@ -137,7 +139,21 @@ class Run_Dir:
         self.acq_date = self.get_acq_datetime()
         self.sequence_name = self.sequence_name()
         self.data_files_dict = self.data_files_dicter()
-        #self.data_files_dict = self.data_files_lister()
+        self.single_signals_metadata, self.spectrum_metadata = self.get_signal_metadata()
+
+    def __str__(self):
+        print_string =  f"{type(self)}\nname: {self.name}\nacq_date: {self.acq_date}\nacq_method path: {self.acq_method}\nsequence name: {self.sequence_name}\nAvailable Data:"
+        
+        for item in self.single_signals.items():
+            print_string = print_string + str(item) + "\n"
+        
+        print_string = f"{print_string}\n{self.spectrum_metadata}"
+        #available data: {self.data_files_dict}"
+
+        return print_string
+
+    def get_signal_metadata(self):
+        return signal_metadata(self.path)
 
     def data_files_dicter(self):
 
@@ -152,28 +168,7 @@ class Run_Dir:
                 uv_list.append(x.name)
 
         return {"ch_files" : ch_list, "uv_files" : uv_list}
-    
-    # def detector_name_to_nm(self):
 
-    #     acq_macaml = self.path / r"acq.macaml"
-
-    #     with open(acq_macaml, 'r', encoding = 'UTF-8') as f:
-
-    #         xml_data = f.read()
-            
-    #         bsoup_xml = BeautifulSoup(xml_data, 'xml')
-            
-    #         content = bsoup_xml.Content.Section.children
-
-    #         print(content)
-    #         # return the Signal section of the acq.macaml file.
-
-    #         # spectrum is contained in <Name>Spectrum</Name>
-
-    #         # wavelength signals are contained in <Section><Name>Signals\Name><ID>Signals</ID>
-
-    #         return content
-        
     def extract_ch_data(self):
         """
         A function to extraact the ch data from the directory. It was necessary to implement this as a function to provide a 'switch' to parse the data, as that is a slow process.
@@ -191,7 +186,7 @@ class Run_Dir:
 
             if ".ch" in file.name:
 
-                ch_data = Data_Obj(rb_obj.get_file(str(file.name)), file)
+                ch_data = Single_Signal(rb_obj.get_file(str(file.name)), file)
                 
                 ch_data_dict[ch_data.wavelength] = ch_data
                 
@@ -259,9 +254,6 @@ class Run_Dir:
     
     def get_uv_data(self):
         return UV_Data(self.path)
-    
-    def __str__(self):
-        return f"{type(self)}\nname: {self.name}\nacq_date: {self.acq_date}\nacq_method path: {self.acq_method}\nsequence name: {self.sequence_name}\navailable data: {self.data_files_dict}"
 
 # most of the classes were prototypes in 2023-03-02_adding-sequences-to-data-table.ipynb.
 
@@ -379,14 +371,14 @@ class Library:
         data_dict = {}
                    
         df = pd.DataFrame({
+                           "acq_date" : [x.acq_date for x in self.all_data_files],
                            "names" : [x.name for x in self.all_data_files],
                            "path" : [x.path for x in self.all_data_files],
                            "sequence" : [x.sequence_name for x in self.all_data_files],
                            "ch_files" : [x.data_files_dict['ch_files'] for x in self.all_data_files],
                            "uv_files" : [x.data_files_dict['uv_files'] for x in self.all_data_files],
                            "method" : [x.acq_method for x in self.all_data_files],
-                           "desc" : [x.description for x in self.all_data_files], 
-                           "acq_date" : [x.acq_date for x in self.all_data_files]
+                           "desc" : [x.description for x in self.all_data_files]
                            })
         
         return df.sort_values('acq_date', ascending = False)
