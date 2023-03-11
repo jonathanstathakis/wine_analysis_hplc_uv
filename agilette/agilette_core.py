@@ -101,10 +101,10 @@ class Single_Signal:
     def __init__(self, rb_obj_file, file_path):
         self.rb_obj_file = rb_obj_file
         self.path = file_path
-    
-        x_axis = self.rb_obj_file.xlabels.reshape(-1,1) # time in mins for this data
-        y_axis = self.rb_obj_file.extract_traces().transpose()
-        self.data_df = pd.DataFrame(np.concatenate((x_axis, y_axis), axis = 1), columns = ['mins', 'mAU'])
+        self.wavelength = rb_obj_file.ylabels[0]
+        self.x_axis = self.rb_obj_file.xlabels.reshape(-1,1) # time in mins for this data
+        self.y_axis = self.rb_obj_file.extract_traces().transpose()
+        self.data_df = pd.DataFrame(np.concatenate((self.x_axis, self.y_axis), axis = 1), columns = ['mins', 'mAU'])
 
     
     def plot(self, baseline = False, peak_detect = False):
@@ -144,9 +144,10 @@ class Run_Dir:
     def __str__(self):
         print_string =  f"{type(self)}\nname: {self.name}\nacq_date: {self.acq_date}\nacq_method path: {self.acq_method}\nsequence name: {self.sequence_name}\nAvailable Data:"
         
-        for item in self.single_signals.items():
+        for item in self.single_signals_metadata.items():
             print_string = print_string + str(item) + "\n"
         
+        print_string = f"{print_string}\nSpectrum:\n"
         print_string = f"{print_string}\n{self.spectrum_metadata}"
         #available data: {self.data_files_dict}"
 
@@ -183,6 +184,9 @@ class Run_Dir:
         ch_data_dict = {}
 
         for file in self.path.iterdir():
+            """
+            TODO: need to get the dict keys (or output) to be sorted by wavelength from lowest to highest.
+            """
 
             if ".ch" in file.name:
 
@@ -372,7 +376,7 @@ class Library:
                    
         df = pd.DataFrame({
                            "acq_date" : [x.acq_date for x in self.all_data_files],
-                           "names" : [x.name for x in self.all_data_files],
+                           "name" : [x.name for x in self.all_data_files],
                            "path" : [x.path for x in self.all_data_files],
                            "sequence" : [x.sequence_name for x in self.all_data_files],
                            "ch_files" : [x.data_files_dict['ch_files'] for x in self.all_data_files],
