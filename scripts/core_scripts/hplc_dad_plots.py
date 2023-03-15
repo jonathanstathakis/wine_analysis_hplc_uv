@@ -1,3 +1,5 @@
+import sklearn
+
 def plot_3d_line(uv_data, plot_title = None):
     
     """
@@ -6,15 +8,10 @@ def plot_3d_line(uv_data, plot_title = None):
     
     # Set up the environment
 
-    import rainbow as rb
-
-    from pathlib import Path
-
     import pandas as pd
 
     from plotly import __version__ 
 
-    from plotly.offline import download_plotlyjs, init_notebook_mode, plot, iplot
 
     from plotly import express as px
 
