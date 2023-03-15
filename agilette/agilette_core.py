@@ -73,10 +73,15 @@ class UV_Data:
         
     def extract_uv_data(self):
 
+        print(self.path.name)
+
+        for x in self.path.iterdir():
+            print(x)
         try:
             for x in self.path.iterdir():
                 if ".UV" in x.name:
 
+                    # the path is the absolute file path to the file contained within the parent .D director
                     uv_data = retrieve_uv_data(rb.read(str(self.path)))
 
                     self.uv_data = uv_data
@@ -92,7 +97,7 @@ class UV_Data:
         """
         from scripts.core_scripts.hplc_dad_plots import plot_3d_line
 
-        plot_3d_line(self.uv_data, self.path.parent.name)
+        plot_3d_line(self.uv_data, self.path.name)
 
 class Single_Signal:
     """
@@ -140,6 +145,7 @@ class Run_Dir:
         self.sequence_name = self.sequence_name()
         self.data_files_dict = self.data_files_dicter()
         self.single_signals_metadata, self.spectrum_metadata = self.get_signal_metadata()
+        self.spectrum = None
 
     def __str__(self):
         print_string =  f"{type(self)}\nname: {self.name}\nacq_date: {self.acq_date}\nacq_method path: {self.acq_method}\nsequence name: {self.sequence_name}\nAvailable Data:"
@@ -241,8 +247,8 @@ class Run_Dir:
                 else:
                     description = description.replace("\n", "").replace(" ", "-").strip()
                 
-                acq_method = bsoup_xml.find("ACQMethodPath").get_text()
-
+                acq_method = bsoup_xml.find("ACQMethodPath").get_text().split('\\')[-1]
+                                                                              
             return name, description, acq_method
         
         except Exception as e:
@@ -256,8 +262,11 @@ class Run_Dir:
         
         return rainbow_obj
     
-    def get_uv_data(self):
-        return UV_Data(self.path)
+    def load_spectrum(self):
+
+        self.spectrum =  UV_Data(self.path)
+        self.spectrum.extract_uv_data()
+        return self.spectrum
 
 # most of the classes were prototypes in 2023-03-02_adding-sequences-to-data-table.ipynb.
 
@@ -293,7 +302,7 @@ class Library:
         
         return sequence_dict
     
-    def combined_dict(self):
+    def all_data(self):
             
         import re
         
@@ -310,19 +319,14 @@ class Library:
             loop_count += 1
             if x.name not in all_data.keys():
 
-                print(f"{x.name} is not in all_data.keys()")
-
-                print(f"{x.name} added for the first time")
-
                 all_data[x.name] = Run_Dir(x)
                 continue
                 
             if x.name in all_data.keys():
-                print(f"{x.name} is in all_data.keys()")
                 new_name = f"{x.name}_{dup_suffix}"
                 dup_suffix += 1
 
-                print(f"renaming {x.name} as {new_name} to avoid duplicates in dict")
+                #print(f"renaming {x.name} as {new_name} to avoid duplicates in dict")
     
                 all_data[new_name] = Run_Dir(x)
 
@@ -376,7 +380,8 @@ class Library:
                    
         df = pd.DataFrame({
                            "acq_date" : [x.acq_date for x in self.all_data_files],
-                           "name" : [x.name for x in self.all_data_files],
+                           "sample_name" : [x.name for x in self.all_data_files],
+                           "run_name" : [x.path.name for x in self.all_data_files],
                            "path" : [x.path for x in self.all_data_files],
                            "sequence" : [x.sequence_name for x in self.all_data_files],
                            "ch_files" : [x.data_files_dict['ch_files'] for x in self.all_data_files],
@@ -385,7 +390,7 @@ class Library:
                            "desc" : [x.description for x in self.all_data_files]
                            })
         
-        return df.sort_values('acq_date', ascending = False)
+        return df.sort_values('acq_date', ascending = False).reset_index(drop = True)
     
 def main():
     ag = Agilette("/Users/jonathan/0_jono_data/")
