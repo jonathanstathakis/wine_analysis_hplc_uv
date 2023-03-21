@@ -79,6 +79,8 @@ def retrieve_uv_data(data_uv):
         
         df = pd.DataFrame(data = combo_data, columns = column_names)
         
+        df.columns = df.columns.astype(str)
+        
 
     except Exception as e:
         print(e)

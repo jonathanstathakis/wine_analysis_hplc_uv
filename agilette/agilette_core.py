@@ -68,15 +68,10 @@ class UV_Data:
     """
     def __init__(self, uv_file_path = str):
         self.path = uv_file_path
-        self.data = None
         self.uv_data = None
         
     def extract_uv_data(self):
 
-        print(self.path.name)
-
-        for x in self.path.iterdir():
-            print(x)
         try:
             for x in self.path.iterdir():
                 if ".UV" in x.name:
@@ -85,8 +80,6 @@ class UV_Data:
                     uv_data = retrieve_uv_data(rb.read(str(self.path)))
 
                     self.uv_data = uv_data
-
-                    print("uv_data extracted")
         
         except Exception as e:
             print(e)
@@ -147,17 +140,17 @@ class Run_Dir:
         self.single_signals_metadata, self.spectrum_metadata = self.get_signal_metadata()
         self.spectrum = None
 
-    def __str__(self):
-        print_string =  f"{type(self)}\nname: {self.name}\nacq_date: {self.acq_date}\nacq_method path: {self.acq_method}\nsequence name: {self.sequence_name}\nAvailable Data:"
+    # def __str__(self):
+    #     print_string =  f"{type(self)}\nname: {self.name}\nacq_date: {self.acq_date}\nacq_method path: {self.acq_method}\nsequence name: {self.sequence_name}\nAvailable Data:"
         
-        for item in self.single_signals_metadata.items():
-            print_string = print_string + str(item) + "\n"
+    #     for item in self.single_signals_metadata.items():
+    #         print_string = print_string + str(item) + "\n"
         
-        print_string = f"{print_string}\nSpectrum:\n"
-        print_string = f"{print_string}\n{self.spectrum_metadata}"
-        #available data: {self.data_files_dict}"
+    #     print_string = f"{print_string}\nSpectrum:\n"
+    #     print_string = f"{print_string}\n{self.spectrum_metadata}"
+    #     #available data: {self.data_files_dict}"
 
-        return print_string
+    #     return print_string
 
     def get_signal_metadata(self):
         return signal_metadata(self.path)
@@ -264,7 +257,7 @@ class Run_Dir:
     
     def load_spectrum(self):
 
-        self.spectrum =  UV_Data(self.path)
+        self.spectrum = UV_Data(self.path)
         self.spectrum.extract_uv_data()
         return self.spectrum
 
