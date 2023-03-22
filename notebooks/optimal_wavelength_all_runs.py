@@ -104,30 +104,6 @@ def find_target_runs(lib):
 
     return runs
 
-def uv_data_addition(runs, lib):
-
-    all_data = lib.all_data()
-
-    def uv_data_extractor(run_name):
-        # accesses the data dir through the all_data dict using the run name specified by filtering the data table.
-
-        data_dir = all_data[run_name]
-
-        uv_data = data_dir.load_spectrum().uv_data
-        
-        # uv_data is a df containing a spectrum with 'mins' as the first column
-
-        return uv_data
-    
-    # # this line returns a series of dataframes 'uv_data'.
-
-    uv_data_series = runs['run_name'].apply(uv_data_extractor)
-
-    uv_data_series.index = runs['run_name'].values
-    uv_data_series.name = 'uv_data'
-
-    return uv_data_series
-
 def main():
     
     time_1 = perf_counter()
@@ -141,18 +117,16 @@ def main():
     
     runs['uv_data'] = runs['run_dir_obj'].apply(lambda run_dir : run_dir.load_spectrum().uv_data)
 
-    # # merge the uv_data with the rest of the runs table from the right.
-    # runs = pd.merge(runs, uv_data_series.to_frame(), left_on = 'run_name', right_index = True)
-
     # # set uv_data index to mins for scaling operation to follow
-    # runs['uv_data'] = runs['uv_data'].apply(lambda x : x.set_index('mins'))
+    runs['uv_data'] = runs['uv_data'].apply(lambda x : x.set_index('mins'))
 
     # # scale the uv_data nm column-wise.
     
-    # scaled_uv_data = uv_data_scaler(runs.set_index('run_name').loc[:,'uv_data'])
+    scaled_uv_data = uv_data_scaler(runs.set_index('run_name').loc[:,'uv_data'])
 
-    # runs = pd.merge(runs, scaled_uv_data.to_frame(), left_on = 'run_name', right_index = True)
- 
+    runs = pd.merge(runs, scaled_uv_data.to_frame(), left_on = 'run_name', right_index = True)
+    
+    print(runs.columns)
     # #its important to track what the index is of passed dataframes and Series in and out of .apply in order to get expected behavior. Set index to desired column often.
 
     # # Current modus operandi for transforming columns and adding them to the runs df:
@@ -162,7 +136,7 @@ def main():
 
     # # Baseline Calculator
 
-    # #spectrum_baseline_calculation(runs.set_index('run_name').loc[:,'scaled_uv_data'])
+    spectrum_baseline_calculation(runs.set_index('run_name').loc[:,'scaled_uv_data'])
 
     # #uv_data_baselines = 
     # #runs = pd.Merge(runs, , on_left = 'run_name', on_right = )
