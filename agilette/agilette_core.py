@@ -269,7 +269,7 @@ class Run_Dir:
 class Agilette:
     def __init__(self, path: str):
         self.path = Path(path)
-        self.library = library(self.path)
+        #self.library = library(self.path)
 
 
             
@@ -292,8 +292,8 @@ class Library:
         if 'sequences' in runs_to_load:
             self.sequences = self.sequences()
         
-        if "all_data_files" in runs_to_load:
-            self.all_data_files = self.all_data_files()
+        # if "all_data_files" in runs_to_load:
+        #     self.all_data_files = self.all_data_files()
 
         standard_options = ['single_runs', 'sequences', 'all_data_files']
 
@@ -373,45 +373,50 @@ class Library:
             
         return all_data
 
-    def all_data_files(self):
+    # def all_data_files(self):
         
-        # sequences
-        seq_list = []
+    #     # sequences
+    #     seq_list = []
         
-        for data_dir in self.sequences.values():
-            for y in data_dir.data_files.values():
-                seq_list.append(y)
-        # single runs
-        run_list = []
+    #     for data_dir in self.sequences.values():
+    #         for y in data_dir.data_files.values():
+    #             seq_list.append(y)
+    #     # single runs
+    #     run_list = []
         
-        for x in self.single_runs.values():
-            run_list.append(x)
+    #     for x in self.single_runs.values():
+    #         run_list.append(x)
             
-        all_data_list = seq_list + run_list
+    #     all_data_list = seq_list + run_list
         
-        return(all_data_list)
+    #     return(all_data_list)
     
     def data_table(self):
+
+        """
+        modify this to be applicable to any set of loaded runs in dict form.
+        """
                 # need to form dicts for each column then combine them together into the DF. Its just gna display the objects of each data object. Q is though, from what list? self.data_file_dir Also I need to find a way to get the acq date without using rainbow.
         
         
-        ids = [idx for idx, x in enumerate(self.all_data_files)]
+        #ids = [idx for idx, x in enumerate(self.all_data_files)]
+        #print([x.acq_date for x in list(self.loaded_runs.values())])
 
-        data_dict = {}
-                   
         df = pd.DataFrame({
-                           "acq_date" : [x.acq_date for x in self.all_data_files],
-                           "sample_name" : [x.name for x in self.all_data_files],
-                           "run_name" : [x.path.name for x in self.all_data_files],
-                           "path" : [x.path for x in self.all_data_files],
-                           "sequence" : [x.sequence_name for x in self.all_data_files],
-                           "ch_files" : [x.data_files_dict['ch_files'] for x in self.all_data_files],
-                           "uv_files" : [x.data_files_dict['uv_files'] for x in self.all_data_files],
-                           "method" : [x.acq_method for x in self.all_data_files],
-                           "desc" : [x.description for x in self.all_data_files]
-                           })
+                          "acq_date" : [x.acq_date for x in self.loaded_runs.values()],
+                           "sample_name" : [x.name for x in self.loaded_runs.values()],
+                           "run_name" : [x.path.name for x in self.loaded_runs.values()],
+                           "path" : [x.path for x in self.loaded_runs.values()],
+                           "sequence" : [x.sequence_name for x in self.loaded_runs.values()],
+                           "ch_files" : [x.data_files_dict['ch_files'] for x in self.loaded_runs.values()],
+                           "uv_files" : [x.data_files_dict['uv_files'] for x in self.loaded_runs.values()],
+                           "method" : [x.acq_method for x in self.loaded_runs.values()],
+                           "desc" : [x.description for x in self.loaded_runs.values()]
+        })
+
+        df = df.sort_values('acq_date', ascending = False).reset_index(drop = True)
         
-        return df.sort_values('acq_date', ascending = False).reset_index(drop = True)
+        return df
     
 def main():
     ag = Agilette("/Users/jonathan/0_jono_data/")
