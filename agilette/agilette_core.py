@@ -13,6 +13,7 @@ Current Heriarchy ( 2023-03-08 ):
 
 TODO: Add a plotting function to the Data class
 TODO: add functionality to the Library Object, i.e. a help string and print behavior, such as a list of all the contained runs and sequences.
+TODO: add proper type hints to EVERYTHING. Identify whether path can be PosixPath in every case, otherwise make it so.
 """
 
 from pathlib import Path
@@ -45,8 +46,8 @@ class Sequence:
 
     todo: add start dates.
     """
-    def __init__(self, file_path):
-        self.path = file_path
+    def __init__(self, path: str):
+        self.path = path
         self.data_files = self.data_files()
 
     def data_files(self):
@@ -266,9 +267,11 @@ class Run_Dir:
 # Agilette will be the entry point to all other functionality, analogous to loading the chemstation program.
 
 class Agilette:
-    def __init__(self, path = str):
+    def __init__(self, path: str):
         self.path = Path(path)
-        self.library = Library(self.path)
+        self.library = library(self.path)
+
+
             
 # An object to imitate the data directory that stores single run and sequence files.
 
@@ -276,13 +279,38 @@ class Agilette:
 
 class Library:
 
-    def __init__(self, dir_path):
-    
-        self.path = dir_path
-        self.single_runs = self.single_runs()
-        self.sequences = self.sequences()
-        self.all_data_files = self.all_data_files()
-    
+    """
+    The equivalent of the top level dir. use .data_table() to view all runs in the data folder path provided, otherwise give a list of .D file names to speed up load times.
+    TODO: test behavior of various argument inputs i.e. sequences, single runs, runs_to_load, and combinations. What will happen if there is an overlap?
+    """
+    def __init__(self, path: Path, runs_to_load: list = []):
+        self.path = path
+
+        if 'single_runs' in runs_to_load:
+            self.single_runs = self.single_runs()
+        
+        if 'sequences' in runs_to_load:
+            self.sequences = self.sequences()
+        
+        if "all_data_files" in runs_to_load:
+            self.all_data_files = self.all_data_files()
+
+        standard_options = ['single_runs', 'sequences', 'all_data_files']
+
+        if bool(runs_to_load):
+
+            self.loaded_runs = {}
+
+            for name in runs_to_load:
+
+                d_path = self.path.glob('**/' + name)
+
+                d_path = next(d_path)
+
+                self.loaded_runs[d_path.name] = Run_Dir(d_path)     
+
+            #loaded_runs = {obj.name : Run_Dir(Path.glob(dir_name)) for dir_name in runs_to_load}
+
     def single_runs(self):
         
         single_run_dict = {obj.name : Run_Dir(obj) for obj in self.path.iterdir() if obj.name.endswith(".D")}
