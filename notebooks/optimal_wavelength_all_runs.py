@@ -53,56 +53,31 @@ def spectrum_baseline_calculation(spectrum_column):
     """
     1. Instantiate the Baseline object by passing it the mins Series, i.e. the Column index.
     2. get the y values by passing each columns values to the Baseline object.
+
+    input is runs.set_index('run_name').loc[:,'scaled_uv_data'], a Series of dataframes.
     """
 
-
-    def baseline_calculator(nm_series):
-        if isinstance(nm_series, pd.Series):
-            baseline_fitter = Baseline(nm_series.index)
-            baseline_y = baseline_fitter.iasls(nm_series.values)[0]
+    def baseline_calculator(nm_series_column):
+        if isinstance(nm_series_column, pd.Series):
+            baseline_fitter = Baseline(nm_series_column.index)
+            baseline_y = baseline_fitter.iasls(nm_series_column.values)[0]
 
             return(baseline_y)
         
         else:
-            print(f"nm_series is {type(nm_series)}, not a Series")
+            print(f"nm_series is {type(nm_series_column)}, not a Series")
 
-    # def column_accessor(spectrum):
-    #     # access each nm column in spectrum df and apply baseline_calculator
-    #     if isinstance(spectrum, pd.Series):
-    #         return spectrum.apply(baseline_calculator)
-    #     else:
-    #         print(f"spectrum obj is {type(spectrum)}, not a DataFrame")
+    return_spectrum_column = spectrum_column.apply(
+                                                    lambda spectrum : spectrum.apply(baseline_calculator) 
+                                                    if isinstance(spectrum, pd.DataFrame) else "error")
 
-    def uv_data_accessor(spectrum_column):
-        # access each row in the spectrum column and apply column accessor, then handle the return
-        if isinstance(spectrum_column, pd.Series):
-            scaled_baseline_dfs_series = spectrum_column.apply(baseline_calculator)
-            scaled_baseline_dfs_series.name = 'scaled_baseline_dfs'
-
-        else:
-            print(f"spectrum_column is {type(spectrum_column)}, not a Series")
-
-
-    spectrum_column.apply(uv_data_accessor)
+    if isinstance(return_spectrum_column, pd.Series):
+        print('returning baselines')
+        return_spectrum_column.name = 'scaled_uv_data_baselines'
+        return return_spectrum_column
+    else:
+        print(f"return_spectrum_column is a {type(return_spectrum_column)}, not a Series" )
     
-def find_target_runs(lib):
-    lib_df = lib.data_table()
-
-    # filter to 10cm avantor column runs with a uv spectrum file
-    
-    filter_2_1_methods = (lib_df['method'].str.contains("2_1*"))
-
-    filter_uracil = (lib_df['sample_name'].str.contains("uracil*"))
-
-    filter_has_uv = (lib_df['uv_files'].apply(len)==0)
-
-    runs = lib_df.loc[(filter_2_1_methods & ~filter_uracil & ~filter_has_uv)]
-
-    # below is a reduced runs set for prototyping, will need to be expanded to use the full set after the code is written.
-
-    runs = runs.iloc[0:3]
-
-    return runs
 
 def main():
     
@@ -126,7 +101,6 @@ def main():
 
     runs = pd.merge(runs, scaled_uv_data.to_frame(), left_on = 'run_name', right_index = True)
     
-    print(runs.columns)
     # #its important to track what the index is of passed dataframes and Series in and out of .apply in order to get expected behavior. Set index to desired column often.
 
     # # Current modus operandi for transforming columns and adding them to the runs df:
@@ -135,14 +109,37 @@ def main():
     # # 3. Using .apply() on a Series will return a series, be prepared to handle that. Pass that series back out into the main() where you will perform a merge into the runs df.
 
     # # Baseline Calculator
+    baselines = spectrum_baseline_calculation(runs.set_index('run_name').loc[:,'scaled_uv_data'])
+    
+    runs = pd.merge(runs, baselines, left_on = 'run_name', right_index = True)
 
-    spectrum_baseline_calculation(runs.set_index('run_name').loc[:,'scaled_uv_data'])
+    print(runs['scaled_uv_data_baselines'].values)
 
-    # #uv_data_baselines = 
-    # #runs = pd.Merge(runs, , on_left = 'run_name', on_right = )
+    # Correct scaled UV data by subtracting the baseline
+
 
     time_2 = perf_counter()
 
     print(time_2-time_1)
 
 main()
+
+    
+def find_target_runs(lib):
+    lib_df = lib.data_table()
+
+    # filter to 10cm avantor column runs with a uv spectrum file
+    
+    filter_2_1_methods = (lib_df['method'].str.contains("2_1*"))
+
+    filter_uracil = (lib_df['sample_name'].str.contains("uracil*"))
+
+    filter_has_uv = (lib_df['uv_files'].apply(len)==0)
+
+    runs = lib_df.loc[(filter_2_1_methods & ~filter_uracil & ~filter_has_uv)]
+
+    # below is a reduced runs set for prototyping, will need to be expanded to use the full set after the code is written.
+
+    runs = runs.iloc[0:3]
+
+    return runs
