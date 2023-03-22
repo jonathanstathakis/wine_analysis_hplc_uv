@@ -411,7 +411,9 @@ class Library:
                            "ch_files" : [x.data_files_dict['ch_files'] for x in self.loaded_runs.values()],
                            "uv_files" : [x.data_files_dict['uv_files'] for x in self.loaded_runs.values()],
                            "method" : [x.acq_method for x in self.loaded_runs.values()],
-                           "desc" : [x.description for x in self.loaded_runs.values()]
+                           "desc" : [x.description for x in self.loaded_runs.values()],
+                           "run_dir_obj" : [x for x in self.loaded_runs.values()]
+                           
         })
 
         df = df.sort_values('acq_date', ascending = False).reset_index(drop = True)
