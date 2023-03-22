@@ -105,5 +105,5 @@ def signal_metadata(in_path):
             return get_single_signal_info(soup), get_spectrum_info(soup)
     
     if not in_path.is_file():
-        print(f"{in_path} does not exist, cannot load signal metadata from acq.macaml")
+        #print(f"{in_path} does not exist, cannot load signal metadata from acq.macaml")
         return ("empty", "empty")
