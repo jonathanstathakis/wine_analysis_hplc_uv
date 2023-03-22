@@ -20,7 +20,9 @@ from pybaselines import Baseline
 
 # adds root dir 'wine_analyis_hplc_uv' to path.)
 
-from agilette import agilette_core as ag
+from agilette.agilette_core import Library
+
+from pathlib import Path
 
 from time import perf_counter
 
@@ -127,16 +129,20 @@ def find_target_runs(lib):
 
     return runs
 
+
+
 def main():
     
-    time_1 = perf_counter()
-    lib = ag.Agilette('/Users/jonathan/0_jono_data')
-    time_2 = perf_counter()
-    print(time_2 - time_1)
+
+    selected_runs = ['2023-03-07_DEBERTOLI_CS_001.D', '2023-02-23_2021-DEBORTOLI-CABERNET-MERLOT_AVANTOR.D', '2023-02-23_LOR-RISTRETTO.D']
+
+    lib = Library(Path('/Users/jonathan/0_jono_data'), runs_to_load = selected_runs)
+
+    print(lib.data_table())
 
     # runs = find_target_runs(lib)
     
-    # uv_data_series = uv_data_addition(runs, lib)
+    uv_data_series = uv_data_addition(runs, lib)
 
     # # merge the uv_data with the rest of the runs table from the right.
     # runs = pd.merge(runs, uv_data_series.to_frame(), left_on = 'run_name', right_index = True)
