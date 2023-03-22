@@ -19,36 +19,11 @@ from sklearn.preprocessing import MinMaxScaler
 from pybaselines import Baseline
 
 # adds root dir 'wine_analyis_hplc_uv' to path.)
-
 from agilette.agilette_core import Library
 
 from pathlib import Path
 
 from time import perf_counter
-
-def uv_data_addition(runs, lib):
-
-    all_data = lib.all_data()
-
-    def uv_data_extractor(run_name):
-        # accesses the data dir through the all_data dict using the run name specified by filtering the data table.
-
-        data_dir = all_data[run_name]
-
-        uv_data = data_dir.load_spectrum().uv_data
-        
-        # uv_data is a df containing a spectrum with 'mins' as the first column
-
-        return uv_data
-    
-    # # this line returns a series of dataframes 'uv_data'.
-
-    uv_data_series = runs['run_name'].apply(uv_data_extractor)
-
-    uv_data_series.index = runs['run_name'].values
-    uv_data_series.name = 'uv_data'
-
-    return uv_data_series
 
 def uv_data_scaler(uv_data_column):
 
@@ -129,20 +104,42 @@ def find_target_runs(lib):
 
     return runs
 
+def uv_data_addition(runs, lib):
 
+    all_data = lib.all_data()
+
+    def uv_data_extractor(run_name):
+        # accesses the data dir through the all_data dict using the run name specified by filtering the data table.
+
+        data_dir = all_data[run_name]
+
+        uv_data = data_dir.load_spectrum().uv_data
+        
+        # uv_data is a df containing a spectrum with 'mins' as the first column
+
+        return uv_data
+    
+    # # this line returns a series of dataframes 'uv_data'.
+
+    uv_data_series = runs['run_name'].apply(uv_data_extractor)
+
+    uv_data_series.index = runs['run_name'].values
+    uv_data_series.name = 'uv_data'
+
+    return uv_data_series
 
 def main():
     
-
-    selected_runs = ['2023-03-07_DEBERTOLI_CS_001.D', '2023-02-23_2021-DEBORTOLI-CABERNET-MERLOT_AVANTOR.D', '2023-02-23_LOR-RISTRETTO.D']
+    time_1 = perf_counter()
+    selected_runs = ['2023-03-07_DEBERTOLI_CS_001.D']#'2023-02-23_2021-DEBORTOLI-CABERNET-MERLOT_AVANTOR.D', '2023-02-23_LOR-RISTRETTO.D']
 
     lib = Library(Path('/Users/jonathan/0_jono_data'), runs_to_load = selected_runs)
 
     print(lib.data_table())
 
-    # runs = find_target_runs(lib)
+    runs = lib.data_table()
     
-    uv_data_series = uv_data_addition(runs, lib)
+    runs['uv_data'] = runs['run_dir_obj'].apply(lambda run_dir : run_dir.load_spectrum().uv_data)
 
     # # merge the uv_data with the rest of the runs table from the right.
     # runs = pd.merge(runs, uv_data_series.to_frame(), left_on = 'run_name', right_index = True)
@@ -170,5 +167,8 @@ def main():
     # #uv_data_baselines = 
     # #runs = pd.Merge(runs, , on_left = 'run_name', on_right = )
 
+    time_2 = perf_counter()
+
+    print(time_2-time_1)
 
 main()
