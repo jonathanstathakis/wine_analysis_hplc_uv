@@ -67,23 +67,19 @@ class UV_Data:
     """
     A class representing the UV data of a run. It will be initialised by 'extract_uv_data()' and contain the UV data as a Spectrum object.
     """
-    def __init__(self, uv_file_path = str):
-        self.path = uv_file_path
+    def __init__(self, path : Path):
+        self.path = path
         self.uv_data = None
         
     def extract_uv_data(self):
 
         try:
-            for x in self.path.iterdir():
-                if ".UV" in x.name:
-
-                    # the path is the absolute file path to the file contained within the parent .D director
-                    uv_data = retrieve_uv_data(rb.read(str(self.path)))
-
-                    self.uv_data = uv_data
-        
+            self.uv_data = retrieve_uv_data(str(self.path))
+            
         except Exception as e:
             print(e)
+        
+        return self.uv_data
     
     def line_plot(self):
         """
