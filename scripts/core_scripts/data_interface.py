@@ -48,45 +48,54 @@ def data_table(top_dir):
     
     return df
 
-def retrieve_uv_data(data_uv):
+def retrieve_uv_data(uv_data_path : str):
 
     """
     Takes a rainbow-api DataFile object containing chemstation .UV data and returns a df in
     wide format. For 3d plotting, convert to long format.
     """
+    if isinstance(uv_data_path, str):
+        data_uv = rb.agilent.chemstation.parse_uv(uv_data_path)
 
+    else:
+        print(f'not a string, {type(uv_data_path)}')
     try:
-        data = data_uv.extract_traces('DAD1.UV').transpose()
 
+        data = data_uv.data
+        time = data_uv.xlabels.reshape(-1,1)
+    
     except Exception as e:
         print(e)
     
     try:
-    
         # need to combine the time data with the abs data prior to forming the DF.
         
-        combo_data = np.concatenate((data_uv.get_file('DAD1.UV').xlabels.reshape(-1,1), data), axis = 1)
+        combo_data = np.concatenate((time, data), axis = 1)
 
     except Exception as e:
         
         print(f"trying to form a combination data of time and absorbance but {e}")
-    
+
     try:
-    
         # form a list of column names to align with the combo_data aray
         
-        column_names = ['mins'] + list(data_uv.get_file('DAD1.UV').ylabels)
+        column_names = ['mins'] + list(data_uv.ylabels)
         
         df = pd.DataFrame(data = combo_data, columns = column_names)
         
         df.columns = df.columns.astype(str)
-        
 
+        df.name = str(f"{Path(uv_data_path).parent.name.replace('.D', '')}_spectrum")
+        
     except Exception as e:
         print(e)
 
     try:
-        return df
+        if isinstance(df, pd.DataFrame):
+            return df
+        else:
+            print('returning nothing, not a DF')
+            return df
     
     except Exception as e:
         print(e)

@@ -92,6 +92,8 @@ def main():
     
     runs['uv_data'] = runs['run_dir_obj'].apply(lambda run_dir : run_dir.load_spectrum().uv_data)
 
+    runs['uv_data'] = runs['uv_data'].apply(lambda spectrum : spectrum[['255']])
+
     # # set uv_data index to mins for scaling operation to follow
     runs['uv_data'] = runs['uv_data'].apply(lambda x : x.set_index('mins'))
 
@@ -113,17 +115,17 @@ def main():
     
     runs = pd.merge(runs, baselines, left_on = 'run_name', right_index = True)
 
-    print(runs['scaled_uv_data_baselines'].values)
-
     # Correct scaled UV data by subtracting the baseline
 
+    # 1. get the scaled_uv_data by nm
+    # 2. get the baseline by nm
+    # 3. subtract one from the other.
 
     time_2 = perf_counter()
 
     print(time_2-time_1)
 
 main()
-
     
 def find_target_runs(lib):
     lib_df = lib.data_table()
