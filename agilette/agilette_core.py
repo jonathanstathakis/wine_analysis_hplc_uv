@@ -278,18 +278,22 @@ class Library:
     """
     The equivalent of the top level dir. use .data_table() to view all runs in the data folder path provided, otherwise give a list of .D file names to speed up load times.
     TODO: test behavior of various argument inputs i.e. sequences, single runs, runs_to_load, and combinations. What will happen if there is an overlap?
+
+    2023-03-29 - Going to rework the Library
     """
     def __init__(self, path: Path, runs_to_load: list = []):
+        
         self.path = path
+        self.all_data_files = None
 
         if 'single_runs' in runs_to_load:
             self.single_runs = self.single_runs()
-        
         if 'sequences' in runs_to_load:
             self.sequences = self.sequences()
-        
-        # if "all_data_files" in runs_to_load:
-        #     self.all_data_files = self.all_data_files()
+        if "all_data_files" in runs_to_load:
+            print('loading all data files in given path')
+
+            #self.all_data_files = self.get_all_data_files()
 
         standard_options = ['single_runs', 'sequences', 'all_data_files']
 
@@ -298,11 +302,8 @@ class Library:
             self.loaded_runs = {}
 
             for name in runs_to_load:
-
                 d_path = self.path.glob('**/' + name)
-
                 d_path = next(d_path)
-
                 self.loaded_runs[d_path.name] = Run_Dir(d_path)     
 
             #loaded_runs = {obj.name : Run_Dir(Path.glob(dir_name)) for dir_name in runs_to_load}
@@ -319,55 +320,13 @@ class Library:
         
         return sequence_dict
     
-    def all_data(self):
+    def get_all_data_files(self):
             
         import re
-        
-        # combine all D dirs together into a dict. To handle duplicate file names across sequences and single runs, we will add a counter to the key name.
-        
-        all_data = {}
-
-        dup_suffix = 1
-
-        loop_count = 0
 
         for x in self.path.glob('**/*.D'):
-            
-            loop_count += 1
-            if x.name not in all_data.keys():
-
-                all_data[x.name] = Run_Dir(x)
-                continue
-                
-            if x.name in all_data.keys():
-                new_name = f"{x.name}_{dup_suffix}"
-                dup_suffix += 1
-
-                #print(f"renaming {x.name} as {new_name} to avoid duplicates in dict")
-    
-                all_data[new_name] = Run_Dir(x)
-
-            
-            
-            # else:
-            #     if x.name in all_data.keys() and x.is_dir():
-            #         print(x)
-            #         print(f"duplicate found {x.name}")
-
-            #         suffix += 1
-            #         print(f"dup count: {dup_count}")
-
-            #         dup_key_name = f"{x.name}_{dup_count}"
-
-            #         print(f"duplicate name {dup_key_name}")
-
-            #         all_data[f"{x.name}_{dup_count}"] = Run_Dir(x)
-
-            # print("leaving iteration")
-
-        #combined_dict = {**self.single_runs, **self.sequences.values().data_files}
-            
-        return all_data
+        
+            print(x.names)
 
     # def all_data_files(self):
         
