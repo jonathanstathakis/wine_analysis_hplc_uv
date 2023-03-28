@@ -1,0 +1,71 @@
+,id,vintage,name,sample_date,open_date,notes,variety,size
+0,z1,2016,zema estate 'family selection' cabernet sauvignon,,,"fridge. sampled at 21:20 20230122, stored for 10h before transport to lab.",cabernet-sauvignon,750
+1,z2,2016,zema estate 'family selection' cabernet sauvignon,,,"freezer storage. sampled at 21:20 20230122, stored for 10h before transport to lab.",cabernet-sauvignon,750
+2,z3,2016,zema estate 'family selection' cabernet sauvignon,,,ambient storage. sampled at 21:20 20230122.,cabernet-sauvignon,750
+3,1,2022,william downie 'cathedral' pinot noir,,,ambient 2 weeks. sampled 20230111.,pinot-noir,750
+4,2,2021,babo chianti,,,ambient 2 weeks. sampled 20230111.,sangiovese,750
+5,,2021,joshua cooper shay's flat cabernet sauvignon,,2023-02-04,,cabernet-sauvignon,750
+6,5,2022,william downie 'cathedral' pinot noir,,02-02,,pinot-noir,750
+7,6,2021,babo chianti,,04-02,,sangiovese,750
+8,7,2020,uva non grata gamay,,04-02,,gamay,750
+9,8,2021,hey malbec,,04-02,,malbec,750
+10,9,2018,crawford river cab,,01/02,,cabernet-sauvignon,750
+11,10,2021,john duval concilio shiraz,,06-02,,shiraz,750
+12,11,2021,joshua cooper shay's flat cabernet sauvignon,,,,cabernet-sauvignon,750
+13,12,2020,joseph faiveley bourgogne pinot noir,,03-02,under corevin,pinot-noir,750
+14,13,2021,pithon-paille 'grololo',,19-01,under corevin,grolleau,750
+16,15,2020,torbreck the struie,,27-01,under corevin,shiraz,750
+17,16,2021,girolamo russo etna nerina,,27-01,under corevin,etna-bianco,750
+18,17,2021,koerner wine nielluccio sangiovese,,06-02,under corevin,sangiovese,750
+20,19,2021,by farr chardonnay,,02-02,under corevin (pivot),chardonnay,750
+21,20,2018,protero gumeracha nebbiolo,,,fresh open,nebbiolo,750
+22,21,2021,jim barry watervale riesling,,06-02,,riesling,750
+23,22,2019,kuenhof riesling,,10-02,,riesling,750
+24,23,2018,domaine des lises crozes-hermitage,,10-02,,rhone-blend,750
+25,24,2022,stargazer riesling,,09-02,"one duplicate, 242",riesling,750
+26,25,nv,nv ulysse collin champagne blanc de blancs extra brut les pierrières,,13-02,,champagne-blend,750
+27,26,2016,anna maria abbona barolo bricco san pietro,,10-02,,nebbiolo,750
+29,28,2021,cullen wines mangan east block,,09-02,,petit-verdot_malbec,750
+30,29,2008,torbreck descendant shiraz viognier,,09-02,"5 duplicates, 291, 292, 293, 294, 295",shiraz_viognier,750
+31,30,2009,st hugo's cabernet sauvignon,,09-02,,cabernet,750
+32,31,2013,woodlands cabernet merlot,,15-02,,cabernet_merlot,750
+33,32,2021,by farr chardonnay,2023-03-13,,,,750
+34,33,2021,pithon-paille 'grololo' rouge,2023-03-13,,,,750
+35,34,2020,uva non grata gamay,2023-03-13,,,,750
+36,35,2021,ciu ciu 'oris' falerio,2023-03-13,,,,750
+37,36,2021,nino barraco 'fior di bianco',2023-03-13,,,,750
+38,37,2022,dom. simha paysan fleur sauvage,2023-03-13,,,,750
+39,38,2018,crawford river cabernets,2023-03-13,,,,750
+40,39,2021,john duval concilio shiraz,2023-03-13,,,,750
+41,40,2020,joseph faiveley bourgogne rouge,2023-03-13,,,,750
+42,41,2021,st hugo gsm,2023-03-13,,,,750
+43,42,2017,andrea oberto la mora barolo,2023-03-13,,,,750
+44,43,2021,stoney rise pinot noir,2023-03-13,,,,750
+45,44,2021,girolamo russo etna nerina,2023-03-13,,,,750
+46,45,2022,jumping juice shiraz,2023-03-13,,,,750
+47,46,2019,orlando 'steingarten' riesling,2023-03-13,,,,750
+48,47,?,yangarra 'roux beaute' roussanne,2023-03-13,,,,750
+49,48,2020,babo chianti,2023-03-13,,potentially mislabelled,,750
+50,49,2020,matias riccitelli hey malbec,2023-03-13,,potentially mislabelled,,750
+51,50,2022,mt horrocks cordon cut riesling,2023-03-13,,"can't be this wine, didnt sample any sweet wines. vial contains a red wine that tastes like malbec.",,750
+52,51,nv,dom. gavoty 'cuvee cignal' rose,2023-03-13,,,,750
+53,52,2022,vinden headcase 'pokolbin blanc',2023-03-13,,,,750
+54,53,2021,nick spencer 'tumbarumba' chardonnay,2023-03-13,,,,750
+55,54,2021,domaine fevre ac chablis,2023-03-13,,,,750
+56,55,nv,mumm tasmania brut prestige,2023-03-13,,,,750
+57,56,2022,yangarra estate rose,2023-03-13,,potentially mislabelled,,750
+58,57,2021,le pezze pinot grigio,2023-03-13,,,,750
+59,58,2021,pieropan soave,2023-03-16,,,,750
+60,59,2021,billaud d'or bourgogne blanc,2023-03-16,,,,750
+61,60,2017,anna maria abbona barolo,2023-03-16,,,,750
+62,61,2019,shaw and smith shiraz balhannah,2023-03-16,,,,750
+63,62,2020,spinifex bete noir,2023-03-16,,,,750
+64,63,2021,domaine seguinot-bordet chablis,2023-03-16,,,,750
+65,64,2019,deviation road loftia,2023-03-16,,,,750
+66,65,2020,le macchiole bolgheri rosso,2023-03-20,,,,750
+67,66,2021,criante c21 cataratto,2023-03-20,,,,750
+68,67,2019,wynns coonawarra estate shiraz,2023-03-21,,,,750
+69,68,2014,shaw + smith shiraz,2023-03-23,2023-03-21,,,750
+70,69,2021,domenica chardonnay,2023-03-23,2023-03-23,,,750
+71,70,2020,hochkirch pinot noir,2023-03-23,2023-03-23,,,750
+72,71,2020,cascina delle rose dolcetto d’alba ‘a elizabeth’,2023-03-23,2023-03-23,,,750
