@@ -82,48 +82,48 @@ def spectrum_baseline_calculation(spectrum_column):
 def main():
     
     time_1 = perf_counter()
-    selected_runs = ['2023-03-07_DEBERTOLI_CS_001.D']#'2023-02-23_2021-DEBORTOLI-CABERNET-MERLOT_AVANTOR.D', '2023-02-23_LOR-RISTRETTO.D']
+    selected_runs = ['2023-02-23_2021-DEBORTOLI-CABERNET-MERLOT_AVANTOR.D', '2023-02-23_LOR-RISTRETTO.D']
 
     lib = Library(Path('/Users/jonathan/0_jono_data'), runs_to_load = selected_runs)
 
-    print(lib.data_table())
+    print(lib.data_table()['path'])
 
     runs = lib.data_table()
     
-    runs['uv_data'] = runs['run_dir_obj'].apply(lambda run_dir : run_dir.load_spectrum().uv_data)
+    runs['uv_data'] = runs['run_dir_obj'].apply(lambda row : row.load_spectrum().uv_data)
 
-    runs['uv_data'] = runs['uv_data'].apply(lambda spectrum : spectrum[['255']])
+    # runs['uv_data'] = runs['uv_data'].apply(lambda spectrum : spectrum[['255']])
 
-    # # set uv_data index to mins for scaling operation to follow
-    runs['uv_data'] = runs['uv_data'].apply(lambda x : x.set_index('mins'))
+    # # # set uv_data index to mins for scaling operation to follow
+    # runs['uv_data'] = runs['uv_data'].apply(lambda x : x.set_index('mins'))
 
-    # # scale the uv_data nm column-wise.
+    # # # scale the uv_data nm column-wise.
     
-    scaled_uv_data = uv_data_scaler(runs.set_index('run_name').loc[:,'uv_data'])
+    # scaled_uv_data = uv_data_scaler(runs.set_index('run_name').loc[:,'uv_data'])
 
-    runs = pd.merge(runs, scaled_uv_data.to_frame(), left_on = 'run_name', right_index = True)
+    # runs = pd.merge(runs, scaled_uv_data.to_frame(), left_on = 'run_name', right_index = True)
     
-    # #its important to track what the index is of passed dataframes and Series in and out of .apply in order to get expected behavior. Set index to desired column often.
+    # # #its important to track what the index is of passed dataframes and Series in and out of .apply in order to get expected behavior. Set index to desired column often.
 
-    # # Current modus operandi for transforming columns and adding them to the runs df:
-    # # 1. define a transformation function wrapper in order to keep the code clean.
-    # # 2. pass in the to-be-transformed column with index set to 'run_name' in order to be able to track what is what. Doesnt necessarily need to be run-names, its just that its easier to understand what is happening than the generic integer index.
-    # # 3. Using .apply() on a Series will return a series, be prepared to handle that. Pass that series back out into the main() where you will perform a merge into the runs df.
+    # # # Current modus operandi for transforming columns and adding them to the runs df:
+    # # # 1. define a transformation function wrapper in order to keep the code clean.
+    # # # 2. pass in the to-be-transformed column with index set to 'run_name' in order to be able to track what is what. Doesnt necessarily need to be run-names, its just that its easier to understand what is happening than the generic integer index.
+    # # # 3. Using .apply() on a Series will return a series, be prepared to handle that. Pass that series back out into the main() where you will perform a merge into the runs df.
 
-    # # Baseline Calculator
-    baselines = spectrum_baseline_calculation(runs.set_index('run_name').loc[:,'scaled_uv_data'])
+    # # # Baseline Calculator
+    # baselines = spectrum_baseline_calculation(runs.set_index('run_name').loc[:,'scaled_uv_data'])
     
-    runs = pd.merge(runs, baselines, left_on = 'run_name', right_index = True)
+    # runs = pd.merge(runs, baselines, left_on = 'run_name', right_index = True)
 
-    # Correct scaled UV data by subtracting the baseline
+    # # Correct scaled UV data by subtracting the baseline
 
-    # 1. get the scaled_uv_data by nm
-    # 2. get the baseline by nm
-    # 3. subtract one from the other.
+    # # 1. get the scaled_uv_data by nm
+    # # 2. get the baseline by nm
+    # # 3. subtract one from the other.
 
-    time_2 = perf_counter()
+    # time_2 = perf_counter()
 
-    print(time_2-time_1)
+    # print(time_2-time_1)
 
 main()
     
