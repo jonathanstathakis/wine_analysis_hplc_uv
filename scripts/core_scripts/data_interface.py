@@ -54,9 +54,9 @@ def retrieve_uv_data(uv_data_path : str):
     Takes a rainbow-api DataFile object containing chemstation .UV data and returns a df in
     wide format. For 3d plotting, convert to long format.
     """
-    if isinstance(uv_data_path, str):
-        data_uv = rb.agilent.chemstation.parse_uv(uv_data_path)
-
+    if isinstance(uv_data_path, str) and Path(uv_data_path).is_file():
+        data_uv = rb.agilent.chemstation.parse_uv(str(first(Path(uv_data_path).glob("*.UV"))))
+    
     else:
         print(f'not a string, {type(uv_data_path)}')
     try:
@@ -65,7 +65,7 @@ def retrieve_uv_data(uv_data_path : str):
         time = data_uv.xlabels.reshape(-1,1)
     
     except Exception as e:
-        print(e)
+        print('tried to parse the uv data, but', e)
     
     try:
         # need to combine the time data with the abs data prior to forming the DF.
