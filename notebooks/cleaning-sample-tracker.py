@@ -12,7 +12,7 @@ import pandas as pd
 
 import os
 
-from google_docs_api import get_sheets_values_as_df, post_df_as_sheet_values, post_new_sheet
+from google_sheets_api import get_sheets_values_as_df, post_df_as_sheet_values, post_new_sheet
 
 def extract_vintage_from_name(df):
 
