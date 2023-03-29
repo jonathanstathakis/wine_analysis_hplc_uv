@@ -5,7 +5,7 @@ from pathlib import Path
 
 from scripts.acaml_read import signal_metadata
 
-from agilette.agilette_core import Single_Signal, UV_Data
+from agilette.modules import Single_Signal, UV_Data
 
 class Run_Dir:
     """

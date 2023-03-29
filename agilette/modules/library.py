@@ -2,7 +2,7 @@ from typing import Union
 from pathlib import Path
 import pandas as pd
 
-# from agilette.agilette_core import Sequence
+from agilette.modules.sequence import Sequence
 
 class Library:
 
