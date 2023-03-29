@@ -127,9 +127,9 @@ class Run_Dir:
 
     To get ch data, it is useful to view each signal's wavelength and band rather than the detector name, so run self.extract_ch_data() to get a dictionary of each signal with its wavelength as the key and dataframe of the signal as value.
     """
-    def __init__(self, file_path):
-        self.path = file_path
-        self.name, self.description, self.acq_method = self.load_meta_data()
+    def __init__(self, path: Path):
+        self.path = path
+       # self.name, self.description, self.acq_method = self.load_meta_data()
         self.metadata = self.load_meta_data()
         self.acq_date = self.get_acq_datetime()
         self.sequence_name = self.sequence_name()
@@ -273,6 +273,8 @@ class Agilette:
 
 #dict_3={k:v for d in (dict_1,dict_2) for k,v in d.items()}
 
+from typing import Union
+
 class Library:
 
     """
@@ -281,38 +283,108 @@ class Library:
 
     2023-03-29 - Going to rework the Library
     """
-    def __init__(self, path: Path, runs_to_load: list = []):
-        
+    def __init__(self, path : Union[str, list, Path]):
+        """
+        runs_to_load can be a single filepath string, a Path object, or list of either filepath strings or Path objects. If it is a string, convert it to Path object before continuing.
+
+        If it is a list, iterate through the list and check the file types.
+        """
         self.path = path
-        self.all_data_files = None
+        self.runs = self.load_runs(self.path)
 
-        if 'single_runs' in runs_to_load:
-            self.single_runs = self.single_runs()
-        if 'sequences' in runs_to_load:
-            self.sequences = self.sequences()
-        if "all_data_files" in runs_to_load:
-            print('loading all data files in given path')
-
-            #self.all_data_files = self.get_all_data_files()
-
-        standard_options = ['single_runs', 'sequences', 'all_data_files']
-
-        if bool(runs_to_load):
-
-            self.loaded_runs = {}
-
-            for name in runs_to_load:
-                d_path = self.path.glob('**/' + name)
-                d_path = next(d_path)
-                self.loaded_runs[d_path.name] = Run_Dir(d_path)     
-
-            #loaded_runs = {obj.name : Run_Dir(Path.glob(dir_name)) for dir_name in runs_to_load}
-
-    def single_runs(self):
+    def load_runs(self, path: Union[str, Path, list]) -> list:
+        """
+        Read in filepaths to Agilent .D run dirs to be used to initialise Run_Dir objs.
         
-        single_run_dict = {obj.name : Run_Dir(obj) for obj in self.path.iterdir() if obj.name.endswith(".D")}
+        Currently this function only wraps run_input_validation, but plans for more functionality later.
         
-        return single_run_dict
+        Input options are:
+        1. Path or str filepath to specific .D.
+        2. List of Path or str filepaths to specified .D.
+        3. Top level directory containing .D dirs.
+
+        Output is a list of verified path objects leading to .D dirs.
+        """
+        def run_input_validation(path : Union[str, Path, list]) -> list:
+            """
+            Driver function of load_runs, takes str or Path leading to .D directory or a top level directory containing .D, or a list of both (or either) and returns a list of verified Path objects. 
+            
+            Throws an error if the input is not one of these three, or if the directory is not a .D, or if the list is empty.
+
+            Note: have not tested what happens if a list contains a directory containing .D objects.
+            """
+
+            runs = None
+
+            def path_list_validation(path : list) -> list:
+                """
+                Takes a list of possible run Dir (.D) paths and valdiates them.
+
+                Takes a list, returns a list.
+                """
+                try:
+                    runs = []
+                    for p in path:
+                        # 1. test if p is a string, if so convert to Path
+                        # 2. test if p is a directory that ends with .D
+                        # 3. if one element is not a .D dir, break the loop,
+                        if isinstance(p, str):
+                            p = Path(p)
+                        if p.is_dir() and p.suffix.endswith('.D'):
+                            runs.append(p)
+                            continue
+                        else:
+                            # If any item in the list is a file or non-existent path, raise an error
+                            raise ValueError(f"{p} is not a directory")
+                
+                except Exception as e:
+                    print(e)
+                    return None
+
+                return runs
+
+            try:
+                ##3. A list of .D paths
+                
+                # 1. if its a list, check each element in list.
+                # 2. if element is string, turn into Path object.
+                # 3. if path leads to dir and the dir is .D, continue to next element.
+                # 4. 
+
+                # 1. list
+                if isinstance(path, list):
+                    runs = path_list_validation(path)
+                    return runs
+
+                # 2. if not a list, test for string. if string, turn into Path.
+                elif isinstance(path, str):
+                    path = Path(path)
+
+                # 3. Now that any strings are caught and converted to Paths, 
+                if isinstance(path, Path) and path.is_dir():
+                    # single .D path
+                    if path.suffix.endswith('.D'):
+                        runs = [path]
+
+                    # 4. top level path containing .D dirs.
+                    else:
+                        runs = [p for p in path.glob('**/*.D')]
+                        if not runs:
+                            raise ValueError(f"{path} does not contain .D directories")
+                else:
+                    raise TypeError(f"{path} is not list or Path leading to a directory, it is {type(path)}")
+
+            except Exception as e:
+                print(f"An error occurred: {e}")
+                
+                return None
+            
+            return runs
+        
+        runs = run_input_validation(path)
+         
+        return runs
+            
                         
     def sequences(self):
         
@@ -328,23 +400,6 @@ class Library:
         
             print(x.names)
 
-    # def all_data_files(self):
-        
-    #     # sequences
-    #     seq_list = []
-        
-    #     for data_dir in self.sequences.values():
-    #         for y in data_dir.data_files.values():
-    #             seq_list.append(y)
-    #     # single runs
-    #     run_list = []
-        
-    #     for x in self.single_runs.values():
-    #         run_list.append(x)
-            
-    #     all_data_list = seq_list + run_list
-        
-    #     return(all_data_list)
     
     def data_table(self):
 
