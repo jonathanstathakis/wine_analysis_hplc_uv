@@ -1,4 +1,4 @@
-from agilette_core import Library
+from agilette.modules.library import Library
 
 from pathlib import Path
 
