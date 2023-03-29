@@ -5,13 +5,13 @@ from pathlib import Path
 
 from scripts.acaml_read import signal_metadata
 
-from agilette.modules.agilette_core import Single_Signal, UV_Data
+from agilette.modules.agilette_core import Single_Signal, Spectrum
 
 class Run_Dir:
     """
     A single run directory containing signal data and metadata about the run.
 
-    Use extract_uv_data(self) to get the Spectrum.
+    Use extract_Spectrum(self) to get the Spectrum.
 
     To get ch data, it is useful to view each signal's wavelength and band rather than the detector name, so run self.extract_ch_data() to get a dictionary of each signal with its wavelength as the key and dataframe of the signal as value.
     """
@@ -24,7 +24,7 @@ class Run_Dir:
         self.data_files_dict = self.data_files_dicter()
 
         self.single_signals_metadata, self.spectrum_metadata = self.get_signal_metadata()
-        self.spectrum = UV_Data(self.path)
+        self.spectrum = Spectrum(self.path)
         self.metadata = self.load_meta_data()
 
     def get_signal_metadata(self):
@@ -153,8 +153,8 @@ class Run_Dir:
     
     # def load_spectrum(self):
 
-    #     self.spectrum = UV_Data(self.path)
-    #     self.spectrum.extract_uv_data()
+    #     self.spectrum = Spectrum(self.path)
+    #     self.spectrum.extract_Spectrum()
     #     return self.spectrum
 
     def __str__(self):

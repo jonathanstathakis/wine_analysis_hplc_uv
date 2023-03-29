@@ -13,6 +13,7 @@ def testing_library() -> None:
 
     lib = Library(path)
 
-    print(lib.spectrum_table)
+    loaded_spectrums = lib.load_spectrum()
+    loaded_spectrums['spectrum_obj'].apply(lambda x : x.line_plot())
 
 testing_library()

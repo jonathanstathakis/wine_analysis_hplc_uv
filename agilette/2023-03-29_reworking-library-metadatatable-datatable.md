@@ -85,3 +85,30 @@ for run in runs_list:
 202303300006
 
 metadata table done. Now for data table.
+
+===
+
+202303300223
+
+spectrum table done.
+
+Now for the join.
+
+1. define a join function.
+2. join the tables.
+3. apply the load_spectrum data function to the spectrum column.
+4. return the dataframe with the spectrum objects containing a dataframe spectrum.
+
+===
+
+202303300926
+
+Last nights solution worked for generating the full table on the test case, but failed on the top level dir.
+
+Potential issues:
+
+No explicit handling of provided .D that don't contain .UV.
+
+Handling of synchronosity between metadata_table and data_table. Presumably `pd.merge` defaults to left join which should handle that, but if I for example mess with the metadata index, it will fail to merge.
+
+The current error is 'Attempted merge, but join cols were not equal'. This is not surprising as not all .D dirs in the given path contain .UV. I will remove that test now.

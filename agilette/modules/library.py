@@ -6,6 +6,7 @@ from agilette.modules.sequence import Sequence
 from agilette.modules.library_input_validation import run_input_validation
 from agilette.modules.metadata_table import metadata_table
 from agilette.modules.spectrum_table import spectrum_table
+from agilette.modules.join_metadata_spectrum_tables import join_metadata_spectrum_tables
 from agilette.modules.run_dir import Run_Dir
 
 class Library:
@@ -25,6 +26,14 @@ class Library:
         self.metadata_table = self.get_metadata_table(self.metadata_list)
         self.spectrum_list = self.get_spectrum_list(self.runs_list)
         self.spectrum_table = self.get_spectrum_table(self.spectrum_list)
+
+    def load_spectrum(self):
+        """
+        join the `spectrum_table` with `metadata_table` and load the data within the `Spectrum` objects.
+        
+        Returns a dataframe of the merged tables.
+        """
+        return join_metadata_spectrum_tables(self.metadata_table, self.spectrum_table)
 
     def get_spectrum_table(self, spectrum_list : list) -> pd.DataFrame:
         return spectrum_table(spectrum_list)
