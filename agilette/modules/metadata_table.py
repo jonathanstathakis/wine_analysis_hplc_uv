@@ -1,29 +1,30 @@
+"""
+Generates a metadata table from a given metadata_list.
+
+Only for use from a Library object loading metadata from its Run_Dir objects.
+
+List of lists as input, pd.DataFrame as output.
+"""
+
 import pandas as pd
 
-def metadata_table(self):
-
+def metadata_table(metadata_list : list) -> pd.DataFrame:
         """
-        modify this to be applicable to any set of loaded runs in dict form.
+        list of lists of metadata as input, dataframe as output. Nonstandalone function of Library.
         """
-                # need to form dicts for each column then combine them together into the DF. Its just gna display the objects of each data object. Q is though, from what list? self.data_file_dir Also I need to find a way to get the acq date without using rainbow.
-        
-        
-        #ids = [idx for idx, x in enumerate(self.all_data_files)]
-        #print([x.acq_date for x in list(self.loaded_runs.values())])
+        column_names = ['acq_date',
+                   'name',
+                   'path',
+                   'acq_method',
+                   'description',
+                   'sequence_name',
+                   'data_files'
+                   ]
 
-        df = pd.DataFrame({
-                          "acq_date" : [x.acq_date for x in self.loaded_runs.values()],
-                           "sample_name" : [x.name for x in self.loaded_runs.values()],
-                           "run_name" : [x.path.name for x in self.loaded_runs.values()],
-                           "path" : [x.path for x in self.loaded_runs.values()],
-                           "sequence" : [x.sequence_name for x in self.loaded_runs.values()],
-                           "ch_files" : [x.data_files_dict['ch_files'] for x in self.loaded_runs.values()],
-                           "uv_files" : [x.data_files_dict['uv_files'] for x in self.loaded_runs.values()],
-                           "method" : [x.acq_method for x in self.loaded_runs.values()],
-                           "desc" : [x.description for x in self.loaded_runs.values()],
-                           "run_dir_obj" : [x for x in self.loaded_runs.values()]
-                           
-        })
-
+        print(metadata_list)
+        
+        df = pd.DataFrame(metadata_list, columns= column_names)
+        
         df = df.sort_values('acq_date', ascending = False).reset_index(drop = True)
-        
+
+        return df

@@ -69,3 +69,13 @@ First off I have to move Run_Dir to its own file.
 
 Run_Dir init will take a Path object and have no output, and will use load_metadata 
 
+===
+
+202303292139
+
+Forming the metadata table.
+
+```python
+for run in runs_list:
+    [run_name]
+```
