@@ -5,7 +5,7 @@ from pathlib import Path
 
 from scripts.acaml_read import signal_metadata
 
-from agilette.modules import Single_Signal, UV_Data
+from agilette.modules.agilette_core import Single_Signal, UV_Data
 
 class Run_Dir:
     """
@@ -25,17 +25,8 @@ class Run_Dir:
         self.single_signals_metadata, self.spectrum_metadata = self.get_signal_metadata()
         self.spectrum = None
 
-    # def __str__(self):
-    #     print_string =  f"{type(self)}\nname: {self.name}\nacq_date: {self.acq_date}\nacq_method path: {self.acq_method}\nsequence name: {self.sequence_name}\nAvailable Data:"
-        
-    #     for item in self.single_signals_metadata.items():
-    #         print_string = print_string + str(item) + "\n"
-        
-    #     print_string = f"{print_string}\nSpectrum:\n"
-    #     print_string = f"{print_string}\n{self.spectrum_metadata}"
-    #     #available data: {self.data_files_dict}"
-
-    #     return print_string
+    def __str__(self):
+            return str(self.path.parent.parts[-1] + '/' + self.path.name)
 
     def get_signal_metadata(self):
         return signal_metadata(self.path)
