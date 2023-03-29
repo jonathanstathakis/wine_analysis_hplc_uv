@@ -13,6 +13,6 @@ def testing_library() -> None:
 
     lib = Library(path)
 
-    print(lib.metadata_table)
+    print(lib.spectrum_table)
 
 testing_library()

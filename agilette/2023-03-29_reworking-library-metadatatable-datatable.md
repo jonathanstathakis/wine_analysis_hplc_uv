@@ -79,3 +79,9 @@ Forming the metadata table.
 for run in runs_list:
     [run_name]
 ```
+
+===
+
+202303300006
+
+metadata table done. Now for data table.

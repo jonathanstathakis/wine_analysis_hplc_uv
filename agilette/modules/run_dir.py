@@ -24,11 +24,18 @@ class Run_Dir:
         self.data_files_dict = self.data_files_dicter()
 
         self.single_signals_metadata, self.spectrum_metadata = self.get_signal_metadata()
-        self.spectrum = None
+        self.spectrum = UV_Data(self.path)
         self.metadata = self.load_meta_data()
 
     def get_signal_metadata(self):
         return signal_metadata(self.path)
+    
+    def spectrum_to_list(self) -> list:
+        return[self.acq_date, 
+                self.name, 
+                self.path,
+                self.spectrum
+                ]
 
     def metadata_to_list(self):
         """
@@ -144,11 +151,11 @@ class Run_Dir:
         
         return rainbow_obj
     
-    def load_spectrum(self):
+    # def load_spectrum(self):
 
-        self.spectrum = UV_Data(self.path)
-        self.spectrum.extract_uv_data()
-        return self.spectrum
+    #     self.spectrum = UV_Data(self.path)
+    #     self.spectrum.extract_uv_data()
+    #     return self.spectrum
 
     def __str__(self):
             return str(self.path.parent.parts[-1] + '/' + self.path.name)
