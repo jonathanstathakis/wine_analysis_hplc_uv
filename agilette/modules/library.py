@@ -2,7 +2,7 @@ from typing import Union
 from pathlib import Path
 import pandas as pd
 
-from agilette.agilette_core import Sequence
+# from agilette.agilette_core import Sequence
 
 class Library:
 
@@ -115,11 +115,11 @@ class Library:
         return runs
             
                         
-    def sequences(self):
+    # def sequences(self):
         
-        sequence_dict = {sequence_dir.name : Sequence(sequence_dir) for sequence_dir in self.path.iterdir() if sequence_dir.name.endswith(".sequence")}
+    #     sequence_dict = {sequence_dir.name : Sequence(sequence_dir) for sequence_dir in self.path.iterdir() if sequence_dir.name.endswith(".sequence")}
         
-        return sequence_dict
+    #     return sequence_dict
     
     def get_all_data_files(self):
             
