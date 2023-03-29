@@ -7,15 +7,8 @@ from agilette.modules.library_input_validation import run_input_validation
 from agilette.modules.metadata_table import metadata_table
 from agilette.modules.run_dir import Run_Dir
 
-class Runs_List:
-    def __init__(self, runs : list) -> None:
-        self.runs = runs
-
-    
-    def __str__(self):
-        #return "\n".join(str(run) for run in self.runs)
-
 class Library:
+
     """
     The equivalent of the top level dir. use .data_table() to view all runs in the data folder path provided, otherwise give a list of .D file names to speed up load times.
     """
@@ -26,8 +19,23 @@ class Library:
         If it is a list, iterate through the list and check the file types.
         """
         self.path = path
-        self.runs_list = Runs_List(self.load_runs(self.path))
+        self.runs_list = self.load_runs(self.path)
+        self.metadata_list = self.get_metadata_list(self.runs_list)
+        self.metadata_table = self.get_metadata_table(self.metadata_list)
+        #self.metadata_table
     
+    def get_metadata_list(self, runs_list : list) -> list:
+        """
+        Takes a list of Run_Dir objects and returns a list of their metadata as a list of lists.
+        """
+        metadata_list = [run.metadata_to_list() for run in runs_list]
+        return metadata_list
+
+    def get_metadata_table(self, metadata_list : list) -> pd.DataFrame:
+        """
+        Takes a list of lists of Library Run_Dir metadata and returns them as a dataframe, using `metadata_table()`
+        """
+        return metadata_table(metadata_list)
 
 
     def load_runs(self, path: Union[str, Path, list]) -> list:
@@ -47,7 +55,6 @@ class Library:
         runs = run_input_validation(path)
 
         try:
-
             if not isinstance(runs, type(None)):
                 
                 def run_dir_obj_loader(runs):
@@ -62,6 +69,12 @@ class Library:
             print(f"an error occured, {e}")
 
         return runs
+    
+    def __str__(self):
+        """
+        Outputs the path of each run in the Library as an identifier.
+        """
+        return "Runs in Library:\n" + "\n".join([str(run.path) for run in self.runs_list])
             
                         
     # def sequences(self):

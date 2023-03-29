@@ -17,19 +17,32 @@ class Run_Dir:
     """
     def __init__(self, path: Path):
         self.path = path
-       # self.name, self.description, self.acq_method = self.load_meta_data()
-        self.metadata = self.load_meta_data()
+        self.name, self.description, self.acq_method = self.load_meta_data()
         self.acq_date = self.get_acq_datetime()
         self.sequence_name = self.sequence_name()
+
         self.data_files_dict = self.data_files_dicter()
+
         self.single_signals_metadata, self.spectrum_metadata = self.get_signal_metadata()
         self.spectrum = None
-
-    def __str__(self):
-            return str(self.path.parent.parts[-1] + '/' + self.path.name)
+        self.metadata = self.load_meta_data()
 
     def get_signal_metadata(self):
         return signal_metadata(self.path)
+
+    def metadata_to_list(self):
+        """
+        Retruns a list metadata objects for use in `Library.get_metadata_list()`
+        """
+        return [self.acq_date, 
+                self.name, 
+                self.path,
+                self.acq_method,
+                self.description,
+                self.sequence_name,
+                self.data_files_dict,
+                #self.single_signals_metadata,
+                ]
 
     def data_files_dicter(self):
 
@@ -117,12 +130,12 @@ class Run_Dir:
                     description = description.replace("\n", "").replace(" ", "-").strip()
                 
                 acq_method = bsoup_xml.find("ACQMethodPath").get_text().split('\\')[-1]
-                                                                              
-            return name, description, acq_method
-        
+ 
         except Exception as e:
             print(f"error loading metadata from {self.path}: {e}")
     
+        return name, description, acq_method 
+        
     def rb_object(self):
         """
         loads the whole target data dir, currently it just returns the method and the data.
@@ -137,6 +150,8 @@ class Run_Dir:
         self.spectrum.extract_uv_data()
         return self.spectrum
 
+    def __str__(self):
+            return str(self.path.parent.parts[-1] + '/' + self.path.name)
 # most of the classes were prototypes in 2023-03-02_adding-sequences-to-data-table.ipynb.
 
 # Agilette will be the entry point to all other functionality, analogous to loading the chemstation program.
