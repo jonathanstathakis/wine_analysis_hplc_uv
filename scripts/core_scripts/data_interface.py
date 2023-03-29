@@ -48,21 +48,33 @@ def data_table(top_dir):
     
     return df
 
-def retrieve_uv_data(uv_data_path : str):
+def retrieve_uv_data(run_dir_path : Path):
 
     """
     Takes a rainbow-api DataFile object containing chemstation .UV data and returns a df in
     wide format. For 3d plotting, convert to long format.
     """
-    if isinstance(uv_data_path, str) and Path(uv_data_path).is_file():
-        data_uv = rb.agilent.chemstation.parse_uv(str(first(Path(uv_data_path).glob("*.UV"))))
+    if isinstance(run_dir_path, Path) and Path(run_dir_path).is_dir():
+        spectrum_path = next(run_dir_path.glob('*.UV'))
+
+    if isinstance(spectrum_path, Path) and Path(spectrum_path).is_file() and spectrum_path.suffix == '.UV':
+        spectrum = rb.agilent.chemstation.parse_uv(str(spectrum_path))
+
+    elif not isinstance(spectrum_path, Path):
+        raise TypeError(f"{spectrum_path} is wrong type, {type(spectrum_path)}, needs to be Path")
+        
+    elif not spectrum_path.is_file():
+        raise FileNotFoundError(f"{spectrum_path} is not a file")
     
-    else:
-        print(f'not a string, {type(uv_data_path)}')
+    elif not spectrum_path.suffix == '.UV':
+        raise ValueError("file provided is not a .UV file")
+    
+    else: 
+        raise RuntimeError("Unidentified cause of error")
     try:
 
-        data = data_uv.data
-        time = data_uv.xlabels.reshape(-1,1)
+        data = spectrum.data
+        time = spectrum.xlabels.reshape(-1,1)
     
     except Exception as e:
         print('tried to parse the uv data, but', e)
@@ -79,13 +91,13 @@ def retrieve_uv_data(uv_data_path : str):
     try:
         # form a list of column names to align with the combo_data aray
         
-        column_names = ['mins'] + list(data_uv.ylabels)
+        column_names = ['mins'] + list(spectrum.ylabels)
         
         df = pd.DataFrame(data = combo_data, columns = column_names)
         
         df.columns = df.columns.astype(str)
 
-        df.name = str(f"{Path(uv_data_path).parent.name.replace('.D', '')}_spectrum")
+        df.name = str(f"{Path(spectrum_path).parent.name.replace('.D', '')}_spectrum")
         
     except Exception as e:
         print(e)

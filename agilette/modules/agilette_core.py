@@ -9,7 +9,7 @@ Current Heriarchy ( 2023-03-08 ):
 - To access a sequence run's signal signal data:
     Agilette(dirpath).library.sequences["sequence_name"].data_files["run_name"].extract_ch_data()["wavelength_nm"]["data"]
 - To access a sequence run's UV data:
-    Agilette.library.sequences["sequence_name"].data_files["run_name"].extract_uv_data()
+    Agilette.library.sequences["sequence_name"].data_files["run_name"].extract_Spectrum()
 
 TODO: Add a plotting function to the Data class
 TODO: add functionality to the Library Object, i.e. a help string and print behavior, such as a list of all the contained runs and sequences.
@@ -29,23 +29,17 @@ from scripts.core_scripts.data_interface import retrieve_uv_data
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
     
-class UV_Data:
+class Spectrum:
     """
-    A class representing the UV data of a run. It will be initialised by 'extract_uv_data()' and contain the UV data as a Spectrum object.
+    A class representing the UV data of a run. It will be initialised by 'extract_Spectrum()' and contain the UV data as a Spectrum object.
     """
     def __init__(self, path : Path):
         self.path = path
-        self.uv_data = None
         
-    def extract_uv_data(self):
-
-        try:
-            self.uv_data = retrieve_uv_data(str(self.path))
-            
-        except Exception as e:
-            print(e)
-        
-        return self.uv_data
+    def extract_spectrum(self):
+            self.spectrum = retrieve_uv_data(self.path)
+            #return self.spectrum
+            return self
     
     def line_plot(self):
         """
@@ -53,7 +47,7 @@ class UV_Data:
         """
         from scripts.core_scripts.hplc_dad_plots import plot_3d_line
 
-        plot_3d_line(self.uv_data, self.path.name)
+        plot_3d_line(self.spectrum, self.path.name)
 
 class Single_Signal:
     """
