@@ -18,7 +18,8 @@ def metadata_table(metadata_list : list) -> pd.DataFrame:
                    'acq_method',
                    'description',
                    'sequence_name',
-                   'data_files'
+                   'ch_filenames',
+                   'uv_filenames'
                    ]
         
         df = pd.DataFrame(metadata_list, columns= column_names)

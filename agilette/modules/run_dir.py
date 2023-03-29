@@ -19,9 +19,9 @@ class Run_Dir:
         self.path = path
         self.name, self.description, self.acq_method = self.load_meta_data()
         self.acq_date = self.get_acq_datetime()
-        self.sequence_name = self.sequence_name()
+        self.sequence_name = self.get_sequence_name()
 
-        self.data_files_dict = self.data_files_dicter()
+        self.ch_filenames, self.uv_filenames = self.get_signal_filenames()
 
         self.single_signals_metadata, self.spectrum_metadata = self.get_signal_metadata()
         self.spectrum = Spectrum(self.path)
@@ -47,11 +47,12 @@ class Run_Dir:
                 self.acq_method,
                 self.description,
                 self.sequence_name,
-                self.data_files_dict,
+                self.ch_filenames,
+                self.uv_filenames
                 #self.single_signals_metadata,
                 ]
 
-    def data_files_dicter(self):
+    def get_signal_filenames(self):
 
         ch_list = []
         uv_list = []
@@ -63,7 +64,7 @@ class Run_Dir:
 
                 uv_list.append(x.name)
 
-        return {"ch_files" : ch_list, "uv_files" : uv_list}
+        return (", ".join(ch_list), ", ".join(uv_list))
 
     def extract_ch_data(self):
         """
@@ -92,7 +93,7 @@ class Run_Dir:
         return ch_data_dict
 
     
-    def sequence_name(self):
+    def get_sequence_name(self):
         
         # note: can only have UPPER CASE naming in Chemstation. Maybe should introduce a lower() function during data read. In fact, should probably include a data cleaning function of some kind. In the mean time, just add upper case to this if statement.
         
