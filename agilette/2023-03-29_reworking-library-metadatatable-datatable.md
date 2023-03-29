@@ -58,9 +58,14 @@ Library path validation is complete. Is currently producing a list of the runs t
 Now to:
 1. clean up the code.
 2. provide documentation to the code.
-3. Refactor it into a seperate file.
 
-What about linting?
+===
 
-## Linting in VSCode.
+202303291807
+
+Now to integrate loading the Run_Dir objects from the verified paths.
+
+First off I have to move Run_Dir to its own file.
+
+Run_Dir init will take a Path object and have no output, and will use load_metadata 
 
