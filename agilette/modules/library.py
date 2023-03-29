@@ -5,6 +5,7 @@ import pandas as pd
 from agilette.modules.sequence import Sequence
 from agilette.modules.library_input_validation import run_input_validation
 from agilette.modules.metadata_table import metadata_table
+from agilette.modules.spectrum_table import spectrum_table
 from agilette.modules.run_dir import Run_Dir
 
 class Library:
@@ -22,7 +23,15 @@ class Library:
         self.runs_list = self.load_runs(self.path)
         self.metadata_list = self.get_metadata_list(self.runs_list)
         self.metadata_table = self.get_metadata_table(self.metadata_list)
-        #self.metadata_table
+        self.spectrum_list = self.get_spectrum_list(self.runs_list)
+        self.spectrum_table = self.get_spectrum_table(self.spectrum_list)
+
+    def get_spectrum_table(self, spectrum_list : list) -> pd.DataFrame:
+        return spectrum_table(spectrum_list)
+     
+    def get_spectrum_list(self, runs_list : list) -> list:
+        spectrum_list = [run.spectrum_to_list() for run in runs_list]
+        return spectrum_list
     
     def get_metadata_list(self, runs_list : list) -> list:
         """

@@ -20,11 +20,9 @@ def metadata_table(metadata_list : list) -> pd.DataFrame:
                    'sequence_name',
                    'data_files'
                    ]
-
-        print(metadata_list)
         
         df = pd.DataFrame(metadata_list, columns= column_names)
         
-        df = df.sort_values('acq_date', ascending = False).reset_index(drop = True)
+        df = df.sort_values('acq_date', ascending = False)
 
         return df
