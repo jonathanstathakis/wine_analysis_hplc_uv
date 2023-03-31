@@ -20,6 +20,8 @@ class Library:
         runs_to_load can be a single filepath string, a Path object, or list of either filepath strings or Path objects. If it is a string, convert it to Path object before continuing.
 
         If it is a list, iterate through the list and check the file types.
+
+        TODO: Add something to handle the case if a top-level filepath is passed that is not a correct path.
         """
         self.path = path
         self.runs_list = self.load_runs(self.path)
