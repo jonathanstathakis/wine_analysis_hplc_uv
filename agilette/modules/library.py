@@ -77,14 +77,17 @@ class Library:
                 
                 def run_dir_obj_loader(runs):
 
-                    loaded_runs = [Run_Dir(run) for run in runs]
+                    try:
+                        loaded_runs = [Run_Dir(run) for run in runs]
+                    except Exception as e:
+                        print(f'Error occured in {run_dir_obj_loader.__name__} in {Library.__name__}: {e}')
 
                     return loaded_runs
                 
                 runs = run_dir_obj_loader(runs)
             
         except Exception as e:
-            print(f"an error occured, {e}")
+            print(f"an error occured in {}, {e}")
 
         return runs
     
