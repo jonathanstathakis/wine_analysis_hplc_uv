@@ -70,8 +70,13 @@ def get_single_signal_info(soup):
                     if "Signals_Signal_Wavelength" in parameter.find('ID'):
                         signal_wavelength = f"{parameter.Value.text} {parameter.Unit.text}"
                     
+                    else:
+                        signal_wavelength = None
+                    
                     if "Signals_Signal_Bandwidth" in parameter.find("ID"):
                         signal_bandwidth = f"{parameter.Value.text} {parameter.Unit.text}"
+                    else:
+                        signal_bandwidth = None
 
                 single_signal_dict[signal_ID] = {"wavelength" : signal_wavelength,
                     "bandwidth" : signal_bandwidth}
