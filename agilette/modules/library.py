@@ -1,6 +1,7 @@
 from typing import Union
 from pathlib import Path
 import pandas as pd
+import inspect
 
 from agilette.modules.sequence import Sequence
 from agilette.modules.library_input_validation import run_input_validation
@@ -80,14 +81,14 @@ class Library:
                     try:
                         loaded_runs = [Run_Dir(run) for run in runs]
                     except Exception as e:
-                        print(f'Error occured in {run_dir_obj_loader.__name__} in {Library.__name__}: {e}')
+                        print(f'Error occured in {inspect.currentframe().f_code.co_name} in {Library.__name__}: {e}')
 
                     return loaded_runs
                 
                 runs = run_dir_obj_loader(runs)
             
         except Exception as e:
-            print(f"an error occured in {}, {e}")
+            print(f"an error occured in {inspect.currentframe().f_code.co_name}, {e}")
 
         return runs
     
