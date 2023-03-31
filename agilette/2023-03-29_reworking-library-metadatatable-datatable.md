@@ -112,3 +112,17 @@ No explicit handling of provided .D that don't contain .UV.
 Handling of synchronosity between metadata_table and data_table. Presumably `pd.merge` defaults to left join which should handle that, but if I for example mess with the metadata index, it will fail to merge.
 
 The current error is 'Attempted merge, but join cols were not equal'. This is not surprising as not all .D dirs in the given path contain .UV. I will remove that test now.
+
+Fixed, just need to call it only on rows that have a uv_data file. simple mask on uv_data_filenames.
+
+===
+
+202303301027
+
+Now I need to add the sample id's to the Run_Dir objects. Should be in the sample.acaml.
+
+Content, SampleParams, IdentParam, Name.
+
+Nvm, name was already in. Just needs cleaning up.
+
+
