@@ -13,7 +13,7 @@ def metadata_table(metadata_list : list) -> pd.DataFrame:
         list of lists of metadata as input, dataframe as output. Nonstandalone function of Library.
         """
         column_names = ['acq_date',
-                   'name',
+                   'id',
                    'path',
                    'acq_method',
                    'description',
