@@ -2,6 +2,7 @@ from bs4 import BeautifulSoup
 import rainbow as rb
 from datetime import datetime
 from pathlib import Path
+import numpy as np
 
 from scripts.acaml_read import signal_metadata
 
@@ -97,10 +98,16 @@ class Run_Dir:
         
         # note: can only have UPPER CASE naming in Chemstation. Maybe should introduce a lower() function during data read. In fact, should probably include a data cleaning function of some kind. In the mean time, just add upper case to this if statement.
         
-        if (".sequence" or ".SEQUENCE") in self.path.parent.name:
-            return self.path.parent.name
-        else:
-            return "single run"
+        try:
+            sequence = next(self.path.parent.glob("*.S"))
+            if sequence:
+                return self.path.parent.name
+            else:
+                return 'single run'
+        
+        except Exception as e:
+            print(e)
+        
     
     def get_acq_datetime(self):
         with open(self.path / 'RUN.LOG', encoding = '<UTF-16LE>') as f:
