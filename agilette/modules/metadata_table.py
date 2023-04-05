@@ -22,8 +22,9 @@ def metadata_table(metadata_list : list) -> pd.DataFrame:
                    'uv_filenames'
                    ]
         
-        df = pd.DataFrame(metadata_list, columns= column_names)
-        
+        df = pd.DataFrame(metadata_list, columns= column_names).convert_dtypes()
+
         df = df.sort_values('acq_date', ascending = False)
+        
 
         return df
