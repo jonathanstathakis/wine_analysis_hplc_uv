@@ -17,6 +17,7 @@ def metadata_table(metadata_list : list) -> pd.DataFrame:
                    'path',
                    'acq_method',
                    'description',
+                   'program_type',
                    'sequence_name',
                    'ch_filenames',
                    'uv_filenames'

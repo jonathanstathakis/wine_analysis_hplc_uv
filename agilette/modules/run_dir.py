@@ -20,10 +20,8 @@ class Run_Dir:
         self.path = path
         self.name, self.description, self.acq_method = self.load_meta_data()
         self.acq_date = self.get_acq_datetime()
-        self.sequence_name = self.get_sequence_name()
-
+        self.program_type, self.sequence_name = self.get_program_type_seq_name()
         self.ch_filenames, self.uv_filenames = self.get_signal_filenames()
-
         self.single_signals_metadata, self.spectrum_metadata = self.get_signal_metadata()
         self.spectrum = Spectrum(self.path)
         self.metadata = self.load_meta_data()
@@ -47,6 +45,7 @@ class Run_Dir:
                 self.path,
                 self.acq_method,
                 self.description,
+                self.program_type,
                 self.sequence_name,
                 self.ch_filenames,
                 self.uv_filenames
@@ -94,19 +93,18 @@ class Run_Dir:
         return ch_data_dict
 
     
-    def get_sequence_name(self):
+    def get_program_type_seq_name(self):
+
+        #print(next(self.path.parent.glob("*.S")))
         
         # note: can only have UPPER CASE naming in Chemstation. Maybe should introduce a lower() function during data read. In fact, should probably include a data cleaning function of some kind. In the mean time, just add upper case to this if statement.
-        
+    
         try:
-            sequence = next(self.path.parent.glob("*.S"))
-            if sequence:
-                return self.path.parent.name
-            else:
-                return 'single run'
+            sequence_file = next(self.path.parent.glob("*.S"))
+            return 'sequence', self.path.parent.name
         
-        except Exception as e:
-            print(e)
+        except StopIteration:
+            return 'single run', np.nan
         
     
     def get_acq_datetime(self):
