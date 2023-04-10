@@ -32,10 +32,20 @@ from agilette.modules.run_dir import Run_Dir
 def main():
     #df = super_table()
     lib = Library(Path('/Users/jonathan/0_jono_data/2023-02-22_STONEY-RISE-PN_02-21.D'))
-    df = lib.load_spectrum()
-    df['spectrum'].apply(lambda x : print(x))
+    lib = lib.load_spectrum()
 
+    def nm_extractor(spectrum : pd.DataFrame, nm : str) -> pd.DataFrame :
+        """
+        Take a spectrum df and extract one wavlength, returning as a df of ['mins', 'mAU'].
+        """
 
+        nm_df = spectrum.loc[:,['mins', nm]]
+
+        return nm_df
+
+    lib['nm_254 series'] = pd.Series(lib.apply(lambda x : nm_extractor(x['spectrum'],'254'), axis = 1))
+
+    
 
 main()
 
