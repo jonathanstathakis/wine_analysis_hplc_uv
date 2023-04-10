@@ -15,13 +15,11 @@ from agilette.modules.library import Library
 from google_sheets_api import get_sheets_values_as_df
 import pandas as pd
 import os
-import datetime
 from cellartracker import cellartracker
 import html
 from fuzzywuzzy import fuzz, process
 import streamlit as st
 import numpy as np
-import io
 
 def string_id_to_digit(df : pd.DataFrame) -> pd.DataFrame:
     """
