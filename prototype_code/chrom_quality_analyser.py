@@ -9,7 +9,7 @@ TODO:
         - [x] select 254nm wavelength.
         - [x] plot 254m wavelength.
         - [x] fit baseline.
-        - [ ] calculate area under baseline.
+        - [x] calculate area under baseline.
         - [ ] display  distribution of area under baseline.
         - [ ] calculate peak prominance of 255nm spectrum.
         - [ ] display distribution of peak prominance.
@@ -62,15 +62,14 @@ def main():
     lib['baseline_254'] = pd.Series(lib.apply(lambda row : signal_baseline_creator(row['nm_254']), axis = 1))
 
     # calculate area under the baseline curve
-
     def baseline_area(df : pd.DataFrame) -> float:
-
         area = np.trapz(y = df['mAU'], x = df['mins'])
-
-        print(area)
-
+        return area
+    
+    # create baseline AUC column
     lib['baseline_254_area'] = pd.Series(lib.apply(lambda row :  baseline_area(row['baseline_254']), axis = 1))
 
+    
 main()
 
 
