@@ -4,11 +4,11 @@ See 2023-04-10_logbook.md.
 A master file to develop generalised transformation and statistical calculation of chromatogram signals in Agilette.
 TODO:
     - [ ] get the selected avantor runs.
-    - [ ] load and plot a spectrum.
+    - [x] load and plot a spectrum.
     - [ ] for a Series of DataFrames:
-        - [ ] select 255nm wavelength.
-        - [ ] plot 255nm wavelength.
-        - [ ] fit baseline.
+        - [x] select 254nm wavelength.
+        - [x] plot 254m wavelength.
+        - [x] fit baseline.
         - [ ] calculate area under baseline.
         - [ ] display  distribution of area under baseline.
         - [ ] calculate peak prominance of 255nm spectrum.
@@ -55,11 +55,21 @@ def main():
         baseline_obj = Baseline(signal_df['mins'])
         baseline_y = baseline_obj.iasls(signal_df['254'])[0]
         baseline_df = signal_df[['mins']].copy(deep = True)
-        baseline_df['baseline_254'] = baseline_y
+        baseline_df['mAU'] = baseline_y
         return baseline_df
     
     # create a baseline column.
     lib['baseline_254'] = pd.Series(lib.apply(lambda row : signal_baseline_creator(row['nm_254']), axis = 1))
+
+    # calculate area under the baseline curve
+
+    def baseline_area(df : pd.DataFrame) -> float:
+
+        area = np.trapz(y = df['mAU'], x = df['mins'])
+
+        print(area)
+
+    lib['baseline_254_area'] = pd.Series(lib.apply(lambda row :  baseline_area(row['baseline_254']), axis = 1))
 
 main()
 
