@@ -37,8 +37,7 @@ class Spectrum:
         self.path = path
         
     def extract_spectrum(self):
-            self.spectrum = retrieve_uv_data(self.path)
-            return self
+            return retrieve_uv_data(self.path)
     
     def line_plot(self):
         """
