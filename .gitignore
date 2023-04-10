@@ -162,3 +162,7 @@ cython_debug/
 *credential*
 *.DS_Store
 *.DS_Store
+~$super_df.xlsx
+notebooks/.DS_Store
+notebooks/.DS_Store
+.DS_Store
