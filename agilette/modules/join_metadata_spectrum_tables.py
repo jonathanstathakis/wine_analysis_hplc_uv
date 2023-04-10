@@ -29,7 +29,7 @@ def join_metadata_spectrum_tables(metadata_table : pd.DataFrame, spectrum_table:
 
     # 2. load UV data.
     
-    merge_table['spectrum_obj'] = merge_table['spectrum_obj'].apply(lambda x : x.extract_spectrum())
+    merge_table['spectrum'] = merge_table['spectrum_obj'].apply(lambda x : x.extract_spectrum())
 
     return merge_table
 
