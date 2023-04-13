@@ -28,13 +28,25 @@ from agilette.modules.library import Library
 from agilette.modules.run_dir import Run_Dir
 import plotly.graph_objects as go
 import streamlit as st
+import inspect
+
+st.set_page_config(layout = 'wide')
+
+# inspect.currentframe().f_code.co_name
+
+def test_df_empty(df : pd.DataFrame, func_name : str) -> pd.DataFrame:
+    if df.empty:
+        raise ValueError(f'in {func_name}, passed df is empty')
+    else:
+        return df
 
 # extract single wavelength from spectrum.
-def nm_extractor(spectrum : pd.DataFrame, nm : str) -> pd.DataFrame :
+def nm_extractor(spectrum : pd.DataFrame, nm : str) -> pd.DataFrame:
     """
     Take a spectrum df and extract one wavelength, returning as a df of ['mins', 'mAU'].
     """
     nm_df = spectrum.loc[:,['mins', nm]]
+    nm_df = test_df_empty(nm_df,inspect.currentframe().f_code.co_name)
     return nm_df
 
 def signal_baseline_creator(signal_df : pd.DataFrame) -> pd.DataFrame:
@@ -80,14 +92,15 @@ def streamlit_peak_finding(signal_df : pd.DataFrame, baseline_df : pd.DataFrame,
 
     trace_signal = go.Scatter(x = signal_df['mins'], y = signal_df['254'], mode = 'lines', name = 'signal trace')
     trace_baseline = go.Scatter(x = baseline_df[0]['mins'], y =  baseline_df[0]['mAU'], mode = 'lines', name = 'baseline trace')
-    trace_peaks = go.Scatter(x =peak_df['mins'], y = peak_df['mAU'], mode = 'markers', name = 'peaks trace')
+    #trace_peaks = go.Scatter(x =peak_df['mins'], y = peak_df['mAU'], mode = 'markers', name = 'peaks trace')
 
-    st.set_page_config(layout = 'wide')
     with st.container():
         prominence_slider = st.slider('select a value for peak prominence', min_value = 0, max_value = 100)
         fig = go.Figure()
         fig.update_layout(height = 800, width = 1200)
-        fig.add_traces([trace_signal, trace_baseline, trace_peaks])
+        fig.add_traces([trace_signal, trace_baseline
+        #trace_peaks
+        ])
         #update_peak_trace(lib, prominence_slider)
         st.plotly_chart(fig)
 
@@ -110,9 +123,9 @@ def main():
     # to do this will need to locate the peaks and provide them to peak_prominances as a 'sequence', i.e. list or series.
     # 1. Locate peaks
     # identify peaks using scipy.signal.find_peaks
-    lib['peaks_254'] = lib.apply(lambda row : peak_finder(row['nm_254'], 0.05), axis = 1)
+    lib['peaks_254'] = lib.apply(lambda row : peak_finder(row['nm_254'], 0.05, 2), axis = 1)
 
-    #streamlit_peak_finding(lib['nm_254'][0], lib['baseline_254'], lib['peaks_254'])
+    streamlit_peak_finding(lib['nm_254'][0], lib['baseline_254'], lib['peaks_254'])
         
 main()
 
