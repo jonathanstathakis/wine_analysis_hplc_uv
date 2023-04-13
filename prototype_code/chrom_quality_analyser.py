@@ -27,13 +27,14 @@ from agilette.modules.metadata_sampletracker_cellartracker_join import agilent_s
 from agilette.modules.library import Library
 from agilette.modules.run_dir import Run_Dir
 import matplotlib.pyplot as plt
+import plotly.graph_objects as go
 
 
 import streamlit as st
 
 def main():
     #df = super_table()
-    lib = Library(Path('/Users/jonathan/0_jono_data/2023-02-22_STONEY-RISE-PN_02-21.D'))
+    lib = Library(Path('/Users/jonathan/0_jono_data/'))
     lib = lib.load_spectrum()
 
     # extract single wavelength from spectrum.
@@ -69,8 +70,47 @@ def main():
     # create baseline AUC column
     lib['baseline_254_area'] = pd.Series(lib.apply(lambda row :  baseline_area(row['baseline_254']), axis = 1))
 
+    # calculate peak prominances
+    # to do this will need to locate the peaks and provide them to peak_prominances as a 'sequence', i.e. list or series.
+
+    # 1. Locate peaks
+    # identify peaks using scipy.signal.find_peaks
+
+    def peak_finder(signal_df : pd.DataFrame, in_height = None, in_prominence = None) -> pd.DataFrame:
+        """
+        find peaks for a given signal df, returned as a df of ['mins', 'mAU']
+        """
+        peak_idx, peak_y = find_peaks(signal_df['254'], height = in_height, prominence = in_prominence)
+        peak_y = peak_y['peak_heights']
+        peak_x = signal_df['mins'][peak_idx]
+        peak_df = pd.DataFrame(zip(peak_x, peak_y), columns = ['mins', 'mAU'])
+        print(peak_df.shape)
+        return peak_df
     
+    lib['peaks_254'] = lib.apply(lambda row : peak_finder(row['nm_254'], 0.05), axis = 1)
+
+    trace_signal = go.Scatter(x = lib['nm_254'][0]['mins'], y = lib['nm_254'][0]['254'], mode = 'lines', name = 'signal trace')
+    trace_baseline = go.Scatter(x =lib['baseline_254'][0]['mins'], y = lib['baseline_254'][0]['mAU'], mode = 'lines', name = 'baseline trace')
+    trace_peaks = go.Scatter(x =lib['peaks_254'][0]['mins'], y = lib['peaks_254'][0]['mAU'], mode = 'markers', name = 'peaks trace')
+
+    def update_peak_trace(lib, prominence_slider):
+        
+        new_peaks = lib.apply(lambda row : peak_finder(row['nm_254'], 0.05, in_prominence = prominence_slider), axis = 1)
+        new_x = new_peaks[0]['mins']
+        new_y = new_peaks[0]['mAU']
+        
+        st.write(len(new_y))
+        
+        fig.update_traces(x = new_x, y = new_y, selector = dict(name = 'peaks trace'))
+
+    st.set_page_config(layout = 'wide')
+    with st.container():
+        prominence_slider = st.slider('select a value for peak prominence', min_value = 0, max_value = 100)
+        fig = go.Figure()
+        fig.update_layout(height = 800, width = 1200)
+        fig.add_traces([trace_signal, trace_baseline, trace_peaks])
+        update_peak_trace(lib, prominence_slider)
+        st.plotly_chart(fig)
+        
 main()
-
-
 

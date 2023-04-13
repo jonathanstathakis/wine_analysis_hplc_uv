@@ -81,7 +81,7 @@ def get_sheets_values_as_df(spreadsheet_id : str, range : str, creds_parent_path
 def post_new_sheet(spreadsheet_id : str, sheet_title : str, creds_parent_path):
 
     """
-    Make a new sheet in a given spreadsheet. Returns the response dict.
+    Make a new sheet in a g=ven spreadsheet. Returns the response dict.
     """
 
     service = get_sheets_service(creds_parent_path)
@@ -101,25 +101,18 @@ def post_new_sheet(spreadsheet_id : str, sheet_title : str, creds_parent_path):
     return response
 
 def post_df_as_sheet_values(df : pd.DataFrame, spreadsheet_id : str, range : str, creds_parent_path : str):
-
-    service = get_sheets_service(creds_parent_path)
-
     """
     upload a given df to a specified sheet. Returns the response dict. Range should include the sheet title in the format "sheet_title!A1" 
     """
-
+    service = get_sheets_service(creds_parent_path)
     data = df.astype(str).values.tolist()
-
     columns = df.columns.tolist()
-
     data = [columns] + data
-
     data_body = {
     'range': range,
     'majorDimension': 'ROWS',
     'values': data
     }
-
     response = service.spreadsheets().values().update(spreadsheetId=spreadsheet_id,
                                                           range=data_body['range'],
                                                           valueInputOption='USER_ENTERED',
