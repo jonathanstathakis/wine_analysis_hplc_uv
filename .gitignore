@@ -168,3 +168,5 @@ notebooks/.DS_Store
 .DS_Store
 notebooks/.DS_Store
 .DS_Store
+prototype_code/testing_loading_subset_spectra.py
+agilette/modules/agilette_library.csv
