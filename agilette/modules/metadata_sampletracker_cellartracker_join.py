@@ -190,49 +190,46 @@ def join_dfs_with_fuzzy(df1 : pd.DataFrame, df2 : pd.DataFrame) -> pd.DataFrame:
 
     return merged_df
 
-def agilent_sample_tracker_cellartracker_super_table():
-    metadata_df = agilette_library_loader()
-    metadata_df.attrs['name'] = 'metadata in attrs'
-    #st_df_info(metadata_df)
+def form_join_col(df):
+    df['join_key'] = df['vintage'] + " " + df['name']
+    return df
 
-    avantor_df = selected_avantor_runs(metadata_df)
-    avantor_df = four_digit_id_to_two_digit(avantor_df)
-    avantor_df = string_id_to_digit(avantor_df)
+def chemstation_id_cleaner(df : pd.DataFrame) -> pd.DataFrame:
+    df = four_digit_id_to_two_digit(df)
+    df = string_id_to_digit(df)
+    return df
 
+def chemstation_sample_tracker_join(df :pd.DataFrame) -> pd.DataFrame:
     sample_tracker_df = sample_tracker_download()
     sample_tracker_df.attrs['name'] = 'sample tracker'
     sample_tracker_df = sample_tracker_df[['id','vintage', 'name', 'open_date', 'sample_date', 'notes']]
-    #st_df_info(sample_tracker_df)
 
-    merge_metadata_sample_tracker = pd.merge(avantor_df, sample_tracker_df, on ='id', how = 'left')
-    merge_metadata_sample_tracker.attrs['name'] = 'metadata, sample tracker merge table'
-    #st_df_info(merge_metadata_sample_tracker)
+    join_df = pd.merge(df, sample_tracker_df, on ='id', how = 'left')
+    join_df.attrs['name'] = 'metadata, sample tracker merge table'
+    return join_df
+
+def cellar_tracker_fuzzy_join(df : pd.DataFrame) -> pd.DataFrame:
+    """
+    change all id edits to 'new id'. merge sample_tracker on new_id. Spectrum table will be merged on old_id.
+    """
 
     cellartracker_df = get_cellar_tracker_table().convert_dtypes()
     cellartracker_df.attrs['name'] = 'cellar tracker table'
-    #st_df_info(cellartracker_df)
     
-    def form_join_col(df):
-        df['join_key'] = df['vintage'] + " " + df['name']
-        return df
+    df = form_join_col(df)
 
-    merge_metadata_sample_tracker = form_join_col(merge_metadata_sample_tracker)
     cellartracker_df = form_join_col(cellartracker_df)
+
+    df = join_dfs_with_fuzzy(df, cellartracker_df)
+    df.attrs['name'] = 'super table'
     
-    super_table = join_dfs_with_fuzzy(merge_metadata_sample_tracker, cellartracker_df)
-    super_table.attrs['name'] = 'final table'
+    return df
 
-    print('hey')
-    print(super_table.shape)
-    # st_df_info(super_table)
-
-    # st.subheader('super table\njoin_key_matched missing values')
-    # super_table[super_table['join_key_matched'].isna()]
-
-    # st.subheader('Super Table')
-    # super_table[['acq_date','id','join_key_similarity','join_key_ms', 'join_key_matched']]
-
-    # st.subheader('cellartracker debortoli')
-    # cellartracker_df[cellartracker_df['name'].str.contains('debortoli')]
-
-    return super_table
+def super_table_pipe():
+    df = agilette_library_loader()
+    (df.pipe(selected_avantor_runs)
+        .pipe(chemstation_id_cleaner)
+        .pipe(chemstation_sample_tracker_join)
+        .pipe(cellar_tracker_fuzzy_join)
+    )
+    return df
