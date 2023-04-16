@@ -39,7 +39,7 @@ def plot_3d_line(uv_data, plot_title = None):
     
     fig.update_traces(line=dict(width=4))
 
-    display(fig)
+    fig.show()
     
 import pandas as pd
 
