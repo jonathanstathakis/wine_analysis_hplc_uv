@@ -21,19 +21,19 @@ from cellartracker import cellartracker
 import html
 from fuzzywuzzy import fuzz, process
 import numpy as np
+import streamlit as st
 
 def string_id_to_digit(df : pd.DataFrame) -> pd.DataFrame:
     """
     Replaces the id of a number of runs with their 2 digit id's as stated in the sample tracker.
     """
     # 1. z3 to 00
-
-    df['id'] = df['id'].replace({'z3':'00'})
-
+    df['new_id'] = df['new_id'].replace({'z3':'00'})
     return df
 
 def four_digit_id_to_two_digit(df : pd.DataFrame) -> pd.DataFrame:
-    df['id'] = df['id'].apply(lambda x : x[1:3] if len(x)==4 else x)
+    df = df.rename({'id' : 'old_id'}, axis = 1)
+    df['new_id'] = df['old_id'].apply(lambda x : x[1:3] if len(x)==4 else x)
     return df
 
 def selected_avantor_runs(df : pd.DataFrame) -> pd.DataFrame:
@@ -204,7 +204,7 @@ def chemstation_sample_tracker_join(df :pd.DataFrame) -> pd.DataFrame:
     sample_tracker_df.attrs['name'] = 'sample tracker'
     sample_tracker_df = sample_tracker_df[['id','vintage', 'name', 'open_date', 'sample_date', 'notes']]
 
-    join_df = pd.merge(df, sample_tracker_df, on ='id', how = 'left')
+    join_df = pd.merge(df, sample_tracker_df, left_on ='new_id', right_on = 'id', how = 'left')
     join_df.attrs['name'] = 'metadata, sample tracker merge table'
     return join_df
 
@@ -217,17 +217,15 @@ def cellar_tracker_fuzzy_join(df : pd.DataFrame) -> pd.DataFrame:
     cellartracker_df.attrs['name'] = 'cellar tracker table'
     
     df = form_join_col(df)
-
     cellartracker_df = form_join_col(cellartracker_df)
 
     df = join_dfs_with_fuzzy(df, cellartracker_df)
     df.attrs['name'] = 'super table'
-    
     return df
 
 def super_table_pipe():
     df = agilette_library_loader()
-    (df.pipe(selected_avantor_runs)
+    df = (df.pipe(selected_avantor_runs)
         .pipe(chemstation_id_cleaner)
         .pipe(chemstation_sample_tracker_join)
         .pipe(cellar_tracker_fuzzy_join)
