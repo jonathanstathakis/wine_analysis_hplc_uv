@@ -55,7 +55,10 @@ def retrieve_uv_data(run_dir_path : Path):
     wide format. For 3d plotting, convert to long format.
     """
     if isinstance(run_dir_path, Path) and Path(run_dir_path).is_dir():
-        spectrum_path = next(run_dir_path.glob('*.UV'))
+        try:
+            spectrum_path = next(run_dir_path.glob('*.UV'))
+        except StopIteration:
+            print("No file found with the given extension in the directory") 
 
     if isinstance(spectrum_path, Path) and Path(spectrum_path).is_file() and spectrum_path.suffix == '.UV':
         spectrum = rb.agilent.chemstation.parse_uv(str(spectrum_path))
