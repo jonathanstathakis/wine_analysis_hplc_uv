@@ -13,12 +13,9 @@ def join_metadata_spectrum_tables(metadata_table : pd.DataFrame, spectrum_table:
     # 1. form the join column
 
     metadata_table['join_col'] = metadata_table['acq_date'].astype(str) + metadata_table['path'].astype(str)
-    spectrum_table['join_col'] = spectrum_table['acq_date'].astype(str) + spectrum_table['path'].astype(str)
-
-    # if metadata_table['join_col'].equals(spectrum_table['join_col']):
-
+    spectrum_table['join_col'] = spectrum_table['acq_date'].astype(str) + spectrum_table['path'].astype(str).str.lower()
+    
     try:
-        
         merge_table = pd.merge(metadata_table, spectrum_table.drop(['name', 'path', 'acq_date'], axis = 1), on = 'join_col').drop('join_col', axis = 1)
 
     except Exception as e:
@@ -28,8 +25,10 @@ def join_metadata_spectrum_tables(metadata_table : pd.DataFrame, spectrum_table:
     #     raise ValueError('Attempted merge, but join cols were not equal')
 
     # 2. load UV data.
+    # merge_table = merge_table[~(merge_table['uv_filenames'] == 'empty')]
     
-    merge_table['spectrum'] = merge_table['spectrum_obj'].apply(lambda x : x.extract_spectrum())
+    merge_table['spectrum'] = merge_table.apply(lambda row : row['spectrum_obj'].extract_spectrum() if row['uv_filenames'] != 'empty' else row, axis = 1)
+
 
     return merge_table
 
