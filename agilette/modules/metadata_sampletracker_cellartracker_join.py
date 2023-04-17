@@ -21,7 +21,8 @@ from cellartracker import cellartracker
 import html
 from fuzzywuzzy import fuzz, process
 import numpy as np
-import streamlit as st
+from function_timer import timeit
+
 
 def string_id_to_digit(df : pd.DataFrame) -> pd.DataFrame:
     """
@@ -40,6 +41,7 @@ def selected_avantor_runs(df : pd.DataFrame) -> pd.DataFrame:
     """
     Selects runs to be included in study dataset.
     """
+    print("Filtering for selected underivatized avantor column runs")
     # select runs from 2023 on the avantor column.
     df = df[(df['acq_date'] > '2023-01-01') & (df['acq_method'].str.contains('avantor'))]
 
@@ -88,6 +90,7 @@ def agilette_library_loader():
     """
     Load the full library metadata table and saves it to a .csv for faster load times, if this is the first time the code is run. ATM does not check for updates, so to get them, will have to delete the .csv and run the code again.
     """
+    print("loading inputted library")
     file_name = 'agilette_library.csv'
     file_path = os.path.join(os.getcwd(),file_name)
     if not os.path.exists(file_path):
@@ -111,7 +114,6 @@ def agilette_library_loader():
     
     df = df_string_cleaner(df)
     df = library_id_replacer(df)
-
     return df
 
 def get_cellar_tracker_table():
@@ -195,11 +197,13 @@ def form_join_col(df):
     return df
 
 def chemstation_id_cleaner(df : pd.DataFrame) -> pd.DataFrame:
+    print("cleaning chemstation run id's")
     df = four_digit_id_to_two_digit(df)
     df = string_id_to_digit(df)
     return df
 
 def chemstation_sample_tracker_join(df :pd.DataFrame) -> pd.DataFrame:
+    print("joniing Library.metadata_table with sample_tracker sheet")
     sample_tracker_df = sample_tracker_download()
     sample_tracker_df.attrs['name'] = 'sample tracker'
     sample_tracker_df = sample_tracker_df[['id','vintage', 'name', 'open_date', 'sample_date', 'notes']]
@@ -212,7 +216,7 @@ def cellar_tracker_fuzzy_join(df : pd.DataFrame) -> pd.DataFrame:
     """
     change all id edits to 'new id'. merge sample_tracker on new_id. Spectrum table will be merged on old_id.
     """
-
+    print("joining metadata_table+sample_tracker with cellar_tracker metadata")
     cellartracker_df = get_cellar_tracker_table().convert_dtypes()
     cellartracker_df.attrs['name'] = 'cellar tracker table'
     
@@ -223,6 +227,7 @@ def cellar_tracker_fuzzy_join(df : pd.DataFrame) -> pd.DataFrame:
     df.attrs['name'] = 'super table'
     return df
 
+@timeit 
 def super_table_pipe():
     df = agilette_library_loader()
     df = (df.pipe(selected_avantor_runs)
