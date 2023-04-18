@@ -32,6 +32,17 @@ def primary_key_generator(metadata_dict):
     unique_id = uuid.uuid5(uuid.NAMESPACE_URL, data_json)
     return str(unique_id).replace('-','_')
 
+
+def get_sequence_name(path : str) -> str:
+    parent = os.path.dirname(path)
+    if 'sequence.acaml' in os.listdir(parent):
+        sequence_name = os.path.basename(parent)
+    else:
+        sequence_name = 'single_run'
+
+    return sequence_name
+
+
 def uv_extractor(path : str) -> dict:
     
     uv_name = 'DAD1.UV'
@@ -41,6 +52,7 @@ def uv_extractor(path : str) -> dict:
         
         metadata_dict = uv_file.metadata
         metadata_dict['path'] = path
+        metadata_dict['sequence_name'] = get_sequence_name(metadata_dict['path'])
         metadata_dict['hash_key'] = primary_key_generator(metadata_dict)
 
         uv_data_dict = {}
@@ -51,16 +63,26 @@ def uv_extractor(path : str) -> dict:
 
 @timeit
 def metadata_table_builder(uv_metadata, con):
+
+    table_name = 'raw_chemstation_metadata'
+    con.sql(f"DROP TABLE {table_name}")
+    
     df = pd.json_normalize(data = uv_metadata)
+    df = df.rename({'notebook' : 'id', 'date' : 'acq_date', 'method' : 'acq_method'}, axis = 1)
     
     try:
-        print('creating db from df')
-        con.sql("CREATE TABLE metadata AS SElECT * FROM df")
+        print(f'creating {table_name} table from df')
+        con.execute(f"CREATE TABLE {table_name} AS SElECT * FROM df")
     except Exception as e:
         print(e)
 
+    print(f"{table_name} written to db:")
+    con.sql(f"DESCRIBE {table_name}").show()
+    con.sql(f"SELECT COUNT(*) from {table_name}").show()
+
 @timeit
 def uv_data_table_builder(uv_data_list, con):
+
     print('creating spectrum tables')
     for uv_data in uv_data_list:
         data = uv_data['data']
@@ -83,6 +105,7 @@ def uv_file_dir_filter(root_dir_path : str) -> list:
     # Walk through the directory tree using os.walk()
     for dirpath, dirnames, filenames in os.walk(root_dir_path):
         # Check if the directory name ends with '.D'
+
         if dirpath.endswith('.D'):
             # Check if there is at least one file in the directory that ends with '.UV'
             if any(fnmatch.fnmatch(file, '*.UV') for file in filenames):
@@ -131,10 +154,10 @@ def main():
                 print(metadata_dict['path'])
 
 
-# flattens the list so the dicts can be read in.
+#flattens the list so the dicts can be read in.
 
     con = duckdb.connect('uv_database.db')
     metadata_table_builder(uv_metadata_list, con)
-    uv_data_table_builder(uv_data_list, con)
+    #uv_data_table_builder(uv_data_list, con)
 if __name__ == "__main__":
     main()
