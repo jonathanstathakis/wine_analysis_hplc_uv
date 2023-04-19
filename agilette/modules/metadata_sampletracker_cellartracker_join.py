@@ -23,19 +23,21 @@ from fuzzywuzzy import fuzz, process
 import numpy as np
 from function_timer import timeit
 
+
+
 def selected_avantor_runs(df : pd.DataFrame) -> pd.DataFrame:
     """
     Selects runs to be included in study dataset.
     """
     print(f"Filtering for selected underivatized avantor column runs. df starts with {df.shape[0]} runs")
 
-    print(df['acq_date'])
-    
-    # select runs from 2023 on the avantor column.
-
-    df = df[(df['acq_date'] > '2023-01-01') & (df['acq_method'].str.contains('avantor'))]
-
+    df = df[(df['acq_date'] > '2023-01-01')]
+            
     print(f"after filtering for 2023 runs, {df.shape[0]} runs remaining\n")
+    
+    print(f"Filtering for avantor method runs, {df.shape[0]} runs remaining. Removing:\n{df[~(df['acq_method'].str.contains('avantor'))]}\n")
+    
+    df = df[df['acq_method'].str.contains('avantor')]
 
     sequences_to_drop = \
         list(df.groupby('sequence_name').filter(lambda x: len(x) == 1).groupby('sequence_name').groups.keys())\
@@ -44,17 +46,10 @@ def selected_avantor_runs(df : pd.DataFrame) -> pd.DataFrame:
         + df[df['sequence_name'].str.contains('44min')]['sequence_name'].unique().tolist()\
         + df[df['sequence_name'].str.contains('acetone')]['sequence_name'].unique().tolist()
     
-    df = df[df['sequence_name'].isin(sequences_to_drop)==False]
-
-    print(f"after filtering out 'dups', 'repeat', '44min', 'acetone' runs, {df.shape[0]} runs remaining\n")
+    sequence_drop_mask = df['sequence_name'].isin(sequences_to_drop)==False
+    print(f"Filtering out 'dups', 'repeat', '44min', 'acetone' runs, {df.shape[0]} runs remaining. Removing:\n\n{df[~sequence_drop_mask].groupby('sequence_name').size()}")
     
-    df = df[~(df['new_id'].str.contains('lor-ristretto'))]
-    df = df[~(df['new_id'] == 'uracil')]
-    df = df[~(df['new_id'] == 'toulene')]
-    df = df[~(df['new_id'].str.contains('acetone'))]
-    df = df[~(df['new_id'].str.contains('coffee'))]
-
-    print(f"after filtering out 'lor-ristretto','uracil', 'toulene', 'acetone,'cofee' runs, {df.shape[0]} runs remaining\n")
+    df = df[sequence_drop_mask]
 
     return df
 
@@ -92,8 +87,8 @@ def agilette_library_loader():
                     "uv_filenames" : pd.StringDtype()
                     })
     
-    df = df_string_cleaner(df)
-    df = library_id_replacer(df)
+    # df = df_string_cleaner(df)
+    # df = library_id_replacer(df)
     return df
 
 def get_cellar_tracker_table():
@@ -106,20 +101,7 @@ def get_cellar_tracker_table():
 
     # clean it up. lower values and columns, replace 1001 with nv, check datatypes
 
-    cellar_tracker_df = cellar_tracker_df.apply(lambda x : x.str.lower() if str(x) else x)
-    cellar_tracker_df.columns = cellar_tracker_df.columns.str.lower()
-    cellar_tracker_df = cellar_tracker_df.rename({'wine' : 'name'}, axis = 1)
-
-    cellar_tracker_df = cellar_tracker_df.replace({'1001' : 'nv'})
-
-    def unescape_html(s):
-        return html.unescape(s)
-
-    cellar_tracker_df = cellar_tracker_df.applymap(unescape_html)
-
-
-    cellar_tracker_df = df_string_cleaner(cellar_tracker_df)
-
+    
     return cellar_tracker_df
 
 def sample_tracker_download():
@@ -146,11 +128,10 @@ def form_join_col(df):
     return df
 
 def chemstation_sample_tracker_join(in_df :pd.DataFrame, sample_tracker_df : pd.DataFrame) -> pd.DataFrame:
-    print("## joining metadata table with sample_tracker ##\n")
+    print("########\njoining metadata table with sample_tracker\n########\n")
 
     print(f"in_df has shape {in_df.shape}, columns {in_df.columns}")
     print(f"sample_tracker_df has shape {sample_tracker_df.shape}")
-
 
     sample_tracker_df = sample_tracker_df[['id','vintage', 'name', 'open_date', 'sampled_date', 'notes']]
 
@@ -202,7 +183,6 @@ def cellar_tracker_fuzzy_join(in_df : pd.DataFrame, cellartracker_df : pd.DataFr
 def super_table_pipe(chemstation_df, sample_tracker_df, cellartracker_df):
     
     df = (chemstation_df
-        .pipe(chemstation_id_cleaner)
         .pipe(selected_avantor_runs)
         .pipe(chemstation_sample_tracker_join, sample_tracker_df)
         .pipe(cellar_tracker_fuzzy_join,  cellartracker_df)
@@ -210,11 +190,12 @@ def super_table_pipe(chemstation_df, sample_tracker_df, cellartracker_df):
     return df
 
 def main():
+
     chemstation_df = agilette_library_loader()
     sample_tracker_df = sample_tracker_df_builder()
     cellartracker_df = get_cellar_tracker_table().convert_dtypes()
     
-    print(super_table_pipe(chemstation_df, sample_tracker_df, cellartracker_df))
+    super_table_pipe(chemstation_df, sample_tracker_df, cellartracker_df)
 
 if __name__ == "__main__":
     main()
