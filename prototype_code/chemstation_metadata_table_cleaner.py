@@ -6,6 +6,63 @@ Acts on a local table which is written by prototype_code/chemstation_db_tables_m
 import pandas as pd 
 import numpy as np
 import duckdb as db
+from df_cleaning_methods import df_string_cleaner
+from db_methods import display_table_info, write_df_to_table
+
+def init_cleaned_chemstation_metadata_table(con, raw_table_name):
+
+    df = con.sql(f"SELECT * FROM {raw_table_name}").df()
+    
+    df = df_string_cleaner(df)
+    df = df.rename({'notebook' : 'id', 'date' : 'acq_date', 'method' : 'acq_method'}, axis = 1)
+    df['acq_date'] = pd.to_datetime(df['acq_date']).dt.strftime("%Y-%m-%d")
+    df = chemstation_id_cleaner(df)
+    df = df[~(df['new_id'] == 'coffee') \
+            & ~(df['new_id'] == 'lor-ristretto') \
+            & ~(df['new_id'] == 'espresso') \
+            & ~(df['new_id'] == 'lor-ristretto_column-check') \
+            & ~(df['new_id'] == 'nc1') \
+            & ~(df['old_id'].isna())
+             ]
+    cleaned_df = library_id_replacer(df)
+
+    print("HERE!",cleaned_df.columns)
+
+    print("\nthe following new_id's are not digits and will cause an error when writing the table:\n")
+    print(cleaned_df[~(cleaned_df['new_id'].str.isdigit())])
+
+    new_table_name = raw_table_name.replace('raw','cleaned')
+    schema, table_column_names, df_column_names = write_df_to_table_variables()
+    write_df_to_table(cleaned_df, con, new_table_name, schema, table_column_names, df_column_names)
+
+def write_df_to_table_variables():
+    
+    schema = """
+    old_id VARCHAR,
+    acq_date DATE,
+    acq_method VARCHAR,
+    unit VARCHAR,
+    signal VARCHAR,
+    path VARCHAR,
+    sequence_name VARCHAR,
+    hash_key VARCHAR,
+    new_id INTEGER
+    """
+
+    column_names = """
+    old_id,
+    acq_date,
+    acq_method,
+    unit,
+    signal,
+    path,
+    sequence_name,
+    hash_key,
+    new_id
+    """
+
+    return schema, column_names, column_names
+
 
 def four_digit_id_to_two_digit(df : pd.DataFrame) -> pd.DataFrame:
     df = df.rename({'id' : 'old_id'}, axis = 1)
@@ -40,78 +97,7 @@ def library_id_replacer(df : pd.DataFrame) -> pd.DataFrame:
     return df
 
 def main():
-    in_table_name = "raw_chemstation_metadata"
-    out_table_name = "cleaned_chemstation_metadata"
-
-    con = db.connect('uv_database.db')
-    df = con.sql("SELECT * FROM raw_chemstation_metadata").df()
-
-    df = df.rename({'notebook' : 'id', 'date' : 'acq_date', 'method' : 'acq_method'}, axis = 1)
-    
-    df['acq_date'] = pd.to_datetime(df['acq_date']).dt.strftime("%Y-%m-%d")
-
-    df = chemstation_id_cleaner(df)
-    
-    
-    df = df[~(df['new_id'] == 'coffee') \
-            & ~(df['new_id'] == 'lor-ristretto') \
-            & ~(df['new_id'] == 'espresso') \
-            & ~(df['new_id'] == 'lor-ristretto_column-check') \
-            & ~(df['new_id'] == 'nc1') \
-            & ~(df['old_id'].isna())
-             ]
-
-    clean_df = library_id_replacer(df)
-
-    print("\nthe following new_id's are not digits and will cause an error when writing the table:\n")
-
-    print(clean_df[~(clean_df['new_id'].str.isdigit())])
-
-    schema = """
-    old_id VARCHAR,
-    acq_date DATE,
-    acq_method VARCHAR,
-    unit VARCHAR,
-    signal VARCHAR,
-    path VARCHAR,
-    sequence_name VARCHAR,
-    hash_key VARCHAR,
-    new_id INTEGER
-    """
-
-    con.sql(f"""
-    DROP TABLE IF EXISTS {out_table_name};
-    CREATE TABLE {out_table_name} ({schema});
-    """)    
-    
-    con.sql(f"""
-        INSERT INTO {out_table_name} (
-        old_id,
-        acq_date,
-        acq_method,
-        unit,
-        signal,
-        path,
-        sequence_name,
-        hash_key,
-        new_id
-        )
-        SELECT
-        old_id,
-        acq_date,
-        acq_method,
-        unit,
-        signal,
-        path,
-        sequence_name,
-        hash_key,
-        new_id
-        FROM clean_df as df;
-        """)
-
-    print(f"\n## {out_table_name.upper()} ##\n")
-    con.sql(f"DESCRIBE {out_table_name}").show()
-    con.sql(f"SELECT COUNT(*) FROM {out_table_name}").show()
+    init_cleaned_chemstation_metadata_table()
 
 if __name__ == "__main__":
     main()
