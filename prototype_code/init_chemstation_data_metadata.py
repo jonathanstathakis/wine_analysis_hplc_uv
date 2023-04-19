@@ -1,4 +1,4 @@
-import duckdb
+import duckdb as db
 import rainbow as rb
 import os
 import multiprocessing as mp
@@ -7,8 +7,38 @@ import numpy as np
 import json
 import hashlib
 import fnmatch
-
+import collections
 from function_timer import timeit
+from db_methods import display_table_info
+
+def init_raw_chemstation_tables(root_dir_path : str, con : db.DuckDBPyConnection):
+    dirpaths = uv_file_dir_filter(root_dir_path)
+    print(len(dirpaths), ".D in the given path")
+    
+    uv_metadata_list, uv_data_list = zip(*uv_extractor_pool(dirpaths))
+
+    print('num of unique hash keys in metadata list')
+    
+    num_unique_hash = len(set(d['hash_key'] for d in uv_metadata_list))
+    print('num unqiue hash keys', num_unique_hash)
+    print('size of metadata_list', len(uv_metadata_list))
+
+    list_of_keys = [d['hash_key'] for d in uv_metadata_list]
+
+    uuid_counts = collections.Counter(list_of_keys)
+
+    # print the UUIDs that occur more than once
+    duplicates = [uuid for uuid, count in uuid_counts.items() if count > 1]
+    print('Duplicate UUIDs:', len(duplicates))
+
+    for uuid in duplicates:
+        print(uuid)
+        for metadata_dict in uv_metadata_list:
+            if uuid == metadata_dict['hash_key']:
+                print(metadata_dict['path'])
+
+    metadata_table_builder(uv_metadata_list, con)
+    uv_data_table_builder(uv_data_list, con)
 
 def uv_data_to_df(uv_file):
     spectrum = np.concatenate((uv_file.xlabels.reshape(-1,1),uv_file.data), axis = 1)
@@ -65,37 +95,43 @@ def uv_extractor(path : str) -> dict:
 def metadata_table_builder(uv_metadata, con):
 
     table_name = 'raw_chemstation_metadata'
-    con.sql(f"DROP TABLE {table_name}")
+    con.sql(f"DROP TABLE IF EXISTS {table_name}")
     
     df = pd.json_normalize(data = uv_metadata)
-    df = df.rename({'notebook' : 'id', 'date' : 'acq_date', 'method' : 'acq_method'}, axis = 1)
     
     try:
         print(f'creating {table_name} table from df')
         con.execute(f"CREATE TABLE {table_name} AS SElECT * FROM df")
     except Exception as e:
         print(e)
-
-    print(f"{table_name} written to db:")
-    con.sql(f"DESCRIBE {table_name}").show()
-    con.sql(f"SELECT COUNT(*) from {table_name}").show()
+    
+    display_table_info(con, table_name)
 
 @timeit
 def uv_data_table_builder(uv_data_list, con):
+
+    spectrum_table_name_prefix = "hplc_spectrum_"
 
     print('creating spectrum tables')
     for uv_data in uv_data_list:
         data = uv_data['data']
 
         try:
-            con.sql(f"CREATE TABLE {'hplc_spectrum_' + str(uv_data['hash_key'])} AS SELECT * FROM data")
+            con.sql(f"CREATE TABLE {spectrum_table_name_prefix + str(uv_data['hash_key'])} AS SELECT * FROM data")
         except Exception as e:
             print(e)
 
     num_unique_hash = len(set(d['hash_key'] for d in uv_data_list))
-    print(len(uv_data_list))
-    print(num_unique_hash)
-    
+    print(num_unique_hash, "unique hash keys generated")
+
+    # display result
+
+    num_spectrum_tables = con.sql(f"""
+    SELECT COUNT(*)
+    FROM information_schema.tables
+    WHERE table_type='BASE TABLE' AND table_name LIKE '%{spectrum_table_name_prefix}%'
+    """).fetchone()[0]
+    print(f"{num_spectrum_tables} spectrum tables created with name pattern '[{spectrum_table_name_prefix}]")
 
 @timeit
 def uv_file_dir_filter(root_dir_path : str) -> list:
@@ -126,38 +162,9 @@ def uv_extractor_pool(dirpaths) -> list:
 @timeit
 def main():
     root_dir_path = "/Users/jonathan/0_jono_data"
-    dirpaths = uv_file_dir_filter(root_dir_path)
-    print(len(dirpaths), ".D in the given path")
-    
-    uv_metadata_list, uv_data_list = zip(*uv_extractor_pool(dirpaths))
-    
-    print('num of unique hash keys in metadata list')
-    
-    num_unique_hash = len(set(d['hash_key'] for d in uv_metadata_list))
-    print('num unqiue hash keys', num_unique_hash)
-    print('size of metadata_list', len(uv_metadata_list))
-
-    list_of_keys = [d['hash_key'] for d in uv_metadata_list]
-
-    import collections
-
-    uuid_counts = collections.Counter(list_of_keys)
-
-    # print the UUIDs that occur more than once
-    duplicates = [uuid for uuid, count in uuid_counts.items() if count > 1]
-    print('Duplicate UUIDs:', len(duplicates))
-
-    for uuid in duplicates:
-        print(uuid)
-        for metadata_dict in uv_metadata_list:
-            if uuid == metadata_dict['hash_key']:
-                print(metadata_dict['path'])
+    con = db.connect('uv_database.db')
+    init_raw_chemstation_tables(root_dir_path, con)
 
 
-#flattens the list so the dicts can be read in.
-
-    con = duckdb.connect('uv_database.db')
-    metadata_table_builder(uv_metadata_list, con)
-    #uv_data_table_builder(uv_data_list, con)
 if __name__ == "__main__":
     main()
