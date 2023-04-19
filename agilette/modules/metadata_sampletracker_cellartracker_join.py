@@ -23,27 +23,19 @@ from fuzzywuzzy import fuzz, process
 import numpy as np
 from function_timer import timeit
 
-
-def string_id_to_digit(df : pd.DataFrame) -> pd.DataFrame:
-    """
-    Replaces the id of a number of runs with their 2 digit id's as stated in the sample tracker.
-    """
-    # 1. z3 to 00
-    df['new_id'] = df['new_id'].replace({'z3':'00'})
-    return df
-
-def four_digit_id_to_two_digit(df : pd.DataFrame) -> pd.DataFrame:
-    df = df.rename({'id' : 'old_id'}, axis = 1)
-    df['new_id'] = df['old_id'].apply(lambda x : x[1:3] if len(x)==4 else x)
-    return df
-
 def selected_avantor_runs(df : pd.DataFrame) -> pd.DataFrame:
     """
     Selects runs to be included in study dataset.
     """
-    print("Filtering for selected underivatized avantor column runs")
+    print(f"Filtering for selected underivatized avantor column runs. df starts with {df.shape[0]} runs")
+
+    print(df['acq_date'])
+    
     # select runs from 2023 on the avantor column.
+
     df = df[(df['acq_date'] > '2023-01-01') & (df['acq_method'].str.contains('avantor'))]
+
+    print(f"after filtering for 2023 runs, {df.shape[0]} runs remaining\n")
 
     sequences_to_drop = \
         list(df.groupby('sequence_name').filter(lambda x: len(x) == 1).groupby('sequence_name').groups.keys())\
@@ -51,14 +43,18 @@ def selected_avantor_runs(df : pd.DataFrame) -> pd.DataFrame:
         + df[df['sequence_name'].str.contains('repeat')]['sequence_name'].unique().tolist()\
         + df[df['sequence_name'].str.contains('44min')]['sequence_name'].unique().tolist()\
         + df[df['sequence_name'].str.contains('acetone')]['sequence_name'].unique().tolist()
-            
+    
     df = df[df['sequence_name'].isin(sequences_to_drop)==False]
 
-    df = df[~(df['id'].str.contains('lor-ristretto'))]
-    df = df[~(df['id'] == 'uracil')]
-    df = df[~(df['id'] == 'toulene')]
-    df = df[~(df['id'].str.contains('acetone'))]
-    df = df[~(df['id'].str.contains('coffee'))]
+    print(f"after filtering out 'dups', 'repeat', '44min', 'acetone' runs, {df.shape[0]} runs remaining\n")
+    
+    df = df[~(df['new_id'].str.contains('lor-ristretto'))]
+    df = df[~(df['new_id'] == 'uracil')]
+    df = df[~(df['new_id'] == 'toulene')]
+    df = df[~(df['new_id'].str.contains('acetone'))]
+    df = df[~(df['new_id'].str.contains('coffee'))]
+
+    print(f"after filtering out 'lor-ristretto','uracil', 'toulene', 'acetone,'cofee' runs, {df.shape[0]} runs remaining\n")
 
     return df
 
@@ -73,19 +69,6 @@ def sample_tracker_df_builder():
         creds_parent_path=os.environ.get('GOOGLE_SHEETS_API_CREDS_PARENT_PATH'))
     return df
 
-def library_id_replacer(df : pd.DataFrame) -> pd.DataFrame:
-    replace_dict = {
-        '2021-debortoli-cabernet-merlot_avantor|debertoli_cs': '72',
-        'stoney-rise-pn_02-21' : '73',
-        'crawford-cab_02-21' : '74',
-        'hey-malbec_02-21' : '75',
-        'koerner-nellucio-02-21' : '76'
-                            }
-
-    df['id'] = df['id'].replace(replace_dict, regex = True)
-
-    return df
-
 def agilette_library_loader():
     """
     Load the full library metadata table and saves it to a .csv for faster load times, if this is the first time the code is run. ATM does not check for updates, so to get them, will have to delete the .csv and run the code again.
@@ -93,13 +76,10 @@ def agilette_library_loader():
     print("loading inputted library")
     file_name = 'agilette_library.csv'
     file_path = os.path.join(os.getcwd(),file_name)
-    if not os.path.exists(file_path):
-        df = Library('/Users/jonathan/0_jono_data').metadata_table
-        df.to_csv(file_path, index = False)
-    else:
-        df = pd.read_csv(file_path)
+    
+    df = Library('/Users/jonathan/0_jono_data').metadata_table
 
-        df['acq_date'] = pd.to_datetime(df['acq_date'])
+    df['acq_date'] = pd.to_datetime(df['acq_date'])
     
     df = df.astype({ 
                     "id" : pd.StringDtype(),
@@ -117,7 +97,6 @@ def agilette_library_loader():
     return df
 
 def get_cellar_tracker_table():
-
     client = cellartracker.CellarTracker('OctaneOolong', 'S74rg4z3r1')
 
     usecols = ['Size', 'Vintage', 'Wine', 'Locale', 'Country', 'Region', 'SubRegion', 'Appellation', 'Producer', 'Type', 'Color', 'Category', 'Varietal']
@@ -147,20 +126,12 @@ def sample_tracker_download():
     """
     Downloads the sample tracker file as a .csv for faster load times. ATM does not check the Google Sheet for changes so will need to manually delete the file to get updates.
     """
-    file_name = 'sample_tracker.csv'
-    file_path = os.path.join(os.getcwd(),file_name)
-    df = sample_tracker_df_builder()
-    if not os.path.exists(file_path):
-        df.to_csv(file_path, index = False)
-    else:
-        df = pd.read_csv(file_path)
-    
     df = df.astype({
         "vintage" : pd.StringDtype(),
         "id" : pd.StringDtype(),
         "name" : pd.StringDtype(),
         "open_date" : pd.StringDtype(),
-        "sample_date" : pd.StringDtype(),
+        "sampled_date" : pd.StringDtype(),
         "added_to_cellartracker" : pd.StringDtype(),
         "notes" : pd.StringDtype(),
         "size" : np.float64
@@ -169,6 +140,26 @@ def sample_tracker_download():
     df = df_string_cleaner(df)
 
     return df
+
+def form_join_col(df):
+    df['join_key'] = df['vintage'].astype(str) + " " + df['name']
+    return df
+
+def chemstation_sample_tracker_join(in_df :pd.DataFrame, sample_tracker_df : pd.DataFrame) -> pd.DataFrame:
+    print("## joining metadata table with sample_tracker ##\n")
+
+    print(f"in_df has shape {in_df.shape}, columns {in_df.columns}")
+    print(f"sample_tracker_df has shape {sample_tracker_df.shape}")
+
+
+    sample_tracker_df = sample_tracker_df[['id','vintage', 'name', 'open_date', 'sampled_date', 'notes']]
+
+    merge_df = pd.merge(in_df, sample_tracker_df, left_on ='new_id', right_on = 'id', how = 'left')
+    merge_df.attrs['name'] = 'metadata, sample tracker merge table'
+
+    print("df of dims", merge_df.shape, "formed after merge")
+
+    return merge_df
 
 def join_dfs_with_fuzzy(df1 : pd.DataFrame, df2 : pd.DataFrame) -> pd.DataFrame:
     
@@ -188,51 +179,42 @@ def join_dfs_with_fuzzy(df1 : pd.DataFrame, df2 : pd.DataFrame) -> pd.DataFrame:
     df1.drop(columns = ['join_key_match'], inplace = True)
 
     # 'ms' indicates column was sourced from metadata-sampletracker table, 'ct' from cellartracker table.
-    merged_df = pd.merge(df1, df2, left_on='join_key_matched', right_on='join_key', how = 'left', suffixes = ['_ms','_ct'])
+    merge_df = pd.merge(df1, df2, left_on='join_key_matched', right_on='join_key', how = 'left', suffixes = ['_ms','_ct'])
 
-    return merged_df
+    return merge_df
 
-def form_join_col(df):
-    df['join_key'] = df['vintage'] + " " + df['name']
-    return df
-
-def chemstation_id_cleaner(df : pd.DataFrame) -> pd.DataFrame:
-    print("cleaning chemstation run id's")
-    df = four_digit_id_to_two_digit(df)
-    df = string_id_to_digit(df)
-    return df
-
-def chemstation_sample_tracker_join(df :pd.DataFrame) -> pd.DataFrame:
-    print("joniing Library.metadata_table with sample_tracker sheet")
-    sample_tracker_df = sample_tracker_download()
-    sample_tracker_df.attrs['name'] = 'sample tracker'
-    sample_tracker_df = sample_tracker_df[['id','vintage', 'name', 'open_date', 'sample_date', 'notes']]
-
-    join_df = pd.merge(df, sample_tracker_df, left_on ='new_id', right_on = 'id', how = 'left')
-    join_df.attrs['name'] = 'metadata, sample tracker merge table'
-    return join_df
-
-def cellar_tracker_fuzzy_join(df : pd.DataFrame) -> pd.DataFrame:
+def cellar_tracker_fuzzy_join(in_df : pd.DataFrame, cellartracker_df : pd.DataFrame) -> pd.DataFrame:
     """
     change all id edits to 'new id'. merge sample_tracker on new_id. Spectrum table will be merged on old_id.
     """
     print("joining metadata_table+sample_tracker with cellar_tracker metadata")
-    cellartracker_df = get_cellar_tracker_table().convert_dtypes()
     cellartracker_df.attrs['name'] = 'cellar tracker table'
     
-    df = form_join_col(df)
+    in_df = form_join_col(in_df)
     cellartracker_df = form_join_col(cellartracker_df)
 
-    df = join_dfs_with_fuzzy(df, cellartracker_df)
-    df.attrs['name'] = 'super table'
-    return df
+    merge_df = join_dfs_with_fuzzy(in_df, cellartracker_df)
+
+    print("df of dims", merge_df.shape, "formed after merge")
+    return merge_df
 
 @timeit 
-def super_table_pipe():
-    df = agilette_library_loader()
-    df = (df.pipe(selected_avantor_runs)
+def super_table_pipe(chemstation_df, sample_tracker_df, cellartracker_df):
+    
+    df = (chemstation_df
         .pipe(chemstation_id_cleaner)
-        .pipe(chemstation_sample_tracker_join)
-        .pipe(cellar_tracker_fuzzy_join)
+        .pipe(selected_avantor_runs)
+        .pipe(chemstation_sample_tracker_join, sample_tracker_df)
+        .pipe(cellar_tracker_fuzzy_join,  cellartracker_df)
     )
     return df
+
+def main():
+    chemstation_df = agilette_library_loader()
+    sample_tracker_df = sample_tracker_df_builder()
+    cellartracker_df = get_cellar_tracker_table().convert_dtypes()
+    
+    print(super_table_pipe(chemstation_df, sample_tracker_df, cellartracker_df))
+
+if __name__ == "__main__":
+    main()
