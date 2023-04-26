@@ -11,11 +11,14 @@ def display_table_info(con : db.DuckDBPyConnection, table_name : str) -> None:
 
 def write_df_to_table(df : pd.DataFrame, con : db.DuckDBPyConnection, table_name : str, schema : str, table_column_names : str, df_column_names : str) -> None:
 
-    con.sql(f"""
-    DROP TABLE IF EXISTS {table_name};
-    CREATE TABLE {table_name} ({schema});
-    """)    
-    
+    try:
+        con.sql(f"""
+        DROP TABLE IF EXISTS {table_name};
+        CREATE TABLE {table_name} ({schema});
+        """)
+    except Exception as e:
+        print(f'Exception encountered while trying to create new table {table_name}:{e}')
+        
     insert_query = f"""
             INSERT INTO {table_name} (
             {table_column_names}
