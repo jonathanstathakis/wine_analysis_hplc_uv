@@ -11,12 +11,26 @@ from db_methods import display_table_info, write_df_to_table
 
 def init_cleaned_chemstation_metadata_table(con, raw_table_name):
 
-    df = con.sql(f"SELECT * FROM {raw_table_name}").df()
+    df = con.sql(f"SELECT notebook, date, method, path, sequence_name, hash_key FROM {raw_table_name}").df()
     
     df = df_string_cleaner(df)
+    
     df = df.rename({'notebook' : 'id', 'date' : 'acq_date', 'method' : 'acq_method'}, axis = 1)
+
+    #df = df.drop(axis = 1, [])
+    
     df['acq_date'] = pd.to_datetime(df['acq_date']).dt.strftime("%Y-%m-%d")
+    
     df = chemstation_id_cleaner(df)
+
+    df = chemstation_metadata_drop_unwanted_runs(df)
+
+    write_cleaned_chemstation_metadata_table(df, con, raw_table_name)
+
+    return None
+
+def chemstation_metadata_drop_unwanted_runs(df : pd.DataFrame) -> pd.DataFrame:
+    
     df = df[~(df['new_id'] == 'coffee') \
             & ~(df['new_id'] == 'lor-ristretto') \
             & ~(df['new_id'] == 'espresso') \
@@ -24,16 +38,12 @@ def init_cleaned_chemstation_metadata_table(con, raw_table_name):
             & ~(df['new_id'] == 'nc1') \
             & ~(df['old_id'].isna())
              ]
-    cleaned_df = library_id_replacer(df)
-
-    print("HERE!",cleaned_df.columns)
+    df = library_id_replacer(df)
 
     print("\nthe following new_id's are not digits and will cause an error when writing the table:\n")
-    print(cleaned_df[~(cleaned_df['new_id'].str.isdigit())])
+    print(df[~(df['new_id'].str.isdigit())])
 
-    new_table_name = raw_table_name.replace('raw','cleaned')
-    schema, table_column_names, df_column_names = write_df_to_table_variables()
-    write_df_to_table(cleaned_df, con, new_table_name, schema, table_column_names, df_column_names)
+    return df
 
 def write_df_to_table_variables():
     
@@ -41,8 +51,6 @@ def write_df_to_table_variables():
     old_id VARCHAR,
     acq_date DATE,
     acq_method VARCHAR,
-    unit VARCHAR,
-    signal VARCHAR,
     path VARCHAR,
     sequence_name VARCHAR,
     hash_key VARCHAR,
@@ -53,8 +61,6 @@ def write_df_to_table_variables():
     old_id,
     acq_date,
     acq_method,
-    unit,
-    signal,
     path,
     sequence_name,
     hash_key,
@@ -96,8 +102,23 @@ def library_id_replacer(df : pd.DataFrame) -> pd.DataFrame:
 
     return df
 
+def write_cleaned_chemstation_metadata_table(df : pd.DataFrame, con : db.DuckDBPyConnection, raw_table_name : str) -> None:
+
+    new_table_name = raw_table_name.replace('raw','cleaned')
+
+    schema, table_column_names, df_column_names = write_df_to_table_variables()
+
+    try:
+        print(f"\nwriting df of shape {df.shape}, columns: {df.columns} to db\n")
+
+        write_df_to_table(df, con, new_table_name, schema, table_column_names, df_column_names)
+    except Exception  as e:
+        print(f'Exception encountered when writing cleaned_chemstation_metadata_table to database: {e}')
+
 def main():
-    init_cleaned_chemstation_metadata_table()
+    con =   db.connect('wine_auth_db.db')
+    raw_table_name = 'raw_chemstation_metadata'
+    init_cleaned_chemstation_metadata_table(con, raw_table_name)
 
 if __name__ == "__main__":
     main()
