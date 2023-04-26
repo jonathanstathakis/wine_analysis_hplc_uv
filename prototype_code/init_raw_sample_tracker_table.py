@@ -3,7 +3,7 @@ import sys
 import pandas as pd
 sys.path.append('../')
 from agilette.modules.metadata_sampletracker_cellartracker_join import sample_tracker_df_builder
-from duck_db_methods import write_table_from_df
+from db_methods import write_df_to_table
 from db_methods import display_table_info
 
 def init_raw_sample_tracker_table(con):
@@ -47,7 +47,7 @@ def write_raw_sample_tracker_table(df, con, table_name):
 
     column_assignment = target_columns
 
-    write_table_from_df(df, con, table_name, schema, target_columns, column_assignment)
+    write_df_to_table(df, con, table_name, schema, target_columns, column_assignment)
 
 def main():
     init_raw_sample_tracker_table()

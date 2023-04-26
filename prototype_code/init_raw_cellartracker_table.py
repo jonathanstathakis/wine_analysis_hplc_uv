@@ -5,7 +5,6 @@ import pandas as pd
 sys.path.append('../')
 from agilette.modules.metadata_sampletracker_cellartracker_join import get_cellar_tracker_table
 import numpy as np
-from duck_db_methods import write_table_from_df
 from db_methods import display_table_info
 
 def init_raw_cellartracker_table(con):
