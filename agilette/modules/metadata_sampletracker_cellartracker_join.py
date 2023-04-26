@@ -4,12 +4,6 @@ Joins `agilette.Library.metadata_table` with metadata from sample_tracker and ce
 2023-04-13-15-40: Import agilent_sample_tracker_cellartracker_super_table to get the subst of MRes thesis usable runs.
 
 See Users/jonathan/001_obsidian_vault/mres_logbook/2023-04-06_logbook.md, Users/jonathan/001_obsidian_vault/mres_logbook/2023-04-05_logbook_depicting-progress-thus-far, notebooks/2023-04-05_description-of-dataset-thus-far.ipynb for need, notebooks/2023-03-28-joining-cellartracker-metadata.ipynb for prototype.
-
-1. [x] get sample_tracker table.
-2. [x] get cellar_tracker table.
-3. [x] left join sample_tracker on metadata_table.
-4. [x] left join cellartracker table on metadata table.
-5. [x] rectify join problems.
 """
 import sys
 sys.path.append('../')
@@ -128,17 +122,16 @@ def form_join_col(df):
     return df
 
 def chemstation_sample_tracker_join(in_df :pd.DataFrame, sample_tracker_df : pd.DataFrame) -> pd.DataFrame:
-    print("########\njoining metadata table with sample_tracker\n########\n")
+    print("\n########\njoining metadata table with sample_tracker\n########")
 
-    print(f"in_df has shape {in_df.shape}, columns {in_df.columns}")
-    print(f"sample_tracker_df has shape {sample_tracker_df.shape}")
+    print(f"\nin_df has shape: {in_df.shape}\n\tcolumns: {str(list(in_df.columns))}")
+    print(f"\nsample_tracker_df has shape {sample_tracker_df.shape}")
 
     sample_tracker_df = sample_tracker_df[['id','vintage', 'name', 'open_date', 'sampled_date', 'notes']]
 
-    merge_df = pd.merge(in_df, sample_tracker_df, left_on ='new_id', right_on = 'id', how = 'left')
-    merge_df.attrs['name'] = 'metadata, sample tracker merge table'
+    merge_df = pd.merge(in_df, sample_tracker_df, left_on ='new_id', right_on = 'id', how = 'inner')
 
-    print("df of dims", merge_df.shape, "formed after merge")
+    print("\ndf of dims", merge_df.shape, "formed after merge of chemstation_metadata and sample_tracker.\n If this df has more rows than the inital left_df, it is because there were duplicate matches, so the rows were duplicated.")
 
     return merge_df
 
