@@ -20,6 +20,7 @@ from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
+from google.auth import exceptions
 
 import os
 
@@ -45,7 +46,14 @@ def get_credentials(creds_parent_path : str):
 
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
+            try:
+                # 2023-04-21-23-09 - for some reason when the token expires, this codeblock (suppled by google on google sheets api webpage) should refresh it, right? however it doesnt. This try-except block will try to refresh, throw RefreshError then delete the token manually, then try again.
+
+                creds.refresh(Request())
+            except exceptions.RefreshError as e:
+                print(e)
+                os.remove('/Users/jonathan/wine_analysis_hplc_uv/credientals_tokens/credentials_sheets.json')
+                creds.refresh(Request())
         else:
             flow = InstalledAppFlow.from_client_secrets_file(
                 path_to_credentials, scopes)
@@ -66,6 +74,7 @@ def get_sheets_service(creds_parent_path : str):
 
 def get_sheets_values_as_df(spreadsheet_id : str, range : str, creds_parent_path : str):
     
+
     service = get_sheets_service(creds_parent_path)
 
     sheets_api = service.spreadsheets()
