@@ -1,4 +1,4 @@
-['']"""
+"""
 Top level file to initialize a wine auth database from scratch.
 """
 import os
@@ -15,19 +15,19 @@ from chemstation_metadata_table_cleaner import init_cleaned_chemstation_metadata
 from sample_tracker_cleaner import init_cleaned_sample_tracker_table
 from cellartracker_cleaner import init_cleaned_cellartracker_table
 from function_timer import timeit
+import adapt_super_pipe_to_db
 
 @timeit
 def build_library(db_path : str, data_lib_path : str) -> None:
-
     remove_existing_db(db_path)
-
-    con = db.connect(f'{db_path}')
     
-    load_raw_tables(con, data_lib_path)
+    with db.connect(f'{db_path}') as con:
     
-    load_cleaned_tables(con)
+        load_raw_tables(con, data_lib_path)    
+        load_cleaned_tables(con)
+        adapt_super_pipe_to_db.load_super_table(con)
 
-    con.sql('DESCRIBE').show()
+        con.sql('DESCRIBE').show()
 
     return None
 
