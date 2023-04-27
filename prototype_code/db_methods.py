@@ -8,6 +8,7 @@ def display_table_info(con : db.DuckDBPyConnection, table_name : str) -> None:
     con.sql(f"DESCRIBE TABLE {table_name}").show()
     con.sql(f"SELECT COUNT(*) FROM {table_name}").show()
     con.sql(f"SELECT * FROM {table_name} LIMIT 5").show()
+    return None
 
 def write_df_to_table(df : pd.DataFrame, con : db.DuckDBPyConnection, table_name : str, schema : str, table_column_names : str, df_column_names : str) -> None:
 
