@@ -1,4 +1,4 @@
-"""
+['']"""
 Top level file to initialize a wine auth database from scratch.
 """
 import os
@@ -17,17 +17,11 @@ from cellartracker_cleaner import init_cleaned_cellartracker_table
 from function_timer import timeit
 
 @timeit
-def initialize_db():
+def build_library(db_path : str, data_lib_path : str) -> None:
 
-    table_name = 'wine_auth_db.db'
-    data_lib_path = "/Users/jonathan/0_jono_data"
+    remove_existing_db(db_path)
 
-    # remove old db if it exists.
-    if os.path.exists(table_name):
-        os.remove(table_name)
-        print(f"deleted {table_name}")
-
-    con = db.connect(f'{table_name}')
+    con = db.connect(f'{db_path}')
     
     load_raw_tables(con, data_lib_path)
     
@@ -35,18 +29,30 @@ def initialize_db():
 
     con.sql('DESCRIBE').show()
 
+    return None
+
+def remove_existing_db(db_path : str) -> None:
+    # remove old db if it exists.
+    if os.path.exists(db_path):
+        os.remove(db_path)
+        print(f"deleted {db_path}")
+    return None
+
 def load_raw_tables(con, data_lib_path):
-        init_raw_chemstation_tables(data_lib_path, con)
-        init_raw_sample_tracker_table(con)
-        init_raw_cellartracker_table(con)
+    init_raw_chemstation_tables(data_lib_path, con)
+    init_raw_sample_tracker_table(con)
+    init_raw_cellartracker_table(con)
+    return None
 
 def load_cleaned_tables(con):
     init_cleaned_chemstation_metadata_table(con, 'raw_chemstation_metadata')
     init_cleaned_sample_tracker_table(con, 'raw_sample_tracker')
     init_cleaned_cellartracker_table(con, 'raw_cellartracker')
+    return None
 
 def main():
-    initialize_db()
+    build_library(db_path = 'wine_auth_db.db', data_lib_path = "/Users/jonathan/0_jono_data"
+)
 
 if __name__ == "__main__":
     main()
