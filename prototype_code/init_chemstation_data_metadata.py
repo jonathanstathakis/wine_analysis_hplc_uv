@@ -38,7 +38,32 @@ def init_raw_chemstation_tables(root_dir_path : str, con : db.DuckDBPyConnection
                 print(metadata_dict['path'])
 
     metadata_table_builder(uv_metadata_list, con)
-    uv_data_table_builder(uv_data_list, con)
+    spectrum_table(uv_data_list, con)
+    #uv_d ata_table_builder(uv_data_list, con)
+
+def spectrum_table(uv_data_list : list, con : db.DuckDBPyConnection) -> None:
+
+    table_name = 'spectrums'
+    con.sql(f"DROP TABLE IF EXISTS {table_name}")
+
+    spectrum_dfs = []
+    for uv_data in uv_data_list:
+        data = uv_data['data']
+        data['hash_key'] = uv_data['hash_key']
+        spectrum_dfs.append(data)
+
+    combined_df = pd.concat(spectrum_dfs)
+
+    try:
+        print(f'creating {table_name} table from combined_df')
+        con.execute(f"CREATE TABLE {table_name} AS SELECT * FROM combined_df")
+    except Exception as e:
+        print(e)
+
+    display_table_info(con, table_name)
+
+    return None
+
 
 def uv_data_to_df(uv_file):
     spectrum = np.concatenate((uv_file.xlabels.reshape(-1,1),uv_file.data), axis = 1)
