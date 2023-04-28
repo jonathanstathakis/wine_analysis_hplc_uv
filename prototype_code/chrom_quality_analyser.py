@@ -84,7 +84,7 @@ def main():
     lib['nm_254']
     # create a baseline column.
     # fit the baseline to that wavelength.
-    lib['baseline_254'] = pd.Series(lib.apply(lambda row : dt.signal_baseline_creator(row['nm_254']), axis = 1))
+    lib['baseline_254'] = pd.Series(lib.apply(lambda row : dt.calc_baseline(row['nm_254']), axis = 1))
 
     # create baseline AUC column
     lib['baseline_254_area'] = pd.Series(lib.apply(lambda row :  dt.baseline_area(row['baseline_254']), axis = 1))
