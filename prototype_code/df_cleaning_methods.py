@@ -13,3 +13,4 @@ def df_string_cleaner(df : pd.DataFrame) -> pd.DataFrame:
         df = df.applymap(lowercase_and_strip)
         
         return df
+
