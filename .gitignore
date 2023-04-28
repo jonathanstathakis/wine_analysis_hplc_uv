@@ -171,3 +171,5 @@ notebooks/.DS_Store
 prototype_code/testing_loading_subset_spectra.py
 agilette/modules/agilette_library.csv
 uv_database.db
+prototype_code/wine_auth_db.db
+prototype_code/wine_auth_db.db.wal
