@@ -6,14 +6,14 @@ from pybaselines import Baseline
 import numpy as np
 from scipy.signal import  find_peaks
 
-def calc_baseline(signal_df : pd.DataFrame) -> pd.DataFrame:
+def calc_baseline(signal_df : pd.DataFrame, x_col_key : str, y_col_key : str) -> pd.DataFrame:
     """
     Create baseline obj then fit the baseline on it. return baseline as df of ['mins','mAU']
     """
-    baseline_obj = Baseline(signal_df['mins'])
-    baseline_y = baseline_obj.iasls(signal_df['254'])[0]
-    baseline_df = signal_df[['mins']].copy(deep = True)
-    baseline_df['mAU'] = baseline_y
+    baseline_obj = Baseline(signal_df[x_col_key])
+    baseline_y = baseline_obj.iasls(signal_df[y_col_key])[0]
+    baseline_df = signal_df[[x_col_key]].copy(deep = True)
+    baseline_df['baseline_y'] = baseline_y
     return baseline_df
 
     
