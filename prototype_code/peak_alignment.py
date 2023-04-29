@@ -57,7 +57,12 @@ def peak_alignment_pipe():
     st.subheader('time axis interpolated')
     st.plotly_chart(fig)
 
-    peak_alignment(interpolated_chromatogram_dict, highest_corr_key, wavelength)
+    peak_aligned_df_dict = peak_alignment(interpolated_chromatogram_dict, highest_corr_key, 
+    wavelength)
+
+    fig = plot_methods.plot_signal_from_df_in_dict(peak_aligned_df_dict, 'mins','254')
+    st.subheader('DTW peak aligned')
+    st.plotly_chart(fig)
 
     return None
 
@@ -73,8 +78,6 @@ def baseline_correction(df: pd.DataFrame, col_name : str, raw_signal_y_col_name 
     return baseline_subtracted_signals_series
 
 def interpolate_chromatogram_time(df_dict : dict):
-
-    interpolated_df_dict = {}
 
     # get range of time values
     min_time = min([df_dict[key]['mins'].min() for key in df_dict.keys()])
@@ -175,6 +178,10 @@ def find_representative_sample(corr_df = pd.DataFrame) -> str:
 
     return highest_corr_key
 
+import numpy as np
+from dtw import dtw
+import pandas as pd
+
 def peak_alignment(chromatograms_dict, highest_corr_key, wavelength):
     # Ensure that the data is the correct dtype
     chromatograms_dict = {key: df.astype('float64') for key, df in chromatograms_dict.items()}
@@ -191,30 +198,23 @@ def peak_alignment(chromatograms_dict, highest_corr_key, wavelength):
         # Calculate the DTW distance and path between the reference and current chromatogram
         alignment = dtw(query_chromatogram_np_array, reference_chromatogram_np_array, step_pattern='asymmetric', open_end=True, open_begin=True)
 
-        import matplotlib.pyplot as plt
-        
-        # warping function
-        # plt.plot(alignment.index1, alignment.index2)
-        # plt.show()
-
-        fig, ax = plt.subplots()
-        ax.plot(reference_chromatogram_np_array, 'r')
-        #ax.text(0.0, 1.0, 'reference')
-        ax.plot(alignment.index2,query_chromatogram_np_array[alignment.index1])
-        ax.text(4000, 12.0, key)
-        st.pyplot(fig)
         # Align the current chromatogram to the reference chromatogram using the calculated path
-        # aligned_chromatogram_np_array = np.zeros_like(reference_chromatogram_np_array)
+        aligned_chromatogram_np_array = np.zeros_like(reference_chromatogram_np_array)
 
-        # for cur_idx in range(len(chromatogram_signal_np_array)):
-        #     ref_idx = alignment.loc[cur_idx, 'index1']
-        #     aligned_chromatogram_np_array[cur_idx] = reference_chromatogram_np_array[ref_idx]
+        for i, cur_idx in enumerate(alignment.index2):
+            ref_idx = alignment.index1[i]
+            aligned_chromatogram_np_array[cur_idx] = query_chromatogram_np_array[ref_idx]
 
-        # # Add the aligned chromatogram to the aligned_chromatograms DataFrame
-        # aligned_chromatograms_dict[key] = aligned_chromatogram_np_array
+        # Interpolate missing values in the aligned chromatogram
+        non_zero_indices = np.nonzero(aligned_chromatogram_np_array)[0]
+        interp_func = np.interp(np.arange(len(aligned_chromatogram_np_array)), non_zero_indices, aligned_chromatogram_np_array[non_zero_indices])
+
+        # Replace the original chromatogram with the aligned and interpolated chromatogram
+        aligned_chromatogram_df = chromatogram_df.copy()
+        aligned_chromatogram_df[wavelength] = interp_func
+        aligned_chromatograms_dict[key] = aligned_chromatogram_df
 
     return aligned_chromatograms_dict
-
 
 def plot_signals(df : pd.DataFrame) -> go.Figure:
     """
