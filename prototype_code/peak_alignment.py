@@ -1,6 +1,10 @@
 """
-rule: signal dataframes are always structured index | mins | signal
+~~rule: signal dataframes are always structured index | mins | signal~~
 rule: dataframes with a combination of signal and metadata will always have the sample name as the index.
+rule: use dictionaries to handle collections of dataframes.
+rule: ditch time.
+
+1. interpolate time axis, then just store 1 time array in a df. reduces dimensionality by 1.
 """
 
 import sys
@@ -15,6 +19,7 @@ from prototype_code import db_methods
 from prototype_code import signal_data_treatment_methods as dt
 from prototype_code import plot_methods
 import function_timer
+import streamlit as st
 
 def peak_alignment_pipe():
     con = db.connect('/Users/jonathan/wine_analysis_hplc_uv/prototype_code/wine_auth_db.db')
@@ -24,47 +29,48 @@ def peak_alignment_pipe():
     single_nm_df = extract_single_wavelength(df, wavelength)
     single_nm_df = single_nm_df.set_index('name_ct', drop = True)
     single_nm_df = single_nm_df.drop('spectrum', axis =1)
-    
+
     # subtract baseline
-    
     # show signals before processing
     fig = plot_methods.plot_signal_in_series(single_nm_df, '254','mins','254')
-    #fig.show()
+    st.subheader('raw chromatograms')
+    st.plotly_chart(fig)
 
-    baselines = single_nm_df.apply(lambda row : dt.calc_baseline(row['254'], 'mins', '254'), axis = 1)
+    baseline_subtracted_df_col_name = 'baseline_subtracted_signals'
+    single_nm_df[baseline_subtracted_df_col_name] = baseline_correction(single_nm_df, wavelength, '254','254')
 
-    baseline_subtracted_signals = {}
+    fig = plot_methods.plot_signal_in_series(single_nm_df, baseline_subtracted_df_col_name,'mins','254')
+    st.subheader('baseline subtracted')
+    st.plotly_chart(fig)
 
-    for i in baselines.index:
-        baseline_subtracted_signal = single_nm_df.loc[i]['254']['254'] - baselines.loc[i]['baseline_y']
-        
-        baseline_subtracted_signals[i] = pd.DataFrame({ 'mins' : single_nm_df.loc[i]['254']['mins'], 'signal' : baseline_subtracted_signal})
-
-    baseline_subtracted_signals_series = pd.Series(baseline_subtracted_signals)
-
-    single_nm_df['baseline_subtracted_signals'] = baseline_subtracted_signals_series
-
+    single_nm_df_dict = single_nm_df_dict_builder(single_nm_df, baseline_subtracted_df_col_name)
     # fig = plot_methods.plot_signal_in_series(single_nm_df, 'baseline_subtracted_signals', 'mins','signal')
     # fig.show()
 
-    y_df = sample_name_signal_df_builder(single_nm_df)
-    
+    y_df = sample_name_signal_df_builder(single_nm_df, baseline_subtracted_df_col_name)
     corr_df = y_df.corr()
-
     highest_corr_key = find_representative_sample(corr_df)
-
-    single_nm_df_dict = single_nm_df_dict_builder(single_nm_df, wavelength)
     
     interpolated_chromatogram_dict = interpolate_chromatogram_time(single_nm_df_dict)
 
     fig = plot_methods.plot_signal_from_df_in_dict(interpolated_chromatogram_dict, 'mins','254')
-    print(fig)
-    fig.show()
+    st.subheader('time axis interpolated')
+    st.plotly_chart(fig)
 
-
-#    peak_alignment(y_df, highest_corr_key)
+    peak_alignment(interpolated_chromatogram_dict, highest_corr_key, wavelength)
 
     return None
+
+def baseline_correction(df: pd.DataFrame, col_name : str, raw_signal_y_col_name : str, baseline_y_col_name : str):
+    baselines = df.apply(lambda row : dt.calc_baseline(row[col_name], 'mins', raw_signal_y_col_name), axis = 1)
+    baseline_subtracted_signals = {}
+
+    for i in baselines.index:
+        baseline_subtracted_signal = df.loc[i][col_name][raw_signal_y_col_name] - baselines.loc[i][baseline_y_col_name]
+        baseline_subtracted_signals[i] = pd.DataFrame({ 'mins' : df.loc[i][col_name]['mins'], raw_signal_y_col_name : baseline_subtracted_signal})
+
+    baseline_subtracted_signals_series = pd.Series(baseline_subtracted_signals)
+    return baseline_subtracted_signals_series
 
 def interpolate_chromatogram_time(df_dict : dict):
 
@@ -95,23 +101,22 @@ def interpolate_chromatogram_time(df_dict : dict):
     return interpolated_chromatograms_dict
 
 
-def single_nm_df_dict_builder(single_nm_df, wavelength):
+def single_nm_df_dict_builder(single_nm_df, df_col_name):
     
     single_nm_df_dict = {}
 
     for idx, row in single_nm_df.iterrows():
-        single_nm_df_dict[idx] = row[wavelength]
+        single_nm_df_dict[idx] = row[df_col_name]
 
     return single_nm_df_dict
 
-
-def sample_name_signal_df_builder(single_nm_df):
+def sample_name_signal_df_builder(single_nm_df, col_name : str):
     # extract the sample names as column names, y_axis column as column values.
     sample_name_signal_df = pd.DataFrame(columns = single_nm_df.index)
 
     for idx, row in single_nm_df.iterrows():
         print(idx)
-        sample_name_signal_df[idx] = row['254']['254'].values
+        sample_name_signal_df[idx] = row[col_name]['254'].values
     
     return sample_name_signal_df
 
@@ -170,43 +175,46 @@ def find_representative_sample(corr_df = pd.DataFrame) -> str:
 
     return highest_corr_key
 
-def peak_alignment(chromatograms, highest_corr_key):
+def peak_alignment(chromatograms_dict, highest_corr_key, wavelength):
+    # Ensure that the data is the correct dtype
+    chromatograms_dict = {key: df.astype('float64') for key, df in chromatograms_dict.items()}
 
-    # ensure that the data is the corredt dtype
-    chromatograms = chromatograms.astype('float64')
+    # Define reference chromatogram, convert to numpy array
+    reference_chromatogram_np_array = chromatograms_dict[highest_corr_key][wavelength].to_numpy()
 
-    # define reference chromatogram, convert to numpy array
-    reference_chromatogram = chromatograms[highest_corr_key].to_numpy()
+    # Create new dict to store aligned chromatograms
+    aligned_chromatograms_dict = {}
 
-    # create container dataframe
-    chromatograms = pd.DataFrame(index=chromatograms.index)
-
-    print(chromatograms)
-
-    for column in chromatograms.columns:
-    
-        chromatogram = chromatograms[column].to_numpy()
+    for key, chromatogram_df in chromatograms_dict.items():
+        query_chromatogram_np_array = chromatogram_df[wavelength].to_numpy()
 
         # Calculate the DTW distance and path between the reference and current chromatogram
-    
-        alignment = dtw(reference_chromatogram, chromatogram, step_pattern='asymmetric', open_end=True, open_begin=True)
+        alignment = dtw(query_chromatogram_np_array, reference_chromatogram_np_array, step_pattern='asymmetric', open_end=True, open_begin=True)
 
-        # Align the current chromatogram to the reference chromatogram using the calculated path
-        aligned_chromatogram = np.zeros_like(chromatogram)
+        import matplotlib.pyplot as plt
         
-        for i in range(len(alignment.index1)):
-            ref_idx = alignment.index1[i]
-            cur_idx = alignment.index2[i]
-            aligned_chromatogram[cur_idx] = reference_chromatogram[ref_idx]
+        # warping function
+        # plt.plot(alignment.index1, alignment.index2)
+        # plt.show()
 
-        # Add the aligned chromatogram to the aligned_chromatograms DataFrame
-        chromatograms[column] = aligned_chromatogram
+        fig, ax = plt.subplots()
+        ax.plot(reference_chromatogram_np_array, 'r')
+        #ax.text(0.0, 1.0, 'reference')
+        ax.plot(alignment.index2,query_chromatogram_np_array[alignment.index1])
+        ax.text(4000, 12.0, key)
+        st.pyplot(fig)
+        # Align the current chromatogram to the reference chromatogram using the calculated path
+        # aligned_chromatogram_np_array = np.zeros_like(reference_chromatogram_np_array)
 
-    #Plot the aligned chromatograms
-    for column in chromatograms.columns:
-        plt.plot(chromatograms[column], label=column)
-    # plt.legend()
-    #plt.show()
+        # for cur_idx in range(len(chromatogram_signal_np_array)):
+        #     ref_idx = alignment.loc[cur_idx, 'index1']
+        #     aligned_chromatogram_np_array[cur_idx] = reference_chromatogram_np_array[ref_idx]
+
+        # # Add the aligned chromatogram to the aligned_chromatograms DataFrame
+        # aligned_chromatograms_dict[key] = aligned_chromatogram_np_array
+
+    return aligned_chromatograms_dict
+
 
 def plot_signals(df : pd.DataFrame) -> go.Figure:
     """
@@ -224,4 +232,3 @@ def main():
     
 if __name__ == '__main__':
     main()
-

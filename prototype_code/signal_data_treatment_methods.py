@@ -13,7 +13,7 @@ def calc_baseline(signal_df : pd.DataFrame, x_col_key : str, y_col_key : str) ->
     baseline_obj = Baseline(signal_df[x_col_key])
     baseline_y = baseline_obj.iasls(signal_df[y_col_key])[0]
     baseline_df = signal_df[[x_col_key]].copy(deep = True)
-    baseline_df['baseline_y'] = baseline_y
+    baseline_df[y_col_key] = baseline_y
     return baseline_df
 
     
