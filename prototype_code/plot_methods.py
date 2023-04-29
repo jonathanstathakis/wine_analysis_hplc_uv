@@ -1,10 +1,20 @@
 from plotly import graph_objects as go
 import pandas as pd
 
-def plot_signal_in_series(df : pd.DataFrame, series_key, x_key, y_key):
+def plot_signal_in_series(series : pd.Series, x_key, y_key):
     fig = go.Figure()
-    for idx, row in df.iterrows():
-        fig.add_trace(go.Scatter(x = row[series_key][x_key], y = row[series_key][y_key], mode = 'lines',name = row.name, text = row.name))
+    for idx in series.index:
+        fig.add_trace(go.Scatter(x = series[idx][x_key], y = series[idx][y_key], mode = 'lines',name = idx, text = idx))
+    
+    fig.update_layout(
+        legend = dict(
+        x = 0.5,
+        y = -0.1,
+        xanchor = 'center',
+        yanchor = 'top',
+        orientation = 'h',
+        traceorder = 'normal'),
+        margin = dict(b=100))
     return fig
 
 def plot_signal_from_df_in_dict(dict_of_df : dict, x_key, y_key):
