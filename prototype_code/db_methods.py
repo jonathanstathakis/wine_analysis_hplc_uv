@@ -8,7 +8,7 @@ def index():
     display_table_info()
     write_df_to_table()
     #list_table_names_not_spectrum()
-    get_spectrums()
+    get_spectra()
 
 def display_table_info(con : db.DuckDBPyConnection, table_name : str) -> None:
     print(f"\n\n###### {table_name.upper()} TABLE ######\n")
@@ -51,11 +51,11 @@ def write_df_to_table(df : pd.DataFrame, con : db.DuckDBPyConnection, table_name
 #     """
 #     con.sql(query).show()
 
-def get_spectrums(metadata_df : pd.DataFrame, con : db.DuckDBPyConnection) -> pd.DataFrame:
+def get_spectra(metadata_df : pd.DataFrame, con : db.DuckDBPyConnection) -> pd.DataFrame:
         """
         Pass a wine metadata dataframe with relevant hash_key to join to spectrums contained in spectrum table found through the con object. returns the metadata df with a spectrum column, where spectrums are nested dataframes.
         """
-        def get_spectrum(con : db.DuckDBPyConnection, hash_key : str) -> pd.DataFrame:
+        def get_spectra(con : db.DuckDBPyConnection, hash_key : str) -> pd.DataFrame:
             query = f"""
             SELECT * from spectrums
             where hash_key = '{hash_key}'
@@ -63,7 +63,7 @@ def get_spectrums(metadata_df : pd.DataFrame, con : db.DuckDBPyConnection) -> pd
             df = con.sql(query).df()
             return df
 
-        metadata_df['spectrum'] = metadata_df.apply(lambda row : get_spectrum(con, row['hash_key']), axis = 1)
+        metadata_df['spectra'] = metadata_df.apply(lambda row : get_spectra(con, row['hash_key']), axis = 1)
         metadata_df = metadata_df.drop('hash_key', axis =1)
 
         return metadata_df
