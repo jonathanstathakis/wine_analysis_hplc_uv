@@ -25,70 +25,96 @@ def peak_alignment_pipe():
     con = db.connect('/Users/jonathan/wine_analysis_hplc_uv/prototype_code/wine_auth_db.db')
 
     wavelength = '254'
-    df = fetch_repres_spectra(con)
-    single_nm_df = extract_single_wavelength(df, wavelength)
-    single_nm_df = single_nm_df.set_index('name_ct', drop = True)
-    single_nm_df = single_nm_df.drop('spectrum', axis =1)
+    df = fetch_spectra(con)
 
-    st.subheader('raw chromatograms')
-    fig = plot_methods.plot_signal_in_series(single_nm_df['254'],'mins','254')
-    st.plotly_chart(fig)
-
+    raw_chromatogram_series_name = 'raw_chromatograms'
+    df[raw_chromatogram_series_name] = extract_single_wavelength(df, wavelength)
+    df = df.set_index('name_ct', drop = True)
+    df = df.drop('spectrum', axis =1)
+    
+    st.write(df.columns)
     # subtract baseline. If baseline not subtracted, alignment WILL NOT work.
-    baseline_subtracted_df_col_name = 'baseline_subtracted_signals'
-    single_nm_df[baseline_subtracted_df_col_name] = baseline_correction(single_nm_df, wavelength, '254','254')
+    baseline_subtracted_chromatogram_series_name = 'baseline_subtracted_signals'
+    df[baseline_subtracted_chromatogram_series_name] = baseline_subtraction(df[raw_chromatogram_series_name], '254','254')
 
-    st.subheader('baseline subtracted')
-    fig = plot_methods.plot_signal_in_series(single_nm_df['baseline_subtracted_signals'],'mins','254')
-    st.plotly_chart(fig)
+    st.table(df)
 
-    y_df = sample_name_signal_df_builder(single_nm_df, baseline_subtracted_df_col_name)
+    time_interpolated_chromatogram_name = 'time_interpolated_chromatograms'
+    df[time_interpolated_chromatogram_name] = interpolate_chromatogram_times(df[baseline_subtracted_chromatogram_series_name])
+
+    # calculate correlations between chromatograms as pearson's r, identify sample with highest average correlation, store key as most represntative sample for downstream peak alignment.
+    y_df = sample_name_signal_df_builder(df[baseline_subtracted_chromatogram_series_name], wavelength)
     corr_df = y_df.corr()
     highest_corr_key = find_representative_sample(corr_df)
+
     
-    #single_nm_df_dict = single_nm_df_dict_builder(single_nm_df, baseline_subtracted_df_col_name)
+    peak_aligned_series_name = 'peak_aligned_chromatograms'
+    df[peak_aligned_series_name] = peak_alignment(df[time_interpolated_chromatogram_name], highest_corr_key, 
+    wavelength)
+    
+    peak_alignment_st_output(df, 
+                             highest_corr_key,
+                             wavelength,
+                             raw_chromatogram_series_name,
+                             baseline_subtracted_chromatogram_series_name,
+                             time_interpolated_chromatogram_name,
+                             peak_aligned_series_name)
     
     # change the code so that 'key' is the row name rather than dict key. Should be same same.
 
-    single_nm_df = interpolate_chromatogram_time(single_nm_df, 'baseline_subtracted_signals')
+    return None
 
-    fig = plot_methods.plot_signal_in_series(single_nm_df['time interpolated chromatograms'],'mins','254')
-    st.subheader('time interpolated chromatograms')
+def peak_alignment_st_output(df : pd.DataFrame,
+                              wavelength : str,
+                              highest_corr_key : str, 
+                              raw_chromatogram_series_name : str, baseline_subtracted_chromatogram_series_name : str, time_interpolated_chromatogram__series_name : str, peak_aligned_series_name : str
+                              ) -> None:
+
+    st.subheader('raw chromatograms')
+    fig = plot_methods.plot_signal_in_series(df[raw_chromatogram_series_name],'mins','254')
     st.plotly_chart(fig)
 
-    single_nm_df['aligned peak chromatograms'] = peak_alignment(single_nm_df['time interpolated chromatograms'], highest_corr_key, 
-    wavelength)
+    st.subheader('baseline subtracted')
+    fig = plot_methods.plot_signal_in_series(df[baseline_subtracted_chromatogram_series_name],'mins','254')
+    st.plotly_chart(fig)
+    
+    st.subheader('time interpolated chromatograms')
+    fig = plot_methods.plot_signal_in_series(df[time_interpolated_chromatogram__series_name],'mins','254')
+    st.plotly_chart(fig)
 
-    fig = plot_methods.plot_signal_in_series(single_nm_df['aligned peak chromatograms'],'mins','254')
     st.subheader('aligned peak chromatograms')
+    fig = plot_methods.plot_signal_in_series(df[peak_aligned_series_name],'mins','254')
     st.plotly_chart(fig)
 
     return None
 
-def baseline_correction(df: pd.DataFrame, col_name : str, raw_signal_y_col_name : str, baseline_y_col_name : str):
-    baselines = df.apply(lambda row : dt.calc_baseline(row[col_name], 'mins', raw_signal_y_col_name), axis = 1)
+def baseline_subtraction(df_series: pd.Series, raw_signal_y_col_name : str, baseline_y_col_name : str):
+    baselines = df_series.apply(lambda row : dt.calc_baseline(row, 'mins', raw_signal_y_col_name))
     baseline_subtracted_signals = {}
 
     for i in baselines.index:
-        baseline_subtracted_signal = df.loc[i][col_name][raw_signal_y_col_name] - baselines.loc[i][baseline_y_col_name]
-        baseline_subtracted_signals[i] = pd.DataFrame({ 'mins' : df.loc[i][col_name]['mins'], raw_signal_y_col_name : baseline_subtracted_signal})
+        baseline_subtracted_signal = df_series.loc[i][raw_signal_y_col_name] - baselines.loc[i][baseline_y_col_name]
+        baseline_subtracted_signals[i] = pd.DataFrame({ 'mins' : df_series.loc[i]['mins'], raw_signal_y_col_name : baseline_subtracted_signal})
 
     baseline_subtracted_signals_series = pd.Series(baseline_subtracted_signals)
     return baseline_subtracted_signals_series
 
-def interpolate_chromatogram_time(single_nm_df : pd.DataFrame, signal_col_name = str):
+def interpolate_chromatogram_times(df_series : pd.Series):
     """
     Change the core function to act on a single dataframe, then wrap in a loop.
     """
     # get range of time values
-    max_time = max([row['254']['mins'].max() for row_name, row in single_nm_df.iterrows()])
-    min_time = min([row['254']['mins'].min() for row_name, row in single_nm_df.iterrows()])
+    max_time = 0
+    min_time = 0
+
+    max_time = max([val['mins'].max() for idx, val in df_series.items()])
+    min_time = min([val['mins'].min() for idx, val in df_series.items()])
 
     print('interpolating common time axis across all input chromatograms:\n')
     print(f"min time point: {min_time}\n")
     print(f"max time point: {max_time}\n")
 
-    time_points = np.linspace(start = min_time, stop = max_time, num = single_nm_df.iloc[0]['254']['mins'].shape[0])
+    time_points = np.linspace(start = min_time, stop = max_time, num = df_series.iloc[0]['mins'].shape[0])
     
     print("interpolated time series:\n")
     print(f"range: {min(time_points)} to {max(time_points)} with length {len(time_points)}")
@@ -96,14 +122,11 @@ def interpolate_chromatogram_time(single_nm_df : pd.DataFrame, signal_col_name =
     # Interpolate all chromatograms to the common set of time points
     interpolated_chromatograms_series = pd.Series()
 
-    for row_name, row in single_nm_df.iterrows():
-        interpolated_chromatogram_df = row[signal_col_name].set_index('mins').reindex(time_points, method = 'nearest').interpolate().reset_index()
+    for row_name, row in df_series.items():
+        interpolated_chromatogram_df = row.set_index('mins').reindex(time_points, method = 'nearest').interpolate().reset_index()
         interpolated_chromatograms_series[row_name] = interpolated_chromatogram_df
 
-    single_nm_df['time interpolated chromatograms'] = interpolated_chromatograms_series
-    single_nm_df['time interpolated chromatograms']['stoney rise pinot noir']
-
-    return single_nm_df
+    return interpolated_chromatograms_series
 
 
 def single_nm_df_dict_builder(single_nm_df, df_col_name):
@@ -115,17 +138,16 @@ def single_nm_df_dict_builder(single_nm_df, df_col_name):
 
     return single_nm_df_dict
 
-def sample_name_signal_df_builder(single_nm_df, col_name : str):
+def sample_name_signal_df_builder(df_series : pd.Series, y_col_name : str):
     # extract the sample names as column names, y_axis column as column values.
-    sample_name_signal_df = pd.DataFrame(columns = single_nm_df.index)
+    sample_name_signal_df = pd.DataFrame(columns = df_series.index)
 
-    for idx, row in single_nm_df.iterrows():
-        print(idx)
-        sample_name_signal_df[idx] = row[col_name]['254'].values
+    for idx, row in df_series.items():
+        sample_name_signal_df[idx] = row[y_col_name].values
     
     return sample_name_signal_df
 
-def fetch_repres_spectra(con : db. DuckDBPyConnection) -> None:
+def fetch_spectra(con : db. DuckDBPyConnection) -> None:
     with  con:
         query = """
         SELECT
@@ -149,7 +171,7 @@ def fetch_repres_spectra(con : db. DuckDBPyConnection) -> None:
         
     return df
 
-def extract_single_wavelength(single_wavelength_df : pd.DataFrame, wavelength : str) -> pd.DataFrame:
+def extract_single_wavelength(spectrum_df : pd.DataFrame, wavelength : str) -> pd.DataFrame:
 
     def get_wavelength(spectrum_df : pd.DataFrame, wavelength) -> pd.DataFrame:
         spectrum_df = spectrum_df.set_index('mins')
@@ -158,25 +180,26 @@ def extract_single_wavelength(single_wavelength_df : pd.DataFrame, wavelength : 
 
         return single_wavelength_df
     
-    single_wavelength_df[wavelength] = pd.Series(single_wavelength_df.apply(lambda row : 
-    get_wavelength(row['spectrum'], wavelength), axis = 1),index = single_wavelength_df.index)
+    single_wavelength_series = pd.Series(spectrum_df.apply(lambda row : 
+    get_wavelength(row['spectrum'], wavelength), axis = 1),index = spectrum_df.index)
 
-    single_wavelength_df['signal_shape'] = single_wavelength_df.apply(lambda row : row[wavelength].shape, axis = 1)
-    single_wavelength_df['signal_index'] = single_wavelength_df.apply(lambda row : row[wavelength].index.tolist(), axis = 1)
-    single_wavelength_df['signal_columns'] = single_wavelength_df.apply(lambda row : row[wavelength].columns.tolist(), axis = 1)
+    # spectrum_df['signal_shape'] = spectrum_df.apply(lambda row : row[wavelength].shape, axis = 1)
+    # spectrum_df['signal_index'] = spectrum_df.apply(lambda row : row[wavelength].index.tolist(), axis = 1)
+    # spectrum_df['signal_columns'] = spectrum_df.apply(lambda row : row[wavelength].columns.tolist(), axis = 1)
 
-    return single_wavelength_df
+    return single_wavelength_series
 
 def find_representative_sample(corr_df = pd.DataFrame) -> str:
-
+    corr_df = corr_df.replace({1 : np.nan})
     corr_df['mean'] = corr_df.apply(np.mean)
-    corr_df = corr_df.sort_values(by = 'mean', ascending=False)
-    
+    corr_df = corr_df.sort_values(by = 'mean', ascending=False)    
     highest_corr_key = corr_df['mean'].idxmax()
 
-    print(corr_df['mean'])
-
-    print(f"{corr_df['mean'].idxmax()} has the highest average correlation with {corr_df['mean'].max()}\n")
+    st.header('spectrum correlation matrix')
+    st.write(corr_df)
+    st.subheader('average highest correlation value')
+    st.write(corr_df['mean'])
+    st.write(f"{corr_df['mean'].idxmax()} has the highest average correlation with {corr_df['mean'].max()}\n")
 
     return highest_corr_key
 
