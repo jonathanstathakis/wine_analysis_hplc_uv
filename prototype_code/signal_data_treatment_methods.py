@@ -5,6 +5,7 @@ import pandas as pd
 from pybaselines import Baseline
 import numpy as np
 from scipy.signal import  find_peaks
+import streamlit as st
 
 def calc_baseline(signal_df : pd.DataFrame, x_col_key : str, y_col_key : str) -> pd.DataFrame:
     """
@@ -16,7 +17,6 @@ def calc_baseline(signal_df : pd.DataFrame, x_col_key : str, y_col_key : str) ->
     baseline_df[y_col_key] = baseline_y
     return baseline_df
 
-    
 def baseline_area(df : pd.DataFrame) -> float:
     """
     calculate area under the baseline curve
@@ -34,3 +34,19 @@ def peak_finder(signal_df : pd.DataFrame, in_height = None, in_prominence = None
     peak_df = pd.DataFrame(zip(peak_x, peak_y), columns = ['mins', 'mAU'])
     print(peak_df.shape)
     return peak_df
+
+def extract_single_wavelength(df_series : pd.DataFrame, wavelength : str) -> pd.DataFrame:
+    """
+    Given a dataframe containing
+    """
+    def get_wavelength(spectrum_df : pd.DataFrame, wavelength) -> pd.DataFrame:
+        spectrum_df = spectrum_df.set_index('mins')
+        single_wavelength_df = spectrum_df[wavelength]
+        single_wavelength_df = single_wavelength_df.to_frame().reset_index()
+
+        return single_wavelength_df
+    
+    single_wavelength_series = pd.Series(df_series.apply(lambda row : 
+    get_wavelength(row, wavelength)),index = df_series.index)
+
+    return single_wavelength_series
