@@ -7,6 +7,8 @@ See Users/jonathan/001_obsidian_vault/mres_logbook/2023-04-06_logbook.md, Users/
 """
 import sys
 sys.path.append('../')
+sys.path.append('../../')
+sys.path.append('../../../')
 from agilette.modules.library import Library
 from google_sheets_api import get_sheets_values_as_df
 import pandas as pd
@@ -16,8 +18,14 @@ import html
 from fuzzywuzzy import fuzz, process
 import numpy as np
 from function_timer import timeit
+import sample_tracker_methods
 
-
+def metadata_sampletracker_cellartracker_join():
+    chemstation_df = agilette_library_loader()
+    sample_tracker_df = sample_tracker_methods.sample_tracker_df_builder()
+    cellartracker_df = get_cellar_tracker_table().convert_dtypes()
+    super_table_pipe(chemstation_df, sample_tracker_df, cellartracker_df)
+    return None
 
 def selected_avantor_runs(df : pd.DataFrame) -> pd.DataFrame:
     """
@@ -49,13 +57,6 @@ def selected_avantor_runs(df : pd.DataFrame) -> pd.DataFrame:
 
 def df_string_cleaner(df : pd.DataFrame) -> pd.DataFrame:
     df = df.apply(lambda x: x.str.strip().str.lower() if isinstance(x.dtype, pd.StringDtype) else x)
-    return df
-
-def sample_tracker_df_builder():
-    df = get_sheets_values_as_df(
-        spreadsheet_id='15S2wm8t6ol2MRwTzgKTjlTcUgaStNlA22wJmFYhcwAY',
-        range='sample_tracker!A1:H200',
-        creds_parent_path=os.environ.get('GOOGLE_SHEETS_API_CREDS_PARENT_PATH'))
     return df
 
 def agilette_library_loader():
@@ -186,12 +187,7 @@ def super_table_pipe(chemstation_df, sample_tracker_df, cellartracker_df):
     return df
 
 def main():
-
-    chemstation_df = agilette_library_loader()
-    sample_tracker_df = sample_tracker_df_builder()
-    cellartracker_df = get_cellar_tracker_table().convert_dtypes()
-    
-    super_table_pipe(chemstation_df, sample_tracker_df, cellartracker_df)
+    metadata_sampletracker_cellartracker_join()
 
 if __name__ == "__main__":
     main()
