@@ -86,3 +86,37 @@ def peak_alignment(chromatogram_df_series : pd.Series, highest_corr_key : str, w
         aligned_chromatograms_series[key] = aligned_chromatogram_df
     
     return aligned_chromatograms_series
+
+import pandas as pd
+import numpy as np
+from scipy.spatial.distance import euclidean
+from itertools import combinations
+
+# Assuming 'series_of_dataframes' is your input Series containing DataFrames of spectrum-chromatograms
+def calculate_distance_matrix(series_of_dataframes):
+    n_samples = len(series_of_dataframes)
+    sample_names = series_of_dataframes.index
+
+    # Initialize an empty distance matrix
+    distance_matrix = np.zeros((n_samples, n_samples))
+
+    # Iterate over unique combinations of sample pairs
+    for sample_1, sample_2 in combinations(sample_names, 2):
+        # Extract the DataFrames for each pair of samples
+        df_1 = series_of_dataframes[sample_1]
+        df_2 = series_of_dataframes[sample_2]
+
+        # Flatten the DataFrames and calculate the Euclidean distance
+        flattened_df_1 = df_1.values.flatten()
+        flattened_df_2 = df_2.values.flatten()
+        distance = euclidean(flattened_df_1, flattened_df_2)
+
+        # Fill the distance matrix symmetrically
+        i, j = sample_names.get_loc(sample_1), sample_names.get_loc(sample_2)
+        distance_matrix[i, j] = distance
+        distance_matrix[j, i] = distance
+
+    # Convert the distance matrix to a pandas DataFrame with appropriate row and column names
+    distance_matrix_df = pd.DataFrame(distance_matrix, index=sample_names, columns=sample_names)
+
+    return distance_matrix_df

@@ -175,3 +175,4 @@ prototype_code/wine_auth_db.db
 prototype_code/wine_auth_db.db.wal
 wine_auth_db.db
 .gitignore
+.DS_Store
