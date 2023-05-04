@@ -34,21 +34,34 @@ def peak_finder(signal_df : pd.DataFrame, in_height = None, in_prominence = None
     print(peak_df.shape)
     return peak_df
 
-def extract_single_wavelength(df_series : pd.DataFrame, wavelength : str) -> pd.DataFrame:
+import pandas as pd
+from typing import Union, List
+
+def subset_spectra(df_series: pd.DataFrame, wavelength: Union[str, List[str]] = None) -> pd.DataFrame:
     """
-    Given a dataframe containing
+    Given a dataframe of mins | nm_1 | ... | nm_n, subset to return a df of same length but only the specified wavelengths. A single wavelength can be selected by providing a single string to 'wavelength'.
     """
-    def get_wavelength(spectrum_df : pd.DataFrame, wavelength) -> pd.DataFrame:
+    if wavelength == None:
+        print("No wavelength values provided, therefore no point using this function.")
+        raise RuntimeError
+
+    def get_wavelength(spectrum_df: pd.DataFrame, wavelength_input) -> pd.DataFrame:
+        # If wavelength_input is a single string, convert it to a list with one element
+        if isinstance(wavelength_input, str):
+            wavelength_input = [wavelength_input]
+        
         spectrum_df = spectrum_df.set_index('mins')
-        single_wavelength_df = spectrum_df[wavelength]
-        single_wavelength_df = single_wavelength_df.to_frame().reset_index()
+        single_wavelength_df = spectrum_df[wavelength_input].copy()
+        single_wavelength_df = single_wavelength_df.reset_index()
 
         return single_wavelength_df
-    
-    single_wavelength_series = pd.Series(df_series.apply(lambda row : 
-    get_wavelength(row, wavelength)),index = df_series.index)
 
-    return single_wavelength_series
+    subset_spectra_series = pd.Series(
+        df_series.apply(lambda row: get_wavelength(row, wavelength)),
+        index=df_series.index
+    )
+
+    return subset_spectra_series
 
 def subtract_baseline_from_spectra(df : pd.DataFrame)  -> pd.DataFrame:
     """
