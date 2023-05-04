@@ -1,5 +1,5 @@
 """
-~~rule: signal dataframes are always structured index | mins | signal~~
+rule: signal dataframes are always structured index | mins | signal~~
 rule: dataframes with a combination of signal and metadata will always have the sample name as the index.
 rule: use dictionaries to handle collections of dataframes.
 rule: ditch time.
@@ -23,7 +23,6 @@ def peak_alignment_pipe():
     con = db.connect('/Users/jonathan/wine_analysis_hplc_uv/prototype_code/wine_auth_db.db')
 
     wavelength = '254'
-    df = fetch_spectra(con)
 
     raw_chromatogram_series_name = 'raw_chromatograms'
     df[raw_chromatogram_series_name] = dt.extract_single_wavelength(df['spectra'], wavelength)
