@@ -50,3 +50,67 @@ def extract_single_wavelength(df_series : pd.DataFrame, wavelength : str) -> pd.
     get_wavelength(row, wavelength)),index = df_series.index)
 
     return single_wavelength_series
+
+def subtract_baseline_from_spectra(df : pd.DataFrame)  -> pd.DataFrame:
+    """
+    Subtract baseline from each column of a spectrum  as a pandas dataframe of column format RangeIndex | mins | wavelength_1, .. , wavelength_n.
+
+    Only pass in mins and the wavelength columns.
+    """
+
+    def check_non_numeric_columns(df):
+        non_numeric_columns = ~df.dtypes.apply(pd.api.types.is_numeric_dtype)
+        if non_numeric_columns.any():
+            non_numeric_column_names = df.columns[non_numeric_columns].tolist()
+            raise ValueError(f"\nError: dataframe with non-numeric columns passed to subtract_baseline_from_spectra(). Non-numeric columns: {non_numeric_column_names}\n")
+    
+    try:
+        check_non_numeric_columns(df)
+    except ValueError as e:
+        print(e)
+    
+    baseline_obj = Baseline(df['mins'])
+    names = df['name_ct']
+    df = df.drop(['hash_key', 'name_ct'], axis = 1)
+    baseline_df = df.apply(lambda spectrum_col : baseline_obj.iasls(spectrum_col)[0])
+    baseline_subtracted_spectra_df = df - baseline_df
+    baseline_subtracted_spectra_df['name_ct'] = names
+    return baseline_subtracted_spectra_df
+
+def test_baseline_correction():
+    import duckdb as db
+    con = db.connect('wine_auth_db.db')
+
+    query_1 = """
+    SELECT A.*,
+        sub_query.name_ct
+    FROM
+        spectrums A
+    JOIN (
+        SELECT
+            hash_key,
+            name_ct
+        FROM
+            super_table
+        LIMIT
+        1    
+    ) sub_query
+    ON
+        A.hash_key = sub_query.hash_key;
+    """
+
+    spectra_df = con.sql(query_1).df()
+
+    baseline_subtracted_df = subtract_baseline_from_spectra(spectra_df)
+
+    import matplotlib.pyplot as plt
+
+    baseline_subtracted_df.plot(title = baseline_subtracted_df['name_ct'].values[0])
+    #plt.show()
+
+
+def main():
+    test_baseline_correction()
+
+if __name__ == "__main__":
+    main()
