@@ -8,8 +8,8 @@ rule: ditch time.
 """
 
 import sys
-import duckdb as db
 sys.path.append('../../wine_analysis_hplc_uv')
+import duckdb as db
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -22,19 +22,20 @@ import signal_alignment_methods as sa
 def peak_alignment_pipe():
     con = db.connect('/Users/jonathan/wine_analysis_hplc_uv/prototype_code/wine_auth_db.db')
     
-    df = fetch_spectra(con)
+    df = fetch_sample_dataframes_with_spectra(con)
+    df = df.set_index('name_ct', drop = True)
 
     raw_chromatogram_series_name = 'raw_chromatograms'
-
     wavelength = '254'
 
-    df[raw_chromatogram_series_name] = dt.extract_single_wavelength(df['spectra'], wavelength)
-    df = df.set_index('name_ct', drop = True)
+    df[raw_chromatogram_series_name] = dt.subset_spectra(df['spectra'], wavelength)
     df = df.drop('spectra', axis =1)
-    
     # subtract baseline. If baseline not subtracted, alignment WILL NOT work.
+    
     baseline_subtracted_chromatogram_series_name = 'baseline_subtracted_signals'
-    df[baseline_subtracted_chromatogram_series_name] = sa.baseline_subtraction(df[raw_chromatogram_series_name], '254','254')
+    
+    st.write(df[raw_chromatogram_series_name].columns)
+    df[baseline_subtracted_chromatogram_series_name] = sa.baseline_subtraction(df[raw_chromatogram_series_name], wavelength, wavelength)
 
     time_interpolated_chromatogram_name = 'time_interpolated_chromatograms'
     df[time_interpolated_chromatogram_name] = sa.interpolate_chromatogram_times(df[baseline_subtracted_chromatogram_series_name])
@@ -44,12 +45,11 @@ def peak_alignment_pipe():
     corr_df = y_df.corr()
     highest_corr_key = find_representative_sample(corr_df)
 
-    
     peak_aligned_series_name = 'peak_aligned_chromatograms'
     df[peak_aligned_series_name] = sa.peak_alignment(df[time_interpolated_chromatogram_name], highest_corr_key, 
     wavelength)
     
-    peak_alignment_st_output(df, 
+    peak_alignment_st_output(df,
                              highest_corr_key,
                              wavelength,
                              raw_chromatogram_series_name,
@@ -61,7 +61,7 @@ def peak_alignment_pipe():
 
     return None
 
-def fetch_spectra(con : db. DuckDBPyConnection) -> None:
+def fetch_sample_dataframes_with_spectra(con : db. DuckDBPyConnection) -> None:
     with  con:
         query = """
         SELECT
