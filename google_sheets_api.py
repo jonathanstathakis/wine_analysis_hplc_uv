@@ -13,6 +13,8 @@ Example Workflow:
 6. Upload stuff done to new sheet with post_df_as_sheet_values
 
 Note: A Google spreadsheet is made up of many sheets. This fact may help you conceptualise how the REST API works.
+
+To get credentials.json, go [here](https://console.cloud.google.com/welcome?_ga=2.257563139.969094172.1682911620-1922289290.1679869993&_gac=1.146876229.1682911620.CjwKCAjwo7iiBhAEEiwAsIxQEWyUt8RYTQjtFGOPyODyGgdA7p0t7GOniNvljHEMlJa1rbadYNPhYhoC_wkQAvD_BwE&project=wine-sample-tracker)
 """
 
 from google.auth.transport.requests import Request
