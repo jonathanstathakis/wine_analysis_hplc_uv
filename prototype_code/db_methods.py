@@ -43,18 +43,14 @@ def write_df_to_table(df : pd.DataFrame, con : db.DuckDBPyConnection, table_name
     
     display_table_info(con, table_name)
 
-# def list_table_names_not_spectrum(con : db.DuckDBPyConnection) -> None:
-#     query = """
-#     SELECT table_name from information_schema.tables
-#     WHERE table_type = 'BASE TABLE'
-#     and table_name NOT LIKE '%hplc_spectrum%';
-#     """
-#     con.sql(query).show()
+import function_timer
 
+@function_timer.timeit
 def get_spectra(metadata_df : pd.DataFrame, con : db.DuckDBPyConnection) -> pd.DataFrame:
         """
         Pass a wine metadata dataframe with relevant hash_key to join to spectrums contained in spectrum table found through the con object. returns the metadata df with a spectrum column, where spectrums are nested dataframes.
         """
+
         def get_spectra(con : db.DuckDBPyConnection, hash_key : str) -> pd.DataFrame:
             query = f"""
             SELECT * from spectrums
