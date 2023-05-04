@@ -5,7 +5,6 @@ import pandas as pd
 from pybaselines import Baseline
 import numpy as np
 from scipy.signal import  find_peaks
-import streamlit as st
 
 def calc_baseline(signal_df : pd.DataFrame, x_col_key : str, y_col_key : str) -> pd.DataFrame:
     """
@@ -70,11 +69,9 @@ def subtract_baseline_from_spectra(df : pd.DataFrame)  -> pd.DataFrame:
         print(e)
     
     baseline_obj = Baseline(df['mins'])
-    names = df['name_ct']
-    df = df.drop(['hash_key', 'name_ct'], axis = 1)
     baseline_df = df.apply(lambda spectrum_col : baseline_obj.iasls(spectrum_col)[0])
     baseline_subtracted_spectra_df = df - baseline_df
-    baseline_subtracted_spectra_df['name_ct'] = names
+    
     return baseline_subtracted_spectra_df
 
 def test_baseline_correction():
@@ -100,14 +97,9 @@ def test_baseline_correction():
     """
 
     spectra_df = con.sql(query_1).df()
-
-    baseline_subtracted_df = subtract_baseline_from_spectra(spectra_df)
-
-    import matplotlib.pyplot as plt
-
-    baseline_subtracted_df.plot(title = baseline_subtracted_df['name_ct'].values[0])
-    #plt.show()
-
+    names = spectra_df['name_ct']
+    baseline_subtracted_df = subtract_baseline_from_spectra(spectra_df.drop(['hash_key', 'name_ct'], axis = 1))
+    baseline_subtracted_df['name_ct'] = names
 
 def main():
     test_baseline_correction()
