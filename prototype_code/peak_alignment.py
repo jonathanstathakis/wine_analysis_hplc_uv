@@ -21,11 +21,13 @@ import signal_alignment_methods as sa
 
 def peak_alignment_pipe():
     con = db.connect('/Users/jonathan/wine_analysis_hplc_uv/prototype_code/wine_auth_db.db')
-
-    wavelength = '254'
+    
     df = fetch_spectra(con)
 
     raw_chromatogram_series_name = 'raw_chromatograms'
+
+    wavelength = '254'
+
     df[raw_chromatogram_series_name] = dt.extract_single_wavelength(df['spectra'], wavelength)
     df = df.set_index('name_ct', drop = True)
     df = df.drop('spectra', axis =1)
