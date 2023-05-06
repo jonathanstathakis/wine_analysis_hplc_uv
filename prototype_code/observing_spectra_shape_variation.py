@@ -41,7 +41,7 @@ def observe_sample_size_mismatch(df : pd.DataFrame) -> pd.DataFrame:
     new_size_df_series_raw_report = report_deviating_shapes(df['reshaped_matrix'])
     print(new_size_df_series_raw_report)
 
-    
+    return df
 
 def report_deviating_shapes(matrix_series : pd.Series):
     """
