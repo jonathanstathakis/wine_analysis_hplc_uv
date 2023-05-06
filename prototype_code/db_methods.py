@@ -53,7 +53,7 @@ def get_spectra(df : pd.DataFrame, con : db.DuckDBPyConnection) -> pd.DataFrame:
 
         def get_spectra(con : db.DuckDBPyConnection, hash_key : str) -> pd.DataFrame:
             query = f"""
-            SELECT * from spectrums
+            SELECT * EXCLUDE (hash_key) from spectrums
             where hash_key = '{hash_key}'
             """
             df = con.sql(query).df()
