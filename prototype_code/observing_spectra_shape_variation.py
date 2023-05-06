@@ -5,28 +5,95 @@ import peak_alignment_spectrum_chromatograms
 import pandas as pd
 import itertools
 from scipy.stats import mode
+import numpy as np
 
-def observe_sample_matrix_shape_mismatch():
+def observe_sample_size_mismatch():
+    """
+    2023-05-06 13:23:35 
+    
+    1. form a dataframe `df` of samples with wine, new_id, spectra.
+    2. set the index of the dataframe to 'wine' to preserve those names during Series.apply operations on the spectra column.
+    3. Construct `size_df`, a dataframe of 'ms', 'ns' for each sample row, with index = 'wine'
+    4. calculate the 'm' and 'n' mode for the library from `size_df`.
+    5. display sample name and spectra shapes of thoes which deviate from the library mode.
+    6. Reshape deviated spectra to match the library mode IF distance from the mode is not >10%, if is, notify user.
+    """
+
+    # form dataframe of samples with columns 'wine', 'new_id', 'spectra', set index to 'wine' to preserve during columnar operations.
     df = get_all_sample_matrices()
     df = df.set_index('wine')
     
-    matrix_shape_df = matrix_shapes(df['spectra'])
-
-    row_mode = calc_dim_length_mode(matrix_shape_df['num_row'])
-    col_mode = calc_dim_length_mode(matrix_shape_df['num_col'])
-
-    df['reshaped_spectra'] = df.apply(lambda row : reshape_dataframe(row['spectra'], row_mode, col_mode), axis = 1)
+    # form dataframe of wine : 'size' | 'm' | 'n'
+    shape_df = get_matrix_shapes(df['spectra'])
     
-    new_matrix_shape_df_series = matrix_shapes(df['reshaped_spectra'])
+    # place a function to describe deviations in the library from the shape means.
+    
+    raw_matrix_report = report_deviating_shapes(df['spectra'])
+    #print(raw_matrix_report)
 
-    print(new_matrix_shape_df_series)
+    print(raw_matrix_report.join(df.drop('spectra', axis =1)))
+    
+    # # calculate modes of rows and columns expressed as a float.
+    # m_mode = calc_dim_length_mode(shape_df['m'])
+    # n_mode = calc_dim_length_mode(shape_df['n'])
 
+    # # reshape the input matrixes to match the mode, either padding or slicing
+    # df['reshaped_matrix'] = df.apply(lambda row : reshape_dataframe(row['spectra'], m_mode, n_mode), axis = 1)
+    # new_size_df_series = get_matrix_shapes(df['reshaped_matrix'])
+
+def report_deviating_shapes(matrix_series : pd.Series):
+    """
+    Takes a series containing dataframes, finds deviations from the mode of each dimension, returns a DataFrame report.
+    
+    1. find the shapes of the dataframes.
+    2. for each dimension, find the mode.
+    3. for each dimension, calculate magnitude of deviations from the mode.
+    4. for each dimension, return a report df.
+    5. concat the report df's together.
+    6. in report df, filter out rows for which deviation in both dimensions == 0.
+    7. return filtered report df.
+    """
+    
+    def dim_size_deviation_report(size_series : pd.Series):
+        try:
+
+            # Find the mode of the shapes
+            dim_mode = mode(size_series, keepdims = True)[0][0]
+
+            # Calculate the deviation for each DataFrame's shape from the mode
+            deviations = size_series.apply(lambda shape: np.abs(np.subtract(shape, dim_mode)).sum())
+
+            ##deviations = deviations.
+
+            report = pd.DataFrame({
+                f'{size_series.name}_mode': dim_mode,
+                f'{size_series.name}_shape': size_series,
+                f'{size_series.name}_deviation': deviations,
+                f'{size_series.name}_%_deviation': round(deviations/dim_mode * 100,2)})
+
+        except Exception as e:
+            print(e)
+            print(size_series)
+            report = None
+
+        return report
+    
+    shape_df = get_matrix_shapes(matrix_series)
+
+    m_report = dim_size_deviation_report(shape_df['m'])
+    n_report = dim_size_deviation_report(shape_df['n'])
+
+    join_report = m_report.join(n_report)
+
+    filtered_join_report = join_report.query("m_deviation != 0 or n_deviation !=0")
+    
+    return filtered_join_report
+    
 
 def reshape_dataframe(df : pd.DataFrame, desired_rows : int = None, desired_columns : int = None) -> pd.DataFrame:
     """
     Reshape a dataframe to fit a desired shape. Takes a dataframe and optional number of desired rows or columns and reshapes the dataframe, either padding or subsetting, to match the desired shape. Returns a pandas DataFrame.
     """
-    print(desired_rows, desired_columns)
     # If desired_rows or desired_columns is not provided, use the current DataFrame shape
     if desired_rows is None:
         desired_rows = df.shape[0]
@@ -49,17 +116,20 @@ def reshape_dataframe(df : pd.DataFrame, desired_rows : int = None, desired_colu
 
     return df
 
-def matrix_shapes(series : pd.Series) -> pd.DataFrame:
+def get_matrix_shapes(series : pd.Series) -> pd.DataFrame:
     """
     Take a series of dataframes and return a series of .shape with the same index.
     """
 
-    shape_df = series.apply(lambda row: row.shape).rename('matrix_shape').to_frame()
-    shape_df[['num_row','num_col']] = shape_df['matrix_shape'].apply(pd.Series)
+    shape_df = series.apply(lambda row: row.shape).rename('size').to_frame()
+    shape_df[['m','n']] = shape_df['size'].apply(pd.Series)
     
     return shape_df
 
 def get_all_sample_matrices():
+    """
+    2023-05-06 14:35:05 returns a df of Index(['new_id', 'wine', 'spectra'], dtype='object')
+    """
     df = peak_alignment_spectrum_chromatograms.load_spectrum_chromatograms()
     return df
 
@@ -88,7 +158,7 @@ def calc_dim_length_mode(series : pd.Series):
     return dim_mode
 
 def main():
-    observe_sample_matrix_shape_mismatch()
+    observe_sample_size_mismatch()
     return None
 
 if __name__ == "__main__":
