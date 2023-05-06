@@ -1,3 +1,9 @@
+"""
+Produce a pairwise euclidean distance matrix of sample sc matrices.
+
+1. Get the samples and their sc matrices as a dataframe with 1 column of nested dataframes (the sc matrices). On the first run pickles the dataframe, then loads from the pickle for subsequent runs.
+2. Construct the pairwise-distance matrix.
+"""
 import df_methods
 import sys
 import os
