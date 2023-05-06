@@ -144,12 +144,6 @@ def form_unique_sample_pairs(df : pd.DataFrame) -> list:
     row_pairs = list(itertools.combinations(df.iterrows(), 2))
     print(len(row_pairs))
 
-    # # Process and print the pairs
-    # for pair in row_pairs:
-    #     row_1 = pair[0][1]
-    #     row_2 = pair[1][1]
-    #     print(row_1['wine'], row_2['wine'])
-
     return row_pairs
 
 def calc_dim_length_mode(series : pd.Series):
