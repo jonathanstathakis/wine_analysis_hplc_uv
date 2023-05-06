@@ -21,25 +21,39 @@ def observe_sample_size_mismatch():
 
     # form dataframe of samples with columns 'wine', 'new_id', 'spectra', set index to 'wine' to preserve during columnar operations.
     df = get_all_sample_matrices()
+    print(df.columns)
     df = df.set_index('wine')
     
-    # form dataframe of wine : 'size' | 'm' | 'n'
-    shape_df = get_matrix_shapes(df['spectra'])
+    # # form dataframe of wine : 'size' | 'm' | 'n'
+    # shape_df = get_matrix_shapes(df['spectra'])
     
     # place a function to describe deviations in the library from the shape means.
     
     raw_matrix_report = report_deviating_shapes(df['spectra'])
     #print(raw_matrix_report)
 
-    print(raw_matrix_report.join(df.drop('spectra', axis =1)))
-    
-    # # calculate modes of rows and columns expressed as a float.
-    # m_mode = calc_dim_length_mode(shape_df['m'])
-    # n_mode = calc_dim_length_mode(shape_df['n'])
+    # Adjust pandas display options
 
-    # # reshape the input matrixes to match the mode, either padding or slicing
-    # df['reshaped_matrix'] = df.apply(lambda row : reshape_dataframe(row['spectra'], m_mode, n_mode), axis = 1)
-    # new_size_df_series = get_matrix_shapes(df['reshaped_matrix'])
+    pd.set_option('display.width', None)
+    pd.set_option('display.max_colwidth', None)
+
+    matrix_report = raw_matrix_report.join(df.drop(['spectra'], axis =1))
+    # print(matrix_report.drop('path', axis = 1))
+    # print(matrix_report['path'])
+
+    # extract the modes of each dimension as numeric.
+    m_mode = matrix_report['m_mode'].max()
+    n_mode = matrix_report['n_mode'].max()
+
+    # reshape the input matrixes to match the mode, either padding or slicing
+    df['reshaped_matrix'] = df.apply(lambda row : reshape_dataframe(row['spectra'], m_mode, n_mode), axis = 1)
+    new_size_df_series = get_matrix_shapes(df['reshaped_matrix'])
+
+    # print deviating shapes report after resizing
+    new_size_df_series_raw_report = report_deviating_shapes(df['reshaped_matrix'])
+    print(new_size_df_series_raw_report)
+
+    
 
 def report_deviating_shapes(matrix_series : pd.Series):
     """
@@ -89,7 +103,6 @@ def report_deviating_shapes(matrix_series : pd.Series):
     
     return filtered_join_report
     
-
 def reshape_dataframe(df : pd.DataFrame, desired_rows : int = None, desired_columns : int = None) -> pd.DataFrame:
     """
     Reshape a dataframe to fit a desired shape. Takes a dataframe and optional number of desired rows or columns and reshapes the dataframe, either padding or subsetting, to match the desired shape. Returns a pandas DataFrame.
