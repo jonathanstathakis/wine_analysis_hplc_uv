@@ -176,3 +176,4 @@ prototype_code/wine_auth_db.db.wal
 wine_auth_db.db
 .gitignore
 .DS_Store
+prototype_code/signal_alignment_methods.py
