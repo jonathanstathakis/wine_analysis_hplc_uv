@@ -46,7 +46,7 @@ def write_df_to_table(df : pd.DataFrame, con : db.DuckDBPyConnection, table_name
 import function_timer
 
 @function_timer.timeit
-def get_spectra(metadata_df : pd.DataFrame, con : db.DuckDBPyConnection) -> pd.DataFrame:
+def get_spectra(df : pd.DataFrame, con : db.DuckDBPyConnection) -> pd.DataFrame:
         """
         Pass a wine metadata dataframe with relevant hash_key to join to spectrums contained in spectrum table found through the con object. returns the metadata df with a spectrum column, where spectrums are nested dataframes.
         """
@@ -59,7 +59,8 @@ def get_spectra(metadata_df : pd.DataFrame, con : db.DuckDBPyConnection) -> pd.D
             df = con.sql(query).df()
             return df
 
-        metadata_df['spectra'] = metadata_df.apply(lambda row : get_spectra(con, row['hash_key']), axis = 1)
-        metadata_df = metadata_df.drop('hash_key', axis =1)
+        df['spectra'] = df.apply(lambda row : get_spectra(con, row['hash_key']), axis = 1)
+        
+        df = df.drop('hash_key', axis =1)
 
-        return metadata_df
+        return df
