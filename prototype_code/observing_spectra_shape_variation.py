@@ -27,14 +27,7 @@ def observe_sample_size_mismatch(df : pd.DataFrame) -> pd.DataFrame:
     raw_matrix_report = report_deviating_shapes(df['spectra'])
     #print(raw_matrix_report)
 
-    # Adjust pandas display options
-
-    pd.set_option('display.width', None)
-    pd.set_option('display.max_colwidth', None)
-
     matrix_report = raw_matrix_report.join(df.drop(['spectra'], axis =1))
-    # print(matrix_report.drop('path', axis = 1))
-    # print(matrix_report['path'])
 
     # extract the modes of each dimension as numeric.
     m_mode = matrix_report['m_mode'].max()
