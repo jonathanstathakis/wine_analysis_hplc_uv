@@ -18,29 +18,51 @@ import streamlit as st
 import signal_alignment_methods as sa
 import function_timer
 import pickle
+import observing_spectra_shape_variation
 
 pd.set_option('display.max_rows', None)
 pd.set_option('display.max_columns', None)
 pd.set_option('display.width', None)
 
+
 def peak_alignment_spectrum_chromatogram():
     
+    # get a dataframe consisting of sample metadata and a column of sc matrices as nested dataframes.
     df = load_spectrum_chromatograms()
+    df = df.drop('new_id', axis = 1)
+    df = df.set_index('wine')
+
+    df = observing_spectra_shape_variation.observe_sample_size_mismatch(df)
+
+    series = df['reshaped_matrix']
+
+    # subsetting series while testing code
+    series = series[:5]
+
+    for idx, tab in enumerate(st.tabs(list(series.keys()))):
+        with tab:
+            st.table(series[idx].describe())
+    
+    try:
+        sim_df = sa.calculate_distance_matrix(series)
+        st.table(sim_df)
+    except Exception as e:
+        print(e)
 
 def query_unique_wines_spectra_to_df(con : db.DuckDBPyConnection):
     print('starting')
 
     with  con:
         query = """
-        SELECT new_id, ANY_VALUE(CONCAT(vintage_ct, ' ',name_ct)) AS wine, ANY_VALUE(hash_key) AS hash_key
-        FROM super_table
-        GROUP BY new_id;
+            SELECT ANY_VALUE(new_id) AS new_id, CONCAT(vintage_ct, ' ', name_ct) AS wine, ANY_VALUE(hash_key) AS hash_key, ANY_VALUE(path) AS path
+            FROM super_table
+            GROUP BY wine;
         """
         print('getting metadata_df')
-        metadata_df = con.sql(query).df()
+        df = con.sql(query).df()
         print('getting spectra')
-    
-        df = db_methods.get_spectra(metadata_df, con)
+
+        df = db_methods.get_spectra(df, con)
 
     return df
 
@@ -48,27 +70,26 @@ def query_unique_wines_spectra_to_df(con : db.DuckDBPyConnection):
 def write_unique_id_spectra_df(df : pd.DataFrame, filepath : str):
     print('writing pickle')
     with open(filepath, 'wb') as file:
-        df.to_pickle(file)
+        pickle.dump(df, file)
     return None
 
 @function_timer.timeit
 def read_unique_id_spectra_pickle(filepath : str):
     print('reading pickle')
-    df = pd.read_pickle(filepath)
+    with open(filepath, 'rb') as file:
+        df = pickle.load(file)
     return df
 
 def load_spectrum_chromatograms():
     table_name = 'unique_new_id_spectra'
     filepath = table_name+'.pk1'
 
-    # Check if the table exists
-    if not os.path.exists(filepath):
+    # Check if the pickle file exists
+    if not os.path.isfile(filepath):
         print('establishing conn. with db')
         db_path=os.environ.get('WINE_AUTH_DB_PATH')
-        con = db.connect(db_path)
-        
+        con = db.connect(db_path)        
         df = query_unique_wines_spectra_to_df(con)
-        
         write_unique_id_spectra_df(df, filepath)
 
     else:
