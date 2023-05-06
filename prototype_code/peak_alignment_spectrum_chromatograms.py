@@ -16,7 +16,7 @@ import signal_data_treatment_methods as dt
 import plot_methods
 import streamlit as st
 import signal_alignment_methods as sa
-import function_timer
+from function_timer import timeit
 import pickle
 import observing_spectra_shape_variation
 
@@ -24,6 +24,7 @@ pd.set_option('display.max_rows', None)
 pd.set_option('display.max_columns', None)
 pd.set_option('display.width', None)
 
+@timeit
 def peak_alignment_spectrum_chromatogram():
     
     # get a dataframe consisting of sample metadata and a column of sc matrices as nested dataframes.
@@ -32,8 +33,9 @@ def peak_alignment_spectrum_chromatogram():
     df = df.set_index('wine')
 
     df = observing_spectra_shape_variation.observe_sample_size_mismatch(df)
+    df['normalized_matrix'] = normalize_library_absorbance(df['reshaped_matrix'])
 
-    series = df['reshaped_matrix']
+    series = df['normalized_matrix']
 
     # subsetting series while testing code
     series = series[:5]
@@ -48,6 +50,7 @@ def peak_alignment_spectrum_chromatogram():
     except Exception as e:
         print(e)
 
+@timeit
 def query_unique_wines_spectra_to_df(con : db.DuckDBPyConnection):
     print('starting')
 
@@ -65,20 +68,61 @@ def query_unique_wines_spectra_to_df(con : db.DuckDBPyConnection):
 
     return df
 
-@function_timer.timeit
+@timeit
+def normalize_library_absorbance(series : pd.Series) -> pd.Series:
+    """
+    Normalise a series of dataframes consisting of numeric values across the entire series, i.e. relative to each other. Returns a normalized series of dataframes.
+    """
+
+    import time
+    start_time = time.time()
+
+    def check_numeric_dataframes(series: pd.Series) -> bool:
+        for df in series:
+            non_numeric_columns = df.select_dtypes(exclude=[np.number]).columns
+            if len(non_numeric_columns) > 0:
+                return False
+        return True
+
+    if not check_numeric_dataframes(series):
+        raise ValueError("All DataFrames in the series must consist of numeric values only.")
+
+
+    end_time = time.time()
+    time_taken = end_time - start_time
+    print(f"time taken : {time_taken} seconds")
+    
+    # Find the global minimum and maximum values
+    local_mins = series.apply(lambda df: df.min().min())
+    local_maxs = series.apply(lambda df: df.max().max())
+    
+    global_min = local_mins.min()
+    global_max = local_maxs.max()
+    
+
+    # Normalize each DataFrame in the series
+    normalized_series = series.apply(
+        lambda df: (df - global_min) / (global_max - global_min)
+    )
+
+
+    return normalized_series
+
+@timeit
 def write_unique_id_spectra_df(df : pd.DataFrame, filepath : str):
     print('writing pickle')
     with open(filepath, 'wb') as file:
         pickle.dump(df, file)
     return None
 
-@function_timer.timeit
+@timeit
 def read_unique_id_spectra_pickle(filepath : str):
     print('reading pickle')
     with open(filepath, 'rb') as file:
         df = pickle.load(file)
     return df
 
+@timeit
 def load_spectrum_chromatograms():
     table_name = 'unique_new_id_spectra'
     filepath = table_name+'.pk1'
@@ -96,7 +140,7 @@ def load_spectrum_chromatograms():
 
     return df
 
-@function_timer.timeit
+@timeit
 def main():
     peak_alignment_spectrum_chromatogram()
 
