@@ -17,7 +17,6 @@ def init_raw_sample_tracker_table(con : db.DuckDBPyConnection) -> None:
     display_table_info(con, table_name)
     return None
 
-
 def write_raw_sample_tracker_table(df, con, table_name):
     schema = \
     """
