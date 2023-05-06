@@ -24,7 +24,6 @@ pd.set_option('display.max_rows', None)
 pd.set_option('display.max_columns', None)
 pd.set_option('display.width', None)
 
-
 def peak_alignment_spectrum_chromatogram():
     
     # get a dataframe consisting of sample metadata and a column of sc matrices as nested dataframes.
