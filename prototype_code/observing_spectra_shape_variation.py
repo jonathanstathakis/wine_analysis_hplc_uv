@@ -7,7 +7,7 @@ import itertools
 from scipy.stats import mode
 import numpy as np
 
-def observe_sample_size_mismatch():
+def observe_sample_size_mismatch(df : pd.DataFrame) -> pd.DataFrame:
     """
     2023-05-06 13:23:35 
     
@@ -18,11 +18,6 @@ def observe_sample_size_mismatch():
     5. display sample name and spectra shapes of thoes which deviate from the library mode.
     6. Reshape deviated spectra to match the library mode IF distance from the mode is not >10%, if is, notify user.
     """
-
-    # form dataframe of samples with columns 'wine', 'new_id', 'spectra', set index to 'wine' to preserve during columnar operations.
-    df = get_all_sample_matrices()
-    print(df.columns)
-    df = df.set_index('wine')
     
     # # form dataframe of wine : 'size' | 'm' | 'n'
     # shape_df = get_matrix_shapes(df['spectra'])
@@ -171,7 +166,11 @@ def calc_dim_length_mode(series : pd.Series):
     return dim_mode
 
 def main():
-    observe_sample_size_mismatch()
+    # form dataframe of samples with columns 'wine', 'new_id', 'spectra', set index to 'wine' to preserve during columnar operations.
+    df = get_all_sample_matrices()
+    print(df.columns)
+    df = df.set_index('wine')
+    observe_sample_size_mismatch(df)
     return None
 
 if __name__ == "__main__":
