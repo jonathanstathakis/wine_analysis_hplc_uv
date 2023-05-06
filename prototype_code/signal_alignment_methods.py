@@ -97,6 +97,7 @@ from scipy.spatial.distance import euclidean
 from itertools import combinations
 
 # Assuming 'series_of_dataframes' is your input Series containing DataFrames of spectrum-chromatograms
+
 def calculate_distance_matrix(series_of_dataframes: pd.Series):
     n_samples = len(series_of_dataframes)
     sample_names = series_of_dataframes.index
