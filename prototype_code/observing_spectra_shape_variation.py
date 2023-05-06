@@ -113,8 +113,8 @@ def reshape_dataframe(df : pd.DataFrame, desired_rows : int = None, desired_colu
         df = df.iloc[:, :desired_columns]
     else:
         new_columns = range(desired_columns)
-        df = df.reindex(columns=new_columns, fill_value=0)
-
+     #   df = df.reindex(columns=new_columns, fill_value=0)
+        
     return df
 
 def get_matrix_shapes(series : pd.Series) -> pd.DataFrame:
