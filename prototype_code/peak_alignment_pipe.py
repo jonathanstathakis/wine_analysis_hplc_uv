@@ -157,7 +157,19 @@ def peak_alignment_st_output(df : pd.DataFrame
     return None
 
 def main():
-    peak_alignment_pipe(db_path = '/Users/jonathan/wine_analysis_hplc_uv/prototype_code/wine_auth_db.db', wavelength='254', display_in_st=True)
+
+    pickle_filepath ="alignment_df_pickle.pk1"
+
+    if not os.path.isfile(pickle_filepath):
+        peak_alignment_pipe(db_path = '/Users/jonathan/wine_analysis_hplc_uv/prototype_code/wine_auth_db.db', wavelength='254', display_in_st=True, pickle_filepath = pickle_filepath)
+    
+    use_pickle = input("use pickle? y/n:")
+    
+    if use_pickle == 'y':
+        peak_alignment_pipe(db_path = '/Users/jonathan/wine_analysis_hplc_uv/prototype_code/wine_auth_db.db', wavelength='254', display_in_st=True, pickle_filepath = pickle_filepath)
+    if use_pickle == 'n':
+        os.remove(pickle_filepath)
+        peak_alignment_pipe(db_path = '/Users/jonathan/wine_analysis_hplc_uv/prototype_code/wine_auth_db.db', wavelength='254', display_in_st=True, pickle_filepath = pickle_filepath)
     
 if __name__ == '__main__':
     main()
