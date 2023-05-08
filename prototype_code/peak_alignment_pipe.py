@@ -13,7 +13,6 @@ sys.path.append('../../wine_analysis_hplc_uv')
 import duckdb as db
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
 import db_methods
 import signal_data_treatment_methods as dt
 import plot_methods
