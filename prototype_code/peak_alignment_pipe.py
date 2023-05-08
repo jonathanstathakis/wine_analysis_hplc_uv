@@ -25,14 +25,11 @@ import os
 
 #create your figure and get the figure object returned
 
-def peak_alignment_pipe(db_path : str, wavelength: Union[str, List[str]] = None, display_in_st : bool = False):
+def peak_alignment_pipe(db_path : str, wavelength: Union[str, List[str]] = None, display_in_st : bool = False, pickle_filepath : str = None):
     """
     A pipe to align a supplied library of chromatograms.
     """
-    pickle_file_path = "alignment_df_pickle.pk1"
-    selected_signal_col_name = f'raw {wavelength}'
-
-    if not os.path.isfile(pickle_file_path):
+    if not os.path.isfile(pickle_filepath):
             
         con = db.connect(db_path)
 
