@@ -41,10 +41,15 @@ def peak_alignment_pipe(db_path : str, wavelength: Union[str, List[str]] = None,
 
         st.subheader('Group Contents')
         st.write(df.drop(f'raw {wavelength}', axis = 1))
+
+        normalized_series_name = f'normalised_{wavelength}'
+
+        # y axis normalize
+        df[normalized_series_name] = dt.normalize_library_absorbance(df[raw_signal_col_name])
         
         # subtract baseline. If baseline not subtracted, alignment WILL NOT work.
         baseline_subtracted_chromatogram_series_name = f'baseline_subtracted_{wavelength}'
-        df[baseline_subtracted_chromatogram_series_name] = sa.baseline_subtraction(df[selected_signal_col_name], wavelength, wavelength)
+        df[baseline_subtracted_chromatogram_series_name] = sa.baseline_subtraction(df[normalized_series_name])
 
         # time interpolation
         time_interpolated_chromatogram_name = f'time_interpolated_{wavelength}'
