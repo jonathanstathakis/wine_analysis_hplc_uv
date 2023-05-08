@@ -1,4 +1,3 @@
----
 creation-date: 2023-05-08-13-24-47
 mod-date:
 tag: 2023, mres, homepage, wine-analysis, hplc-uv-dad, cuprac, pcd, peak-alignment, python, chemometrics
@@ -20,10 +19,19 @@ A homepage for the core project of my 2023 Thesis.
 
 [[mres_logbook.md]]
 
+## DP Paper
+
+A paper documenting the results of various chemometric methods on a small library of wine spectrum-chromatogram matrices.
+
+[[homepage_paper-data-processing-for-chemometrics.md]]
+
 [[dp_paper_logbook.md]]
 
-[dp paper homepage](./../paper_data-processing-for-chemometrics/homepage_paper-data-processing-for-chemometrics.md)
+## Wine Deg Paper
 
+A project observing the degradation in chromatogram-spectrum signals over time in various wines.
+
+[[exp_wine-deg_home.md]]
 
 <!-- contents -->
 
