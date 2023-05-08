@@ -29,13 +29,15 @@ def peak_alignment_pipe(db_path : str, wavelength: Union[str, List[str]] = None,
     """
     A pipe to align a supplied library of chromatograms.
     """
+    raw_signal_col_name = f'raw {wavelength}'
+    
     if not os.path.isfile(pickle_filepath):
             
         con = db.connect(db_path)
 
         # get the library and 254 nm signal
 
-        df = get_library(con, wavelength, selected_signal_col_name)
+        df = get_library(con, wavelength, raw_signal_col_name)
 
         st.subheader('Group Contents')
         st.write(df.drop(f'raw {wavelength}', axis = 1))
