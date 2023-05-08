@@ -6,7 +6,6 @@ rule: ditch time.
 
 1. interpolate time axis, then just store 1 time array in a df. reduces dimensionality by 1.
 
-
 """
 
 import sys
@@ -20,26 +19,26 @@ import signal_data_treatment_methods as dt
 import plot_methods
 import streamlit as st
 import signal_alignment_methods as sa
+from typing import Union, List
 
-def peak_alignment_pipe():
-    con = db.connect('/Users/jonathan/wine_analysis_hplc_uv/prototype_code/wine_auth_db.db')
+def peak_alignment_pipe(db_path : str, wavelength: Union[str, List[str]] = None, display_in_st : bool = False):
+    """
+    A pipe to align a supplied library of chromatograms.
+    """
     
-    df = fetch_sample_dataframes_with_spectra(con)
-    df = df.set_index('name_ct', drop = True)
+    con = db.connect(db_path)
 
-    raw_chromatogram_series_name = 'raw_chromatograms'
-    wavelength = '254'
+    # get the library and 254 nm signal
 
-    df[raw_chromatogram_series_name] = dt.subset_spectra(df['spectra'], wavelength)
-    df = df.drop('spectra', axis =1)
+    selected_signal_col_name = 'raw {wavelength}'
+    df = get_library(con, wavelength, selected_signal_col_name)
+    
     # subtract baseline. If baseline not subtracted, alignment WILL NOT work.
-    
-    baseline_subtracted_chromatogram_series_name = 'baseline_subtracted_signals'
-    
-    st.write(df[raw_chromatogram_series_name].columns)
-    df[baseline_subtracted_chromatogram_series_name] = sa.baseline_subtraction(df[raw_chromatogram_series_name], wavelength, wavelength)
+    baseline_subtracted_chromatogram_series_name = f'baseline_subtracted_{wavelength}'
+    df[baseline_subtracted_chromatogram_series_name] = sa.baseline_subtraction(df[selected_signal_col_name], wavelength, wavelength)
 
-    time_interpolated_chromatogram_name = 'time_interpolated_chromatograms'
+    # time interpolation
+    time_interpolated_chromatogram_name = f'time_interpolated_{wavelength}'
     df[time_interpolated_chromatogram_name] = sa.interpolate_chromatogram_times(df[baseline_subtracted_chromatogram_series_name])
 
     # calculate correlations between chromatograms as pearson's r, identify sample with highest average correlation, store key as most represntative sample for downstream peak alignment.
@@ -47,21 +46,23 @@ def peak_alignment_pipe():
     corr_df = y_df.corr()
     highest_corr_key = find_representative_sample(corr_df)
 
-    peak_aligned_series_name = 'peak_aligned_chromatograms'
+    # align the library time axis with dtw 
+    peak_aligned_series_name = f'aligned_{wavelength}'
     df[peak_aligned_series_name] = sa.peak_alignment(df[time_interpolated_chromatogram_name], highest_corr_key, 
     wavelength)
-    
-    peak_alignment_st_output(df,
+
+    # show the results in a steamlit app
+
+    if display_in_st == True:
+        peak_alignment_st_output(df,
                              highest_corr_key,
                              wavelength,
-                             raw_chromatogram_series_name,
+                             selected_signal_col_name,
                              baseline_subtracted_chromatogram_series_name,
                              time_interpolated_chromatogram_name,
                              peak_aligned_series_name)
-    
-    # change the code so that 'key' is the row name rather than dict key. Should be same same.
 
-    return None
+    return df
 
 def fetch_sample_dataframes_with_spectra(con : db. DuckDBPyConnection) -> None:
     with  con:
@@ -87,14 +88,26 @@ def fetch_sample_dataframes_with_spectra(con : db. DuckDBPyConnection) -> None:
         
     return df
 
+def get_library(con : db.DuckDBPyConnection, wavelength : str, signal_col_name : str) -> pd.DataFrame:
+    # get the selected runs to build the library
+    df = fetch_sample_dataframes_with_spectra(con)
+    df = df.set_index('name_ct', drop = True)
+
+    # select the 254nm wavelength column across the library
+    
+    df[signal_col_name] = dt.subset_spectra(df['spectra'], wavelength)
+    df = df.drop('spectra', axis =1)
+
+    return df
+
 def peak_alignment_st_output(df : pd.DataFrame,
                               wavelength : str,
                               highest_corr_key : str, 
-                              raw_chromatogram_series_name : str, baseline_subtracted_chromatogram_series_name : str, time_interpolated_chromatogram__series_name : str, peak_aligned_series_name : str
+                              selected_signal_col_name : str, baseline_subtracted_chromatogram_series_name : str, time_interpolated_chromatogram__series_name : str, peak_aligned_series_name : str
                               ) -> None:
 
     st.subheader('raw chromatograms')
-    fig = plot_methods.plot_signal_in_series(df[raw_chromatogram_series_name],'mins','254')
+    fig = plot_methods.plot_signal_in_series(df[selected_signal_col_name],'mins','254')
     st.plotly_chart(fig)
 
     st.subheader('baseline subtracted')
@@ -135,7 +148,7 @@ def find_representative_sample(corr_df = pd.DataFrame) -> str:
     return highest_corr_key
 
 def main():
-    peak_alignment_pipe()
+    peak_alignment_pipe(db_path = '/Users/jonathan/wine_analysis_hplc_uv/prototype_code/wine_auth_db.db', wavelength='254', display_in_st=True)
     
 if __name__ == '__main__':
     main()
