@@ -55,6 +55,8 @@ def interpolate_chromatogram_times(df_series : pd.Series):
     return interpolated_chromatograms_series
 
 def peak_alignment(chromatogram_df_series : pd.Series, highest_corr_key : str, wavelength : str):
+
+    print('aligning chromatograms..')
     # Ensure that the data is the correct dtype
     chromatogram_df_series = chromatogram_df_series.apply(lambda row : row.astype(float))
 
