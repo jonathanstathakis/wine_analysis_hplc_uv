@@ -15,7 +15,7 @@ import pandas as pd
 import numpy as np
 import db_methods
 import signal_data_treatment_methods as dt
-import plot_methods
+import plotly_plot_methods
 import streamlit as st
 st.set_page_config(layout="wide")
 import signal_alignment_methods as sa
@@ -150,7 +150,7 @@ def peak_alignment_st_output(df : pd.DataFrame
         x_axis_name = list(df_series.iloc[0].columns)[0]
         y_axis_name = list(df_series.iloc[0].columns)[1]
 
-        fig = plot_methods.plot_signal_in_series(df_series, x_axis_name, y_axis_name)
+        fig = plotly_plot_methods.plot_signal_in_series(df_series, x_axis_name, y_axis_name)
 
         st.plotly_chart(fig)
 
