@@ -5,6 +5,8 @@ rule: use dictionaries to handle collections of dataframes.
 rule: ditch time.
 
 1. interpolate time axis, then just store 1 time array in a df. reduces dimensionality by 1.
+
+
 """
 
 import sys
