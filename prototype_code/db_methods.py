@@ -3,6 +3,9 @@ A file to contain general duckdb database methods.
 """
 import pandas as pd
 import duckdb as db
+import sys
+sys.path.append('../')
+import function_timer as ft
 
 def index():
     display_table_info()
@@ -43,9 +46,7 @@ def write_df_to_table(df : pd.DataFrame, con : db.DuckDBPyConnection, table_name
     
     display_table_info(con, table_name)
 
-import function_timer
-
-@function_timer.timeit
+@ft.timeit
 def get_spectra(df : pd.DataFrame, con : db.DuckDBPyConnection) -> pd.DataFrame:
         """
         Pass a wine metadata dataframe with relevant hash_key to join to spectrums contained in spectrum table found through the con object. returns the metadata df with a spectrum column, where spectrums are nested dataframes.
