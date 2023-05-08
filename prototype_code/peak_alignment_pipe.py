@@ -52,15 +52,9 @@ def peak_alignment_pipe(db_path : str, wavelength: Union[str, List[str]] = None,
     wavelength)
 
     # show the results in a steamlit app
-
     if display_in_st == True:
-        peak_alignment_st_output(df,
-                             highest_corr_key,
-                             wavelength,
-                             selected_signal_col_name,
-                             baseline_subtracted_chromatogram_series_name,
-                             time_interpolated_chromatogram_name,
-                             peak_aligned_series_name)
+        output_df = df.drop(['acq_date','new_id','vintage_ct','varietal'], axis = 1)
+        peak_alignment_st_output(output_df)
 
     return df
 
@@ -100,29 +94,6 @@ def get_library(con : db.DuckDBPyConnection, wavelength : str, signal_col_name :
 
     return df
 
-def peak_alignment_st_output(df : pd.DataFrame,
-                              wavelength : str,
-                              highest_corr_key : str, 
-                              selected_signal_col_name : str, baseline_subtracted_chromatogram_series_name : str, time_interpolated_chromatogram__series_name : str, peak_aligned_series_name : str
-                              ) -> None:
-
-    st.subheader('raw chromatograms')
-    fig = plot_methods.plot_signal_in_series(df[selected_signal_col_name],'mins','254')
-    st.plotly_chart(fig)
-
-    st.subheader('baseline subtracted')
-    fig = plot_methods.plot_signal_in_series(df[baseline_subtracted_chromatogram_series_name],'mins','254')
-    st.plotly_chart(fig)
-    
-    st.subheader('time interpolated chromatograms')
-    fig = plot_methods.plot_signal_in_series(df[time_interpolated_chromatogram__series_name],'mins','254')
-    st.plotly_chart(fig)
-
-    st.subheader('aligned peak chromatograms')
-    fig = plot_methods.plot_signal_in_series(df[peak_aligned_series_name],'mins','254')
-    st.plotly_chart(fig)
-
-    return None
 
 def sample_name_signal_df_builder(df_series : pd.Series, y_col_name : str):
     # extract the sample names as column names, y_axis column as column values.
@@ -146,6 +117,27 @@ def find_representative_sample(corr_df = pd.DataFrame) -> str:
     st.write(f"{corr_df['mean'].idxmax()} has the highest average correlation with {corr_df['mean'].max()}\n")
 
     return highest_corr_key
+
+def peak_alignment_st_output(df : pd.DataFrame
+                              ) -> None:
+    """
+    Display the intermediate and final results of the the pipeline. As each stage of the pipeline is stored in the df as a column idx : wine, column : dfs, can iterate through the columns, using the col naems as section headers.
+    """
+    st.header("pipeline output")
+
+    for colname, colval in df.items():
+        
+        st.subheader(f'{colname}')
+
+        df_series = df[colname]
+        x_axis_name = list(df_series.iloc[0].columns)[0]
+        y_axis_name = list(df_series.iloc[0].columns)[1]
+
+        fig = plot_methods.plot_signal_in_series(df_series, x_axis_name, y_axis_name)
+
+        st.plotly_chart(fig)
+
+    return None
 
 def main():
     peak_alignment_pipe(db_path = '/Users/jonathan/wine_analysis_hplc_uv/prototype_code/wine_auth_db.db', wavelength='254', display_in_st=True)
