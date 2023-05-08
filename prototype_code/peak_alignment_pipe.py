@@ -18,38 +18,56 @@ import db_methods
 import signal_data_treatment_methods as dt
 import plot_methods
 import streamlit as st
+st.set_page_config(layout="wide")
 import signal_alignment_methods as sa
 from typing import Union, List
+import pickle
+import os
+
+#create your figure and get the figure object returned
 
 def peak_alignment_pipe(db_path : str, wavelength: Union[str, List[str]] = None, display_in_st : bool = False):
     """
     A pipe to align a supplied library of chromatograms.
     """
-    
-    con = db.connect(db_path)
+    pickle_file_path = "alignment_df_pickle.pk1"
+    selected_signal_col_name = f'raw {wavelength}'
 
-    # get the library and 254 nm signal
+    if not os.path.isfile(pickle_file_path):
+            
+        con = db.connect(db_path)
 
-    selected_signal_col_name = 'raw {wavelength}'
-    df = get_library(con, wavelength, selected_signal_col_name)
-    
-    # subtract baseline. If baseline not subtracted, alignment WILL NOT work.
-    baseline_subtracted_chromatogram_series_name = f'baseline_subtracted_{wavelength}'
-    df[baseline_subtracted_chromatogram_series_name] = sa.baseline_subtraction(df[selected_signal_col_name], wavelength, wavelength)
+        # get the library and 254 nm signal
 
-    # time interpolation
-    time_interpolated_chromatogram_name = f'time_interpolated_{wavelength}'
-    df[time_interpolated_chromatogram_name] = sa.interpolate_chromatogram_times(df[baseline_subtracted_chromatogram_series_name])
+        df = get_library(con, wavelength, selected_signal_col_name)
 
-    # calculate correlations between chromatograms as pearson's r, identify sample with highest average correlation, store key as most represntative sample for downstream peak alignment.
-    y_df = sample_name_signal_df_builder(df[baseline_subtracted_chromatogram_series_name], wavelength)
-    corr_df = y_df.corr()
-    highest_corr_key = find_representative_sample(corr_df)
+        st.subheader('Group Contents')
+        st.write(df.drop(f'raw {wavelength}', axis = 1))
+        
+        # subtract baseline. If baseline not subtracted, alignment WILL NOT work.
+        baseline_subtracted_chromatogram_series_name = f'baseline_subtracted_{wavelength}'
+        df[baseline_subtracted_chromatogram_series_name] = sa.baseline_subtraction(df[selected_signal_col_name], wavelength, wavelength)
 
-    # align the library time axis with dtw 
-    peak_aligned_series_name = f'aligned_{wavelength}'
-    df[peak_aligned_series_name] = sa.peak_alignment(df[time_interpolated_chromatogram_name], highest_corr_key, 
-    wavelength)
+        # time interpolation
+        time_interpolated_chromatogram_name = f'time_interpolated_{wavelength}'
+        df[time_interpolated_chromatogram_name] = sa.interpolate_chromatogram_times(df[baseline_subtracted_chromatogram_series_name])
+
+        # calculate correlations between chromatograms as pearson's r, identify sample with highest average correlation, store key as most represntative sample for downstream peak alignment.
+        y_df = sample_name_signal_df_builder(df[baseline_subtracted_chromatogram_series_name], wavelength)
+        corr_df = y_df.corr()
+        highest_corr_key = find_representative_sample(corr_df)
+
+        # align the library time axis with dtw
+        peak_aligned_series_name = f'aligned_{wavelength}'
+        df[peak_aligned_series_name] = sa.peak_alignment(df[time_interpolated_chromatogram_name], highest_corr_key, 
+        wavelength)
+        
+        with open(pickle_file_path, 'wb') as file:
+            pickle.dump(df, file)
+    else:
+        with open(pickle_file_path, 'rb') as file:
+            print('reading pickle')
+            df = pickle.load(file)
 
     # show the results in a steamlit app
     if display_in_st == True:
