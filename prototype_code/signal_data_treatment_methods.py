@@ -5,6 +5,7 @@ import pandas as pd
 from pybaselines import Baseline
 import numpy as np
 from scipy.signal import  find_peaks
+import streamlit as st
 
 def calc_baseline(signal_df : pd.DataFrame, x_col_key : str, y_col_key : str) -> pd.DataFrame:
     """
@@ -23,15 +24,25 @@ def baseline_area(df : pd.DataFrame) -> float:
     area = np.trapz(y = df['mAU'], x = df['mins'])
     return area
 
-def peak_finder(signal_df : pd.DataFrame, in_height = None, in_prominence = None) -> pd.DataFrame:
+def peak_finder(x : pd.Series, y : pd.Series,in_height = None, in_prominence = None) -> pd.DataFrame:
     """
-    find peaks for a given signal df, returned as a df of ['mins', 'mAU']
+    takes two pd.Series, x and y, finds the peaks in the y array and returns a peak df of shape ['peak_x', 'peak_y'].
+
+    Note: find_peaks returns a tuple of.. something. the first element is the found peaks idx in the supplied 1D array.
+
+    Even though the find_peaks code refers to the 1D array as x, I will refer to it as y to maintain consistancy with the higher level code.
     """
-    peak_idx, peak_y = find_peaks(signal_df['254'], height = in_height, prominence = in_prominence)
-    peak_y = peak_y['peak_heights']
-    peak_x = signal_df['mins'][peak_idx]
-    peak_df = pd.DataFrame(zip(peak_x, peak_y), columns = ['mins', 'mAU'])
-    print(peak_df.shape)
+    peak_idx, _ = find_peaks(y, height = 5, prominence=5)
+    
+    peak_x, peak_y = x[peak_idx], y[peak_idx]
+    
+    peak_df = pd.DataFrame(
+        {
+            'peak_x' : peak_x,
+            'peak_y' : peak_y
+        }
+    )
+
     return peak_df
 
 import pandas as pd
