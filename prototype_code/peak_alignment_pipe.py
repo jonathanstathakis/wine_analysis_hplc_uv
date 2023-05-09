@@ -42,33 +42,31 @@ def peak_alignment_pipe(db_path : str, wavelength: Union[str, List[str]] = None,
         st.subheader('Group Contents')
         st.write(df.drop(f'raw {wavelength}', axis = 1))
 
-        normalized_series_name = f'normalised_{wavelength}'
-
-        # y axis normalize
-        df[normalized_series_name] = dt.normalize_library_absorbance(df[raw_signal_col_name])
-        
         # subtract baseline. If baseline not subtracted, alignment WILL NOT work.
         baseline_subtracted_chromatogram_series_name = f'baseline_subtracted_{wavelength}'
-        df[baseline_subtracted_chromatogram_series_name] = sa.baseline_subtraction(df[normalized_series_name])
-
+        df[baseline_subtracted_chromatogram_series_name] = sa.baseline_subtraction(df[raw_signal_col_name])
+        
+        # y axis normalize
+        normalized_series_name = f'normalised_{wavelength}'
+        df[normalized_series_name] = dt.normalize_library_absorbance(df[baseline_subtracted_chromatogram_series_name])
+        
         # time interpolation
         time_interpolated_chromatogram_name = f'time_interpolated_{wavelength}'
-        df[time_interpolated_chromatogram_name] = sa.interpolate_chromatogram_times(df[baseline_subtracted_chromatogram_series_name])
+        df[time_interpolated_chromatogram_name] = sa.interpolate_chromatogram_times(df[normalized_series_name])
 
         # calculate correlations between chromatograms as pearson's r, identify sample with highest average correlation, store key as most represntative sample for downstream peak alignment.
-        y_df = sample_name_signal_df_builder(df[baseline_subtracted_chromatogram_series_name], wavelength)
+        y_df = sample_name_signal_df_builder(df[baseline_subtracted_chromatogram_series_name])
         corr_df = y_df.corr()
         highest_corr_key = find_representative_sample(corr_df)
 
-        # align the library time axis with dtw
+        # # align the library time axis with dtw
         peak_aligned_series_name = f'aligned_{wavelength}'
-        df[peak_aligned_series_name] = sa.peak_alignment(df[time_interpolated_chromatogram_name], highest_corr_key, 
-        wavelength)
+        df[peak_aligned_series_name] = sa.peak_alignment(df[time_interpolated_chromatogram_name], highest_corr_key)
         
-        with open(pickle_file_path, 'wb') as file:
+        with open(pickle_filepath, 'wb') as file:
             pickle.dump(df, file)
     else:
-        with open(pickle_file_path, 'rb') as file:
+        with open(pickle_filepath, 'rb') as file:
             print('reading pickle')
             df = pickle.load(file)
 
@@ -116,12 +114,12 @@ def get_library(con : db.DuckDBPyConnection, wavelength : str, signal_col_name :
     return df
 
 
-def sample_name_signal_df_builder(df_series : pd.Series, y_col_name : str):
+def sample_name_signal_df_builder(df_series : pd.Series):
     # extract the sample names as column names, y_axis column as column values.
     sample_name_signal_df = pd.DataFrame(columns = df_series.index)
 
     for idx, row in df_series.items():
-        sample_name_signal_df[idx] = row[y_col_name].values
+       sample_name_signal_df[idx] = row.iloc[:,1]
     
     return sample_name_signal_df
 
