@@ -1,22 +1,15 @@
 """
 Top level file to initialize a wine auth database from scratch.
 """
+import devtools.function_timer as ft
 import os
 import duckdb as db
 import sys
-
-
-
-from chemstation import init_chemstation_data_metadata as ch
-from sampletracker import init_raw_sample_tracker_table
-from cellartracker import init_raw_cellartracker_table
-from chemstation import init_chemstation_data_metadata
-from sampletracker import sample_tracker_cleaner
-from cellartracker import cellartracker_cleaner
-from devtools import function_timer as ft
-from core import adapt_super_pipe_to_db
 import shutil
-from devtools import function_timer as ft
+from chemstation import init_chemstation_data_metadata as ch, init_chemstation_data_metadata
+from sampletracker import init_raw_sample_tracker_table, sample_tracker_cleaner
+from cellartracker_methods import init_raw_cellartracker_table, cellartracker_cleaner
+from core import adapt_super_pipe_to_db
 
 def delete_files(data_lib_path : str):
     """
