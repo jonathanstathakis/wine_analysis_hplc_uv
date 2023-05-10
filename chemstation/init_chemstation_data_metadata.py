@@ -3,21 +3,22 @@ todo:
 - [ ] change db connections to be context managed only at the point of writing, pass the db filepath rather than the conn object.
 """
 
-from devtools import project_settings
-import duckdb as db
-import rainbow as rb
-import sys
-import os
-import multiprocessing as mp
-import pandas as pd
-import numpy as np
-import json
-import fnmatch
 import collections
-from devtools import function_timer as ft
+import fnmatch
+import json
+import multiprocessing as mp
+import os
+import sys
+
+import duckdb as db
+import numpy as np
+import pandas as pd
+import rainbow as rb
+
+from chemstation import chemstation_methods, chemstation_to_db_methods
 from db_methods import db_methods
-from chemstation import chemstation_to_db_methods
-from chemstation import chemstation_methods
+from devtools import function_timer as ft
+from devtools import project_settings
 
 counter = None
 counter_lock = None
@@ -46,10 +47,14 @@ def ch_dirs_to_dict_lists(dirpath_list : list, con : db.DuckDBPyConnection):
 
             uv_file_pool = uv_extractor_pool(dirpath_list)
 
+
             try:
                 uv_metadata_list, uv_data_list = zip(*uv_file_pool)
             except TypeError as e:
                 print(f"Tried to unpack uv_file_pool but {e}")
+                print(f"the datatype of uv_file_pool is {type(uv_file_pool)}")
+                print(f"the contents of uv_file_pool is:")
+                [print(file) for file in uv_file_pool]
                 raise TypeError
 
             duplicate_hash_keys(uv_metadata_list)
@@ -96,6 +101,7 @@ def uv_data_to_df(uv_file):
         print(uv_file.metadata.get('notebook'), uv_file.metadata.get('date'))
 
 import uuid
+
 
 def primary_key_generator(metadata_dict):
     data_json = json.dumps(metadata_dict['date'], sort_keys=True)
@@ -144,7 +150,7 @@ def uv_extractor(path : str) -> tuple:
     else:
         print(f"{path} does not contain a .UV file. Remove from the library?")
 
-        return metadata_dict, uv_data_dict
+    return metadata_dict, uv_data_dict
 
 @ft.timeit
 def uv_data_table_builder(uv_data_list, con):
@@ -190,6 +196,11 @@ def uv_extractor_pool(dirpaths: list) -> tuple:
     print("Closing and joining the multiprocessing pool...")
     pool.close()
     pool.join()
+
+    if not isinstance(uv_file_tuples, list):
+        print(f"in uv_extractor_pool..")
+        print(f"uv_file_tuples should be list, but they are {type(uv_file_tuples)}")
+        raise TypeError
 
     print("Finished processing files.")
     return uv_file_tuples
