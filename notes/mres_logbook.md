@@ -425,20 +425,21 @@ Todo:
 
 ### 2023-05-10
 
-2023–05–10
-
 Have started trying to fix the build_library pipeline, but the more i go, the more I realise its broken and fundamentally flawed. Essentially I need to rebuild the whole codebase to be much more modular.
 
  A sudden realizatoin about how python import statements work during runtime has also led me to understand really HOW to build a python project.
 
-
 To rebuild the codebase:
 - [x] Stash all uncommitted changes.
 - [x] create new branch
-- [ ] stash pop in new branch
-- [ ] rebuild project outside of prototype directory
-- [ ] build modular chem station then Sample tracker, then cellartracker tables.
+- [x] stash pop in new branch
+- [x] rebuild project outside of prototype directory
+- [x] build modular chem station then Sample tracker, then cellartracker tables.
 
 once this is done, commit everything merge branch, merge so we are back to the main branch.
+
+2023-05-10 11:44:55
+
+Rebuild is done, now fixing import statements.
 
 <!-- end_file -->

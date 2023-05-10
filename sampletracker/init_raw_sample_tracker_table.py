@@ -1,10 +1,9 @@
 import os
 import sys
 import pandas as pd
-sys.path.append('../')
-import sample_tracker_methods
-from db_methods import write_df_to_table
-from db_methods import display_table_info
+
+from sampletracker import sample_tracker_methods
+from db_methods import db_methods
 import duckdb as db
 import google_sheets_api
 
@@ -14,7 +13,7 @@ def init_raw_sample_tracker_table(con : db.DuckDBPyConnection) -> None:
     df = df.replace({"" : None})
     table_name = 'raw_sample_tracker'
     write_raw_sample_tracker_table(df, con, table_name)
-    display_table_info(con, table_name)
+    db_methods.display_table_info(con, table_name)
     return None
 
 def write_raw_sample_tracker_table(df, con, table_name):

@@ -13,7 +13,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import db_methods
-import signal_data_treatment_methods as dt
+from signal_processing import signal_data_treatment_methods as dt
 import plot_methods
 import streamlit as st
 import signal_alignment_methods as sa
@@ -25,7 +25,7 @@ pd.set_option('display.max_rows', None)
 pd.set_option('display.max_columns', None)
 pd.set_option('display.width', None)
 
-@timeit
+@ft.timeit
 def peak_alignment_spectrum_chromatogram():
     
     # get a dataframe consisting of sample metadata and a column of sc matrices as nested dataframes.
@@ -51,7 +51,7 @@ def peak_alignment_spectrum_chromatogram():
     except Exception as e:
         print(e)
 
-@timeit
+@ft.timeit
 def query_unique_wines_spectra_to_df(con : db.DuckDBPyConnection):
     print('starting')
 
@@ -69,21 +69,21 @@ def query_unique_wines_spectra_to_df(con : db.DuckDBPyConnection):
 
     return df
 
-@timeit
+@ft.timeit
 def write_unique_id_spectra_df(df : pd.DataFrame, filepath : str):
     print('writing pickle')
     with open(filepath, 'wb') as file:
         pickle.dump(df, file)
     return None
 
-@timeit
+@ft.timeit
 def read_unique_id_spectra_pickle(filepath : str):
     print('reading pickle')
     with open(filepath, 'rb') as file:
         df = pickle.load(file)
     return df
 
-@timeit
+@ft.timeit
 def load_spectrum_chromatograms():
     table_name = 'unique_new_id_spectra'
     filepath = table_name+'.pk1'
@@ -101,7 +101,7 @@ def load_spectrum_chromatograms():
 
     return df
 
-@timeit
+@ft.timeit
 def main():
     peak_alignment_spectrum_chromatogram()
 

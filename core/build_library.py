@@ -5,18 +5,18 @@ import os
 import duckdb as db
 import sys
 
-sys.path.append('../')
 
-import init_chemstation_data_metadata as ch
-from init_raw_sample_tracker_table import init_raw_sample_tracker_table
-from init_raw_cellartracker_table import init_raw_cellartracker_table
-from chemstation_metadata_table_cleaner import init_cleaned_chemstation_metadata_table
-from sample_tracker_cleaner import init_cleaned_sample_tracker_table
-from cellartracker_cleaner import init_cleaned_cellartracker_table
-import function_timer as ft
-import adapt_super_pipe_to_db
+
+from chemstation import init_chemstation_data_metadata as ch
+from sampletracker import init_raw_sample_tracker_table
+from cellartracker import init_raw_cellartracker_table
+from chemstation import init_chemstation_data_metadata
+from sampletracker import sample_tracker_cleaner
+from cellartracker import cellartracker_cleaner
+from devtools import function_timer as ft
+from core import adapt_super_pipe_to_db
 import shutil
-import function_timer as ft
+from devtools import function_timer as ft
 
 def delete_files(data_lib_path : str):
     """
@@ -76,8 +76,8 @@ def load_raw_tables(con, data_lib_path):
 
 def load_cleaned_tables(con):
     init_cleaned_chemstation_metadata_table(con, 'raw_chemstation_metadata')
-    init_cleaned_sample_tracker_table(con, 'raw_sample_tracker')
-    init_cleaned_cellartracker_table(con, 'raw_cellartracker')
+    sample_tracker_cleaner.init_cleaned_sample_tracker_table(con, 'raw_sample_tracker')
+    cellartracker_cleaner.init_cleaned_cellartracker_table(con, 'raw_cellartracker')
     return None
 
 def main():

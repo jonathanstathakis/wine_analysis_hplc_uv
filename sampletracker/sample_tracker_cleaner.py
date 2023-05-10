@@ -6,8 +6,8 @@ import pandas as pd
 import duckdb as db
 import numpy as np
 
-from df_cleaning_methods import df_string_cleaner
-from db_methods import display_table_info, write_df_to_table
+from df_methods import df_cleaning_methods
+from db_methods import db_methods
 
 def init_cleaned_sample_tracker_table(con : db.DuckDBPyConnection, raw_table_name : str) -> None:
 
@@ -25,7 +25,7 @@ def init_cleaned_sample_tracker_table(con : db.DuckDBPyConnection, raw_table_nam
 def sample_tracker_df_cleaner(df):
     print('cleaning raw_sample_tracker_df')
     try:
-        df = df_string_cleaner(df)
+        df =  df_cleaning_methods.df_cleaning_methods.df_string_cleaner(df)
         df.columns = df.columns.str.lower()
     except Exception as e:
         print(f'while cleaning raw_sample_tracker_df, encountered Exception: {e}')
@@ -55,7 +55,7 @@ def write_clean_sample_tracker_to_db(df, con, table_name) -> None:
         size
     """
     
-    write_df_to_table(df, con, table_name, schema, table_column_names = col_names, df_column_names = col_names)
+    db_methods.write_df_to_table(df, con, table_name, schema, table_column_names = col_names, df_column_names = col_names)
 
     return None
 

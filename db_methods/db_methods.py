@@ -4,8 +4,7 @@ A file to contain general duckdb database methods.
 import pandas as pd
 import duckdb as db
 import sys
-sys.path.append('../')
-import function_timer as ft
+from devtools import function_timer as ft
 
 def index():
     display_table_info()
@@ -44,7 +43,7 @@ def write_df_to_table(df : pd.DataFrame, con : db.DuckDBPyConnection, table_name
         print(e)
         print(f"full query is:\n\n{insert_query}")
     
-    display_table_info(con, table_name)
+    db_methods.display_table_info(con, table_name)
 
 @ft.timeit
 def get_spectra(df : pd.DataFrame, con : db.DuckDBPyConnection) -> pd.DataFrame:

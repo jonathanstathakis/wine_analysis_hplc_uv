@@ -14,11 +14,11 @@ import duckdb as db
 import pandas as pd
 import numpy as np
 import db_methods
-import signal_data_treatment_methods as dt
-import plotly_plot_methods
+from scripts.core_scripts import signal_data_treatment_methods as dt
+from plot_methods import plotly_plot_methods
 import streamlit as st
 st.set_page_config(layout="wide")
-import signal_alignment_methods as sa
+from signal_processing import signal_alignment_methods as sa
 from typing import Union, List
 import pickle
 import os

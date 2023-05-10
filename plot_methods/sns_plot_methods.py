@@ -1,5 +1,5 @@
 import seaborn as sns
-import signal_data_treatment_methods as dt
+from scripts.core_scripts import signal_data_treatment_methods as dt
 import pandas as pd
 import matplotlib.pyplot as plt
 

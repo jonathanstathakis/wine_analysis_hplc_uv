@@ -18,7 +18,7 @@ TODO:
 """
 from pathlib import Path
 import sys
-sys.path.append('../')
+
 import pandas as pd
 import numpy as np
 from agilette.modules.metadata_sampletracker_cellartracker_join import agilent_sample_tracker_cellartracker_super_table as super_table
@@ -27,7 +27,7 @@ from agilette.modules.run_dir import Run_Dir
 import plotly.graph_objects as go
 import streamlit as st
 import inspect
-import signal_data_treatment_methods as dt
+from signal_processing import signal_data_treatment_methods as dt
 
 st.set_page_config(layout = 'wide')
 

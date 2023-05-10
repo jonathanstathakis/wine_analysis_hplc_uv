@@ -1,10 +1,10 @@
 """
 A module to contain chemstation database interface methods
 """
-from prototype_code import db_methods
+from db_methods import db_methods
 import os
 import sys
-from prototype_code import function_timer  as ft
+from devtools import function_timer  as ft
 import pandas as pd
 import duckdb as db
 
@@ -22,7 +22,7 @@ def write_ch_metadata_table_to_db(uv_metadata, con):
     except Exception as e:
         print(e)
     
-    db_methods.display_table_info(con, table_name)
+    db_methods.db_methods.display_table_info(con, table_name)
     
     return None
 
@@ -45,7 +45,7 @@ def write_spectrum_table_to_db(uv_data_list : list, con : db.DuckDBPyConnection)
     except Exception as e:
         print(e)
 
-    db_methods.display_table_info(con, table_name)
+    db_methods.db_methods.display_table_info(con, table_name)
 
     return None
 
