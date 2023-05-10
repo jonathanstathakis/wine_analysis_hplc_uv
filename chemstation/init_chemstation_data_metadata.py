@@ -50,7 +50,7 @@ def ch_dirs_to_dict_lists(dirpath_list : list, con : db.DuckDBPyConnection):
                 uv_metadata_list, uv_data_list = zip(*uv_file_pool)
             except TypeError as e:
                 print(f"Tried to unpack uv_file_pool but {e}")
-                sys.exit()
+                raise TypeError
 
             duplicate_hash_keys(uv_metadata_list)
         else:
