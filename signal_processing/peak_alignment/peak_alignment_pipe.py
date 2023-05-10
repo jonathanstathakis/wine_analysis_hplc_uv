@@ -71,11 +71,6 @@ def rw_pipe_pickle(series: pd.Series, pickle_dir_path : str = None):
             df = pickle.load(f)
     return df
 
-
-
-
-
-
 def peak_alignment_pipe(db_path : str, wavelength: Union[str, List[str]] = None, pickle_path_prefix : "str" = None):
     """
     A pipe to align a supplied library of chromatograms.
