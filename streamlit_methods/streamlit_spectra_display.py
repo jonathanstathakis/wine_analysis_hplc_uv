@@ -1,7 +1,7 @@
 import pandas as pd
 import streamlit as st
 import sys
-sys.path.append('../')
+
 
 from tests import test_spectra_df
 from scripts.core_scripts import hplc_dad_plots 

@@ -5,7 +5,7 @@ import os
 import polars as pl
 from function_timer import timeit
 
-@timeit
+@ft.timeit
 def main():
     con = duckdb.connect('uv_database.db')
     query = "select * from metadata"

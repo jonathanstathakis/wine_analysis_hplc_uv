@@ -1,5 +1,5 @@
 from plotly import graph_objects as go
-import signal_data_treatment_methods as dt
+from scripts.core_scripts import signal_data_treatment_methods as dt
 import pandas as pd
 import plotly.io as pio
 import numpy as np

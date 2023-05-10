@@ -2,7 +2,7 @@ import sys
 import webbrowser
 import os
 
-sys.path.append('../')
+
 
 from agilette.modules.library import Library
 

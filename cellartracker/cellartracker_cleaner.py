@@ -3,8 +3,8 @@ import pandas as pd
 import duckdb as db
 import numpy as np
 
-from df_cleaning_methods import df_string_cleaner
-from db_methods import display_table_info
+from df_methods import df_cleaning_methods
+from db_methods import db_methods
 
 """
 A file to contain all of the necessary cellartracker cleaning functions, to be run once the raw table is downloaded but before other operations. Works in conjuction with prototype_code/init_table_cellartracker.py
@@ -21,7 +21,7 @@ def init_cleaned_cellartracker_table(con : db.DuckDBPyConnection, raw_table_name
 
 def cellartracker_df_cleaner(df):
 
-    df = df_string_cleaner(df)
+    df = df_cleaning_methods.df_string_cleaner(df)
     df.columns = df.columns.str.lower()
     df = df.rename({'wine' : 'name'}, axis = 1)
     df = df.replace({'1001' : np.nan})
@@ -89,7 +89,7 @@ def write_clean_cellartracker_to_db(df, con, table_name) -> None:
         FROM df;
         """)
 
-    display_table_info(con, table_name)
+    db_methods.display_table_info(con, table_name)
 
 def main():
     cellartracker_df_cleaner()

@@ -3,7 +3,7 @@ todo:
 - [ ] change db connections to be context managed only at the point of writing, pass the db filepath rather than the conn object.
 """
 
-import colored_traceback.auto
+from devtools import project_settings
 import duckdb as db
 import rainbow as rb
 import sys
@@ -14,10 +14,10 @@ import numpy as np
 import json
 import fnmatch
 import collections
-from function_timer import timeit
-from db_methods import display_table_info
-from chemstation_processing_methods import chemstation_to_db_methods
-from chemstation_processing_methods import chemstation_methods
+from devtools import function_timer as ft
+from db_methods import db_methods
+from chemstation import chemstation_to_db_methods
+from chemstation import chemstation_methods
 
 counter = None
 counter_lock = None
@@ -146,7 +146,7 @@ def uv_extractor(path : str) -> tuple:
 
         return metadata_dict, uv_data_dict
 
-@timeit
+@ft.timeit
 def uv_data_table_builder(uv_data_list, con):
 
     spectrum_table_name_prefix = "hplc_spectrum_"
@@ -172,7 +172,7 @@ def uv_data_table_builder(uv_data_list, con):
     """).fetchone()[0]
     print(f"{num_spectrum_tables} spectrum tables created with name pattern '[{spectrum_table_name_prefix}]")
 
-@timeit
+@ft.timeit
 def uv_extractor_pool(dirpaths: list) -> tuple:
     """
     Form a multiprocess pool to apply uv_extractor, returning a tuple of dicts for each .D file in the dirpath list.
@@ -194,7 +194,7 @@ def uv_extractor_pool(dirpaths: list) -> tuple:
     print("Finished processing files.")
     return uv_file_tuples
 
-@timeit
+@ft.timeit
 def main():
     root_dir_path = "/Users/jonathan/0_jono_data"
     con = db.connect('uv_database.db')

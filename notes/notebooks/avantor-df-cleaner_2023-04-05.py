@@ -15,7 +15,7 @@ import pandas as pd
 import numpy as np
 import sys
 
-sys.path.append('../')
+
 from agilette.modules.library import Library
 from avantor_wine_spectrum import masker
 

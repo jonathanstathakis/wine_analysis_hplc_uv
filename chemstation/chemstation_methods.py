@@ -3,7 +3,7 @@ All the methods used to preprocess the chemstation files into the db
 """
 import os
 import fnmatch
-from prototype_code import function_timer  as ft
+from devtools import function_timer  as ft
 
 @ft.timeit
 def uv_filepaths_to_list(root_dir_path : str) -> list:

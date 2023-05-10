@@ -7,7 +7,7 @@ Refer to prototype_code/peak_alignment.py for use of most of these methods (at d
 """
 import pandas as pd
 import numpy as np
-import signal_data_treatment_methods as dt
+from signal_processing import signal_data_treatment_methods as dt
 from dtw import dtw
 import streamlit as st
 from itertools import combinations

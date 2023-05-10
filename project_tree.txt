@@ -3,6 +3,7 @@
 ├── cellartracker
 │   ├── __init__.py
 │   ├── cellartracker_cleaner.py
+│   ├── download_cellartracker_table.py
 │   └── init_raw_cellartracker_table.py
 ├── chemstation
 │   ├── __init__.py
@@ -26,7 +27,8 @@
 │   └── db_methods.py
 ├── devtools
 │   ├── __init__.py
-│   └── function_timer.py
+│   ├── function_timer.py
+│   └── project_settings.py
 ├── df_methods
 │   ├── __init__.py
 │   ├── df_cleaning_methods.py
@@ -75,6 +77,7 @@
 │   ├── __init__.py
 │   ├── plotly_plot_methods.py
 │   └── sns_plot_methods.py
+├── project_tree.txt
 ├── prototypes
 │   ├── __init__.py
 │   ├── chrom_quality_analyser.py
@@ -128,4 +131,4 @@
     ├── experiment_planner.py
     └── time_step_schedule.py
 
-33 directories, 95 files
+33 directories, 98 files

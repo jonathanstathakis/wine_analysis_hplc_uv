@@ -6,9 +6,9 @@ Acts on a local table which is written by prototype_code/chemstation_db_tables_m
 import pandas as pd 
 import numpy as np
 import duckdb as db
-from df_cleaning_methods import df_string_cleaner
-from db_methods import display_table_info, write_df_to_table
-import function_timer as ft
+from df_methods import df_cleaning_methods
+from db_methods import db_methods, write_df_to_table
+from devtools import function_timer as ft
 
 def init_cleaned_chemstation_metadata_table(con, raw_table_name):
     """
