@@ -15,7 +15,7 @@ def core():
 
     # Phase 2: process data
 
-    peak_alignment_pipe.peak_alignment_pipe(db_path = '/Users/jonathan/wine_analysis_hplc_uv/prototype_code/wine_auth_db.db')
+    #peak_alignment_pipe.peak_alignment_pipe(db_path = '/Users/jonathan/wine_analysis_hplc_uv/prototype_code/wine_auth_db.db')
 
     # Phase 3: Data Analysis
 

@@ -442,4 +442,146 @@ once this is done, commit everything merge branch, merge so we are back to the m
 
 Rebuild is done, now fixing import statements.
 
+2023-05-10 13:01:55
+
+Import statements are updated to the point where chemstation file reading methods are able to run..
+
+### 2023-05-11
+
+2023-05-11 10:04:54
+
+Lab day. To achieve today:
+
+CUPRAC verified.
+
+1. verify jake column matches my column performance using ultimo coffee as comparison standard.
+
+38 min run.
+
+1. [x]  Start up instrument, equilib.
+2. [x] Place jakes column in heater as well.
+3. [x] prep coffee
+4. [x] 30 min later, run 38 min run.
+5. [x] swap over to jakes column.
+6. [x] 10 min equilib.
+7. [x] 30 min run.
+8. [x] compare by overlay.
+9. [x]  While comparing, setup iso pump.
+
+Iso pump plumbing:
+
+Methanol -> degasser -> iso pump -> detector. See if anything is detected.
+
+to plumb, will need to prepare capillaries.
+
+1. [x] plumb methanol to degasser.
+2. [x] plumb degasser to iso pump.
+3. [x] purge for 30 mins.
+4. [x] After purge, connect to detector, observe detection on flow.
+5. [x] verify a ok.
+6. [x] connect to radial port of column.
+7. [x] observe signal.
+
+
+#### CUPRAC
+
+1. [x] prepare reagent.
+2. [x] swap inlet to CUPRAC
+3. [x] start flow, observe signal.
+4. [x] inject coffee, observe signal.
+5. [x] inject wine, observe signal.
+
+### CUPRAC SOP
+
+#### startup
+
+1. flush iso pump at 2ml/min with CUPRAC reagent.
+2. capture outflow in vessel to observe color, looking for blue.
+3. meanwhile bin pump, column equilib, 1ml/min.
+4. once blue and 1ml/min, iso pump to 0.3ml/min.
+5. uncap radial port interface, ensure flow is ejecting.
+6. connect iso pump outlet to radial port interface.
+7. circulate for 5 mins.
+8. start runs.
+
+#### closing SOP
+
+1. disconnect radial port and iso pump outlet.
+2. leave radial port uncapped to flush from bin pump.
+3. swap iso pump to methanol.
+4. set iso pump to 2ml/min for 10 mins +.
+5. recap radial port, off.
+
+#### CUPRAC Wine Deg
+
+2023-05-11 16:56:11
+
+todo:
+- [x] prepare vials
+- [x] prepare methods
+- [x] prepare sequences
+- [x] prepare file storage.
+
+- [x]  to prepare the vials - same codes, just add c.
+- [x] to prepare methods - same methods, just add iso pump, prefix with 'cuprac'.
+- [x] to prepare sequences, same as above.
+- [x] to prepare the file storage, copy the tree, delete the internal files, prefix with cuprac.
+
+First ambient sqeuence - 
+
+Ive got 200mL of CUPRAC. - 36mL from the three inital runs = 164mL.
+
+(38 min runs + 2mins) * 0.3 = 12mL per run.
+
+164 / 12 = 13.667 runs. Gotta be a multiple of 3, so 12 runs, or 4 time windows, total time = 8 hours.
+
+Wanna space those runs out over time until someone gets in to shutdown the instrument, say 10am tomorrow.
+
+Gotta do the single 3 runs first, so.. say 7:30pm start. 14.5hrs between then and 10pm, close enough to 16. thus I need to double the length of time between the runs.. while controlling for the flow.
+
+12 runs in total, * 12ml CUPRAC per run = 144mL 
+
+time | occurance | sequence | timedelta
+  -|-|-|-
+  19:30 | start  | 1 | 00
+  23:30 | start  | 2 | 4:00
+  03:30 | start  | 3 | 4:00
+  07:30 | start  | 4 | 4:00
+ 
+ 5 freezer repeats
+
+ cn0101 | ce0101
+ cn0102 | ce0102
+ cn0103 | ce0103
+ cn0104 | ce0104
+ cn0105 | ce0105
+ cn0201 | ce0201
+ cn0202 | ce0202
+ cn0203 | ce0203
+ cn0204 | ce0204
+ cn0205 | ce0205
+ cn0301 | ce0301
+ cn0302 | ce0302
+ cn0303 | ce0303
+ cn0304 | ce0304
+ cn0305 | ce0305
+ 
+ 2 ambient repeats
+
+ 
+ ca0101
+ ca0102
+ ca0201
+ ca0202
+ ca0301
+ ca0302
+
+2023-05-11 18:12:42
+
+Start the first run.
+
+2023-05-11 19:13:39
+
+second wine started.
+
 <!-- end_file -->
