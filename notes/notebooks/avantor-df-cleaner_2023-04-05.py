@@ -19,23 +19,25 @@ import sys
 from agilette.modules.library import Library
 from avantor_wine_spectrum import masker
 
-def avantor_df_cleaner(df : pd.DataFrame) -> pd.DataFrame:
-    
+
+def avantor_df_cleaner(df: pd.DataFrame) -> pd.DataFrame:
     # strips cell if column is string datatype.
-    df =  df.apply(lambda x : x.str.strip() if pd.api.types.is_string_dtype(x) else x)
-    
+    df = df.apply(lambda x: x.str.strip() if pd.api.types.is_string_dtype(x) else x)
+
     # reduces DDDD id's to DD, removing trailing zeroes and unnecessary repeat counters in early runs.
-    df['id'] = df['id'].apply(lambda x : x[2:4] if len(x)==4 else x)
+    df["id"] = df["id"].apply(lambda x: x[2:4] if len(x) == 4 else x)
 
     return df
 
+
 def main():
-    lib = Library('/Users/jonathan/0_jono_data')
+    lib = Library("/Users/jonathan/0_jono_data")
     df = lib.metadata_table
     df = masker(df)
     df = avantor_df_cleaner(df)
 
     pd.options.display.max_rows = 100
     print(pd.options.display.max_rows)
+
 
 main()

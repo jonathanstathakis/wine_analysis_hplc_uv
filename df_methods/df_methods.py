@@ -8,7 +8,8 @@ Contains general df methods to improve quality of life when working with pandas 
 
 import pandas as pd
 
-def describe_df(df : pd.DataFrame):
+
+def describe_df(df: pd.DataFrame):
     print("df shape:", df.shape)
     print("df columns", df.columns)
     print("df index", df.index)

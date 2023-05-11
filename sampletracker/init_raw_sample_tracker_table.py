@@ -7,18 +7,19 @@ from db_methods import db_methods
 import duckdb as db
 import google_sheets_api
 
-def init_raw_sample_tracker_table(con : db.DuckDBPyConnection) -> None:
+
+def init_raw_sample_tracker_table(con: db.DuckDBPyConnection) -> None:
     # download the current sample tracker table
     df = sample_tracker_methods.sample_tracker_df_builder()
-    df = df.replace({"" : None})
-    table_name = 'raw_sample_tracker'
+    df = df.replace({"": None})
+    table_name = "raw_sample_tracker"
     write_raw_sample_tracker_table(df, con, table_name)
     db_methods.display_table_info(con, table_name)
     return None
 
+
 def write_raw_sample_tracker_table(df, con, table_name):
-    schema = \
-    """
+    schema = """
         id INTEGER,
         vintage VARCHAR,
         name VARCHAR,
@@ -29,8 +30,7 @@ def write_raw_sample_tracker_table(df, con, table_name):
         size INTEGER
     """
 
-    target_columns = \
-    """
+    target_columns = """
         id,
         vintage,
         name,
@@ -45,8 +45,10 @@ def write_raw_sample_tracker_table(df, con, table_name):
 
     write_df_to_table(df, con, table_name, schema, target_columns, column_assignment)
 
+
 def main():
     init_raw_sample_tracker_table()
-    
-if __name__ == '__main__':
+
+
+if __name__ == "__main__":
     main()
