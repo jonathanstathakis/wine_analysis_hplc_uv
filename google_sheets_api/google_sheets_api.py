@@ -28,16 +28,16 @@ import os
 
 import pandas as pd
 
-def get_credentials(creds_parent_path : str):
-    """gets the credientials for the google sheets API
-    """
+
+def get_credentials(creds_parent_path: str):
+    """gets the credientials for the google sheets API"""
     creds = None
 
-    scopes = ['https://www.googleapis.com/auth/spreadsheets']
+    scopes = ["https://www.googleapis.com/auth/spreadsheets"]
 
-    path_to_token = f'{creds_parent_path}/token_sheets.json'
+    path_to_token = f"{creds_parent_path}/token_sheets.json"
 
-    path_to_credentials = f'{creds_parent_path}credentials_sheets.json'
+    path_to_credentials = f"{creds_parent_path}credentials_sheets.json"
 
     # The file token.json stores the user's access and refresh tokens, and is
     # created automatically when the authorization flow completes for the first
@@ -54,43 +54,50 @@ def get_credentials(creds_parent_path : str):
                 creds.refresh(Request())
             except exceptions.RefreshError as e:
                 print(e)
-                os.remove('/Users/jonathan/wine_analysis_hplc_uv/credientals_tokens/credentials_sheets.json')
+                os.remove(
+                    "/Users/jonathan/wine_analysis_hplc_uv/credientals_tokens/credentials_sheets.json"
+                )
                 creds.refresh(Request())
         else:
             flow = InstalledAppFlow.from_client_secrets_file(
-                path_to_credentials, scopes)
+                path_to_credentials, scopes
+            )
             creds = flow.run_local_server(port=0)
         # Save the credentials for the next run
-        with open(path_to_token, 'w') as token:
+        with open(path_to_token, "w") as token:
             token.write(creds.to_json())
-    
+
     return creds
 
-def get_sheets_service(creds_parent_path : str):
-    
+
+def get_sheets_service(creds_parent_path: str):
     creds = get_credentials(creds_parent_path)
 
-    service = build('sheets', 'v4', credentials = creds)
+    service = build("sheets", "v4", credentials=creds)
 
     return service
 
-def get_sheets_values_as_df(spreadsheet_id : str, range : str, creds_parent_path : str):
-    
 
+def get_sheets_values_as_df(spreadsheet_id: str, range: str, creds_parent_path: str):
     service = get_sheets_service(creds_parent_path)
 
     sheets_api = service.spreadsheets()
 
-    values = sheets_api.values().get(spreadsheetId = spreadsheet_id, range = range).execute().get('values')
+    values = (
+        sheets_api.values()
+        .get(spreadsheetId=spreadsheet_id, range=range)
+        .execute()
+        .get("values")
+    )
 
     # values are of shape row, col where each element of the values list is a row that contains its column values.
 
-    values_df = pd.DataFrame(values[1:], columns = values[0])
+    values_df = pd.DataFrame(values[1:], columns=values[0])
 
     return values_df
 
-def post_new_sheet(spreadsheet_id : str, sheet_title : str, creds_parent_path):
 
+def post_new_sheet(spreadsheet_id: str, sheet_title: str, creds_parent_path):
     """
     Make a new sheet in a g=ven spreadsheet. Returns the response dict.
     """
@@ -98,35 +105,39 @@ def post_new_sheet(spreadsheet_id : str, sheet_title : str, creds_parent_path):
     service = get_sheets_service(creds_parent_path)
 
     sheet_body = {
-    'requests': [{
-        'addSheet': {
-            'properties': {
-                'title': str(sheet_title)
-            }
-        }
-    }]
+        "requests": [{"addSheet": {"properties": {"title": str(sheet_title)}}}]
     }
-    
-    response = service.spreadsheets().batchUpdate(spreadsheetId=spreadsheet_id, body=sheet_body).execute()
+
+    response = (
+        service.spreadsheets()
+        .batchUpdate(spreadsheetId=spreadsheet_id, body=sheet_body)
+        .execute()
+    )
 
     return response
 
-def post_df_as_sheet_values(df : pd.DataFrame, spreadsheet_id : str, range : str, creds_parent_path : str):
+
+def post_df_as_sheet_values(
+    df: pd.DataFrame, spreadsheet_id: str, range: str, creds_parent_path: str
+):
     """
-    upload a given df to a specified sheet. Returns the response dict. Range should include the sheet title in the format "sheet_title!A1" 
+    upload a given df to a specified sheet. Returns the response dict. Range should include the sheet title in the format "sheet_title!A1"
     """
     service = get_sheets_service(creds_parent_path)
     data = df.astype(str).values.tolist()
     columns = df.columns.tolist()
     data = [columns] + data
-    data_body = {
-    'range': range,
-    'majorDimension': 'ROWS',
-    'values': data
-    }
-    response = service.spreadsheets().values().update(spreadsheetId=spreadsheet_id,
-                                                          range=data_body['range'],
-                                                          valueInputOption='USER_ENTERED',
-                                                          body=data_body).execute()
+    data_body = {"range": range, "majorDimension": "ROWS", "values": data}
+    response = (
+        service.spreadsheets()
+        .values()
+        .update(
+            spreadsheetId=spreadsheet_id,
+            range=data_body["range"],
+            valueInputOption="USER_ENTERED",
+            body=data_body,
+        )
+        .execute()
+    )
 
     return response

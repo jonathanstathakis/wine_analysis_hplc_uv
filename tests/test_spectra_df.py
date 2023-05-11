@@ -1,6 +1,8 @@
 import duckdb as db
+
+
 def test_spectra_df():
-    con = db.connect('wine_auth_db.db')
+    con = db.connect("wine_auth_db.db")
 
     query_1 = """
     SELECT A.*,
