@@ -1,5 +1,6 @@
 import pandas as pd
 
+
 def reagent_calculator(desired_vol : float):
     """
     Desired volume is the final volume after combining the reagents i.e. 3 x reagent volume
@@ -33,12 +34,12 @@ def reagent_calculator(desired_vol : float):
 
     df['moles'] = df['final_conc'] * df['required_vol']
 
-    df['mass (mg)'] = df['molar_mass (mg)'] * df['moles']
+    df['mass (mg)'] = df['molar_mass'] * df['moles']
 
     print(df)
 
 def main():
-    reagent_calculator(desired_vol = 1000)
+    reagent_calculator(desired_vol = 300)
 
 if __name__ == "__main__":
     main()

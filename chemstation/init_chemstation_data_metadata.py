@@ -9,31 +9,30 @@ import json
 import multiprocessing as mp
 import os
 import sys
+from ast import dump
+from re import L
 
 import duckdb as db
 import numpy as np
 import pandas as pd
 import rainbow as rb
+from genericpath import isfile
 
-from chemstation import chemstation_methods, chemstation_to_db_methods
 from db_methods import db_methods
 from devtools import function_timer as ft
 from devtools import project_settings
 
+from . import (chemstation_methods, chemstation_to_db_methods,
+               pickle_chemstation_data)
+
 counter = None
 counter_lock = None
 
-def init_chemstation_data_metadata_tables(data_lib_path : str, con : db.DuckDBPyConnection):
-    """
-    main driver file, handle any preprocessing then activate write_ch_metadata_table_to_db.
-    """
-    print(f"processing dirs at {data_lib_path}..")
-    uv_paths_list = chemstation_methods.uv_filepaths_to_list(data_lib_path)
+def process_chemstation_uv_files(uv_paths_list, con) -> tuple:
+    print("Processing files..")
     uv_metadata_list, uv_data_list = ch_dirs_to_dict_lists(uv_paths_list, con)
-    chemstation_to_db_methods.write_ch_metadata_table_to_db(uv_metadata_list, con)
-    chemstation_to_db_methods.write_spectrum_table_to_db(uv_data_list, con)
-    return None
-
+    return uv_metadata_list, uv_data_list
+    
 def ch_dirs_to_dict_lists(dirpath_list : list, con : db.DuckDBPyConnection):
     """
     1. Create the metadata and data dicts from each .D file.
@@ -42,24 +41,19 @@ def ch_dirs_to_dict_lists(dirpath_list : list, con : db.DuckDBPyConnection):
     """
     if isinstance(dirpath_list, list):
         
-        if input("Overwrite raw chemstation tables in db? (y/n):") == "y":
-            # extract the metadata and data from each .D file as a list of a tuple of dicts.
-
-            uv_file_pool = uv_extractor_pool(dirpath_list)
+        uv_file_pool = uv_extractor_pool(dirpath_list)
 
 
-            try:
-                uv_metadata_list, uv_data_list = zip(*uv_file_pool)
-            except TypeError as e:
-                print(f"Tried to unpack uv_file_pool but {e}")
-                print(f"the datatype of uv_file_pool is {type(uv_file_pool)}")
-                print(f"the contents of uv_file_pool is:")
-                [print(file) for file in uv_file_pool]
-                raise TypeError
+        try:
+            uv_metadata_list, uv_data_list = zip(*uv_file_pool)
+        except TypeError as e:
+            print(f"Tried to unpack uv_file_pool but {e}")
+            print(f"the datatype of uv_file_pool is {type(uv_file_pool)}")
+            print(f"the contents of uv_file_pool is:")
+            [print(file) for file in uv_file_pool]
+            raise TypeError
 
-            duplicate_hash_keys(uv_metadata_list)
-        else:
-            print("Leaving raw chemstation tables asis.")
+        duplicate_hash_keys(uv_metadata_list)
     else:
         print(f"dirpath_list must be list, is {type(dirpath_list)}. Exiting.")
         raise TypeError
