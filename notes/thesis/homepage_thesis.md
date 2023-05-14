@@ -34,7 +34,7 @@ alias:
 
 ### Chapter 2: Literature Review
 
-2.1 HPLC and PCD
+2.1 [[HPLC and PCD|thesis_hplc_and_pcd.md]]
 2.2 Three Way Data in HPLC-PCD
 2.3 XGBoost: Overview and Applications
 2.4 XGBoost for Classication Tasks
