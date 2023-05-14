@@ -68,8 +68,8 @@ def remove_existing_db(db_path: str) -> None:
 
 
 def write_raw_tables(data_lib_path: str, db_filepath: str):
-    chemstation_process_entry.chemstation_data_to_db(data_lib_path, db_filepath)
-    # init_raw_sample_tracker_table.init_raw_sample_tracker_table(con)
+    #chemstation_process_entry.chemstation_data_to_db(data_lib_path, db_filepath)
+    init_raw_sample_tracker_table.init_raw_sample_tracker_table(db_filepath)
     # init_raw_cellartracker_table(con)
     return None
 
