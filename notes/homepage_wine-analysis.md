@@ -19,6 +19,10 @@ A homepage for the core project of my 2023 Thesis.
 
 [[mres_logbook.md]]
 
+## Thesis
+
+[[homepage_thesis.md]]
+
 ## DP Paper
 
 A paper documenting the results of various chemometric methods on a small library of wine spectrum-chromatogram matrices.
