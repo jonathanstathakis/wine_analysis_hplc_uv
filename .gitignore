@@ -188,3 +188,4 @@ scripts/reagent_calculator.py
 .idea
 *.vscode
 *.pk
+**/*.pk
