@@ -5,10 +5,12 @@
         },
         {
             "path": "../001_obsidian_vault/mres_logbook"
+        },
+        {
+            "path": "../001_obsidian_vault"
         }
     ],
     "settings": {
-        "python.analysis.extraPaths": ["${workspaceFolder}","${workspaceFolder}/db_methods/"],
         "python.languageServer": "Pylance",
         "editor.codeActionsOnSave": {
         "source.organizeImports": true},

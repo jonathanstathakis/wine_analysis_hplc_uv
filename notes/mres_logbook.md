@@ -237,7 +237,7 @@ So the homepage_wine-analysis is in ~/wine_analysis_hplc_uv/notes/ but is soft l
 
 #### Data Processing Pipeline
 
-We do have the [build_library](../prototype_code/build_library.py) file, but that is intended for database initialization prior to data processing, i.e. phase 1. There are multiple phases to this project and the overall project code will reflect that:
+We do have the [build_db_library](../prototype_code/build_db_library.py) file, but that is intended for database initialization prior to data processing, i.e. phase 1. There are multiple phases to this project and the overall project code will reflect that:
 
 Phase 1: Data Collection and Preprocessing
 Phase 2: Data Processing
@@ -245,7 +245,7 @@ Phase 3: Data Analysis
 Phase 4: Model Building
 Phase 5: Results Aggregation and Reporting
 
-Phase 1: is covered by build_library. Need a superstructure file. call it "core.py". It can be the main driver. It is [here](../core.py)
+Phase 1: is covered by build_db_library. Need a superstructure file. call it "core.py". It can be the main driver. It is [here](../core.py)
 
 The reason this stuff is needed is because without a heirarchy the project is flat and its uncertain where it begins and finishes, so to speak.
 
@@ -420,12 +420,12 @@ Need to rejig the build library pipe, its too difficult to debug, and is too slo
 2023-05-09 23:05:32
 
 Todo:
-- [x] refactor as much as possible of the build_library pipe to actually be a pipe that is as modular as possible.
+- [x] refactor as much as possible of the build_db_library pipe to actually be a pipe that is as modular as possible.
 - [ ] add user input to consent to building each component of the library pipeline.
 
 ### 2023-05-10
 
-Have started trying to fix the build_library pipeline, but the more i go, the more I realise its broken and fundamentally flawed. Essentially I need to rebuild the whole codebase to be much more modular.
+Have started trying to fix the build_db_library pipeline, but the more i go, the more I realise its broken and fundamentally flawed. Essentially I need to rebuild the whole codebase to be much more modular.
 
  A sudden realizatoin about how python import statements work during runtime has also led me to understand really HOW to build a python project.
 
@@ -505,12 +505,13 @@ to plumb, will need to prepare capillaries.
 8. start runs.
 
 #### closing SOP
+0215 mins.
 
 1. disconnect radial port and iso pump outlet.
 2. leave radial port uncapped to flush from bin pump.
 3. swap iso pump to methanol.
 4. set iso pump to 2ml/min for 10 mins +.
-5. recap radial port, off.
+5. recap radial port, off
 
 #### CUPRAC Wine Deg
 
@@ -568,12 +569,11 @@ time | occurance | sequence | timedelta
  
  2 ambient repeats
 
- 
  ca0101
  ca0102
  ca0201
  ca0202
- ca0301
+ ca0301 
  ca0302
 
 2023-05-11 18:12:42
@@ -583,5 +583,105 @@ Start the first run.
 2023-05-11 19:13:39
 
 second wine started.
+
+2023-05-11 20:08:15
+
+third wine started.
+
+Have applied black to the whole 'wine_analysis_hplc_uv' project dir to autolint. Too much to check all, but a brief skim looked hopeful.
+
+todo before I leave today:
+- [x] top up cuprac
+- [x] top up methanol
+- [x] top up h2O
+- [x] start overnight sequence.
+- [x] clean up lab.
+
+2023-05-11 20:57:47
+
+ambient run first Sequence started.
+
+Did a 100% methanol flush after the shiraz run and saw something come off the column. Seems as though the 2 min method flushes are not enough. increased the flush to 4min, bumping it up to 40 minutes, for each run. Since there are 24 runs itll now consume 0.6 * 24 = 14.4 ml extra. Just to double check, 24 runs * 40 minutes * 0.3 ml/min = 288 mls = 302.4..
+
+2023-05-11 23:11:46
+
+after starting the sequence (and topping up the bin pump phase solutions) there was a sawtooth pressure curve observed with an amplitude of ~100 psi. not great. see if it cleared up over the run.
+
+2023-05-12 00:27:40
+
+Fixed the package again. Fuck me. So, been wrong all week. The expected structure of a python package is: package_name/package_name/modules. where modules all import from each other via .. relative import syntax. I guess the top level name could be anything, but the natural inclination is to name the top level the name of the app.. but the tools require that the root file has 1 folder to import everything from. After that is established however, it behaves as expected..that is, relative imports to the root folder are achieved by consecutive perids. For example, .. is one level ... is two, .... is three (i assume)
+
+### 2023-05-12
+
+2023-05-12 10:24:37
+
+[SOP](#closing-sop)
+
+2023-05-12 11:50:50
+
+Overnight sequence failed due to "not ready timeout". No clear indication of why, but the shutdown macro was not enabled, so the instrument kept running regardless.
+
+Start work at 16:00, need to be at denistone station at 14:45. Need to go home first and groom, say 14:00. Currently 11:44. Gives me 1.5 hours.
+
+2L of H2O at 0.95 ml/min provides me with 31 hours of runtime, btw.
+
+Assuming that I am running 40 or so wines over the next 48 hours, I need to prep  864mL of CUPRAC reagents..
+
+Start up has 7 minutes to go, need to:
+- [x] prep 120mL of cuprac reagent.
+[SOP](#closing-sop)
+- [x] prep cuprac. 30 mins.
+- [x] startup [SOP](#cuprac-sop) 30 mins.
+- [x] run wine 3 ambient.
+
+So apparently precipitate formed and blocked the crud filter prior to the detector, causing the sequence to fail to engage. Because the shutdown macro was not enabled, the instrument just kept running.
+
+The solution is to drop the injection volume down to 5uL injection.
+
+Tommorow ill be running approx 40 runs, which is 33.6 hours of runtime. at 0.3ml/min, that is 604mL of cuprac.
+
+gna make a litre of each.
+
+2023-05-12 13:11:30
+
+|           |   molar_mass |   final_conc |   required_vol |   moles |   mass (g) |
+|:----------|-------------:|-------------:|---------------:|--------:|-----------:|
+| cop_chlor |       170.48 |        0.01  |              1 |   0.01  |    01.7048 |
+| neocup    |       208.26 |        0.075 |              1 |   0.075 |    15.6195 |
+| amac      |        77.08 |        1     |              1 |   1     |    77.08   |
+
+2023-05-12 14:06:26
+
+Exiting lab.
+
+I have started another run of ca0301, as I leave. I have asked corey to shut down the instrument once its done.
+
+I have created ramp_up methods and sequences specific to CUPRAC which include the isopump being at 0.3ml/min steady. See how that goes.
+
+I have prepared 3 x 1L volumetric flasks for CUPRAC reagent. Will ceate tomorrow, just needs a flush out with its specific solvent.
+
+Saturday:
+- [x] pick up samples from davy and colin.
+
+Monday:
+- [ ] prepare cuprac reagents.
+- [ ] setup sequence.
+- [ ] run samples.
+- [ ] enter samples into sample_tracker/cellartracker.
+
+### 2023-05-13
+
+2023-05-13 16:01:00
+
+Finalize chemstation code.
+
+The proecss is as follows, and I want to write it so that each sub-process 'surfaces' in the main function.
+
+2023-05-13 17:03:53
+
+One thing I introduced was the capability to check the db if files were already in there. Problem with this is that the write queries drop the table by default. So the table dropping needs to not occur.
+
+Thus we need to write append functions.
+
 
 <!-- end_file -->
