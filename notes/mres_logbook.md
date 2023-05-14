@@ -681,7 +681,23 @@ The proecss is as follows, and I want to write it so that each sub-process 'surf
 
 One thing I introduced was the capability to check the db if files were already in there. Problem with this is that the write queries drop the table by default. So the table dropping needs to not occur.
 
-Thus we need to write append functions.
+Thus we need to write append function
 
+### 2023-05-15
+
+2023-05-15 09:15:21
+
+Thesis structure has been started.
+
+For each topic section, need to have the following paragraph structure:
+
+1. What is the topic.
+2. When is the topic.
+3. Why is the topic.
+4. How is the topic.
+5. Where is the topic.
+   
+Or something like that.
 
 <!-- end_file -->
+
