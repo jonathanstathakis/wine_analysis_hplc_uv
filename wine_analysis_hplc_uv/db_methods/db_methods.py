@@ -3,6 +3,7 @@ A file to contain general duckdb database methods.
 """
 from distutils.command.check import check
 import os
+import sys
 import duckdb as db
 import pandas as pd
 from ..devtools import (function_timer as ft, project_settings)
@@ -22,6 +23,8 @@ def create_table(db_filepath: str, db_table_name: str, schema: str) -> None:
 
 def display_table_info(db_filepath: str, table_name: str) -> None:
     print(f"\n\n###### {table_name.upper()} TABLE ######\n")
+
+    assert isinstance(db_filepath, str)
 
     with db.connect(db_filepath) as con:
         con.sql(f"DESCRIBE TABLE {table_name}").show()
@@ -60,13 +63,14 @@ def write_df_to_table(
             FROM df;
             """
     try:
+        print(f"writing to {table_name} in {db_filepath}")
         with db.connect(db_filepath) as con:
             con.sql(insert_query)
     except Exception as e:
         print(e)
         print(f"full query is:\n\n{insert_query}")
-
-    display_table_info(con, table_name)
+        sys.exit()
+    return None
 
 
 @ft.timeit
