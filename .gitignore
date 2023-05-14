@@ -181,3 +181,10 @@ unique_new_id_spectra.pk1
 notes/homepage_paper-data-processing-for-chemometrics.md
 chemstation/chemstation_data_dicts_tuple.pk
 scripts/reagent_calculator.py
+*.db
+*.pk
+*.vscode
+.idea
+.idea
+*.vscode
+*.pk
