@@ -14,7 +14,7 @@
 ├── core
 │   ├── __init__.py
 │   ├── adapt_super_pipe_to_db.py
-│   └── build_library.py
+│   └── build_db_library.py
 ├── core.py
 ├── credientals_tokens
 │   ├── credentials_sheets.json
@@ -124,7 +124,7 @@
 ├── tests
 │   ├── test_spectra_df.py
 │   └── testing_reading_db.py
-├── wine_analysis_hplc_uv.code-workspace
+├── ..code-workspace
 └── wine_deg_study
     ├── 2023-04-11_sequence_planner.ipynb
     ├── 2023-04-11_wine_deg_sample_tracker_creation.ipynb

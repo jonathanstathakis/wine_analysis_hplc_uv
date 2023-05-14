@@ -2,19 +2,19 @@
 The main file of the wine_analysis_hplc_uv thesis project. Will act
 as the overarching pipeline to get to final results.
 """
-import devtools.project_settings
-from signal_processing.peak_alignment import peak_alignment_pipe
-import core.build_library as bl
+from wine_analysis_hplc_uv.core import build_library
+from wine_analysis_hplc_uv.devtools import project_settings
+from wine_analysis_hplc_uv.signal_processing.peak_alignment import \
+    peak_alignment_pipe
 
 
 def core():
     """
     Project main file driver function. A pipe to go from start to finish.
     """
+    db_filepath, data_lib_path = "wine_auth_db.db", "/Users/jonathan/0_jono_data"
     # Phase 1: collect and preprocess data
-    bl.build_library(
-        db_path="wine_auth_db.db", data_lib_path="/Users/jonathan/0_jono_data"
-    )
+    build_library.build_db_library(db_filepath, data_lib_path)
 
     # Phase 2: process data
 
