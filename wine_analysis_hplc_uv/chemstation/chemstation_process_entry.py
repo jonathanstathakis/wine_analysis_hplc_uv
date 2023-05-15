@@ -32,8 +32,11 @@ import os
 import duckdb as db
 import pandas as pd
 
-from ..chemstation import (chemstation_methods, chemstation_to_db_methods,
-                           pickle_chemstation_data)
+from ..chemstation import (
+    chemstation_methods,
+    chemstation_to_db_methods,
+    pickle_chemstation_data,
+)
 from ..db_methods import db_methods
 from ..devtools import function_timer as ft
 from ..devtools import project_settings
@@ -45,12 +48,11 @@ def chemstation_data_to_db(data_lib_path: str, db_filepath: str):
     """
     # get the .D paths
     # check if any paths are already in the db, returns the list of those NOT in the db.
-    
+
     uv_paths_list = chemstation_methods.uv_filepaths_to_list(data_lib_path)
     uv_paths_list = check_if_chemstation_tables_needs_updating(
-        uv_paths_list, db_filepath, 'chemstation_metadata'
+        uv_paths_list, db_filepath, "chemstation_metadata"
     )
-    
 
     # get the uv_metadata and data as lists either from the pickle or the process.
     # pickle vars
@@ -78,9 +80,8 @@ def chemstation_data_to_db(data_lib_path: str, db_filepath: str):
         chemstation_metadata_list
     )
     # cs: spectrum_chromatogram
-    cs_df = chemstation_to_db_methods.uv_data_list_to_df(
-        chromatogram_spectrum_list)
-    
+    cs_df = chemstation_to_db_methods.uv_data_list_to_df(chromatogram_spectrum_list)
+
     # get the intended table name
     chemstation_metadata_table_name = "chemstation_metadata"
     chromatogram_spectrum_table_name = "chromatogram_spectra"
@@ -90,16 +91,25 @@ def chemstation_data_to_db(data_lib_path: str, db_filepath: str):
     #     chromatogram_spectrum_table_name,
     #     db_filepath,
     # )
-    metadata_df.pipe(db_methods.append_df_to_db_table_handler, db_filepath, chemstation_metadata_table_name)
-    cs_df.pipe(db_methods.append_df_to_db_table_handler, db_filepath, chromatogram_spectrum_table_name)
+    metadata_df.pipe(
+        db_methods.append_df_to_db_table_handler,
+        db_filepath,
+        chemstation_metadata_table_name,
+    )
+    cs_df.pipe(
+        db_methods.append_df_to_db_table_handler,
+        db_filepath,
+        chromatogram_spectrum_table_name,
+    )
     # cs_df.pipe(
     #     chemstation_to_db_methods.check_if_table_exists_write_df_to_db,
     #     chromatogram_spectrum_table_name,
     #     db_filepath,
     # )
 
+
 def check_if_chemstation_tables_needs_updating(
-    uv_paths_list: list, db_filepath: str, db_table_name : str
+    uv_paths_list: list, db_filepath: str, db_table_name: str
 ) -> list:
     """
     Check if the path column of the chemstation db table corresponds to the uv_paths_list. if any in uv_paths_list not in db, tell user.
@@ -115,13 +125,17 @@ def check_if_chemstation_tables_needs_updating(
             with db.connect(db_filepath) as con:
                 db_path_list = con.sql(query).df()["path"]
             uv_paths_series = pd.Series(uv_paths_list)
-            
-            uv_paths_list = uv_paths_series[~uv_paths_series.isin(db_path_list)].to_list()
+
+            uv_paths_list = uv_paths_series[
+                ~uv_paths_series.isin(db_path_list)
+            ].to_list()
             assert uv_paths_list, f"no files to add to {db_table_name}"
         except AssertionError as e:
             print(e)
         else:
-            print(f"The following files are in the specified filepath but are not in {db_table_name}:")
+            print(
+                f"The following files are in the specified filepath but are not in {db_table_name}:"
+            )
             print(uv_paths_list)
             print(f"adding to {db_table_name}..")
         finally:
@@ -130,8 +144,6 @@ def check_if_chemstation_tables_needs_updating(
     except db.CatalogException as e:
         print(e)
         return uv_paths_list
-
-
 
 
 def main():
