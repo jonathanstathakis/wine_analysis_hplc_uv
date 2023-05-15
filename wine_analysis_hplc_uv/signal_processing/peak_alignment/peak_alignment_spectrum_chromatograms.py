@@ -5,21 +5,22 @@ Produce a pairwise euclidean distance matrix of sample sc matrices.
 2. Construct the pairwise-distance matrix.
 3. 
 """
-import df_methods
-import sys
 import os
-import duckdb as db
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-import db_methods
-from signal_processing import signal_data_treatment_methods as dt
-import plot_methods
-import streamlit as st
-import signal_alignment_methods as sa
-from function_timer import timeit
 import pickle
+import sys
+
+import db_methods
+import df_methods
+import duckdb as db
+import matplotlib.pyplot as plt
+import numpy as np
 import observing_spectra_shape_variation
+import pandas as pd
+import plot_methods
+import signal_alignment_methods as sa
+import streamlit as st
+from function_timer import timeit
+from signal_processing import signal_data_treatment_methods as dt
 
 pd.set_option("display.max_rows", None)
 pd.set_option("display.max_columns", None)

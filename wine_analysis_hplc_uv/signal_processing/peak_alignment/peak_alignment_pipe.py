@@ -9,21 +9,22 @@ rule: ditch time.
 """
 
 import imp
-import sys
-import duckdb as db
-import pandas as pd
-import numpy as np
-import pickle
 import os
+import pickle
 import shutil
+import sys
+
+import duckdb as db
+import numpy as np
+import pandas as pd
 import streamlit as st
 
 st.set_page_config(layout="wide")
-from typing import Union, List
-from ...scripts.core_scripts import signal_data_treatment_methods as dt
-from ...plot_methods import plotly_plot_methods
-from ...signal_processing import signal_alignment_methods as sa
+from typing import List, Union
 
+from ...plot_methods import plotly_plot_methods
+from ...scripts.core_scripts import signal_data_treatment_methods as dt
+from ...signal_processing import signal_alignment_methods as sa
 
 # create your figure and get the figure object returned
 

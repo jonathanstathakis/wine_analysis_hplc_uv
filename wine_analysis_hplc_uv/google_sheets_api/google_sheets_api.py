@@ -17,16 +17,14 @@ Note: A Google spreadsheet is made up of many sheets. This fact may help you con
 To get credentials.json, go [here](https://console.cloud.google.com/welcome?_ga=2.257563139.969094172.1682911620-1922289290.1679869993&_gac=1.146876229.1682911620.CjwKCAjwo7iiBhAEEiwAsIxQEWyUt8RYTQjtFGOPyODyGgdA7p0t7GOniNvljHEMlJa1rbadYNPhYhoC_wkQAvD_BwE&project=wine-sample-tracker)
 """
 
+import os
+import pandas as pd
+from google.auth import exceptions
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
-from google.auth import exceptions
-
-import os
-
-import pandas as pd
 
 
 def get_credentials(creds_parent_path: str):
@@ -55,7 +53,7 @@ def get_credentials(creds_parent_path: str):
             except exceptions.RefreshError as e:
                 print(e)
                 os.remove(
-                    "/Users/jonathan/wine_analysis_hplc_uv/credientals_tokens/credentials_sheets.json"
+                    "/Users/jonathan/mres_thesis/wine_analysis_hplc_uv.py/credientals_tokens/credentials_sheets.json"
                 )
                 creds.refresh(Request())
         else:
