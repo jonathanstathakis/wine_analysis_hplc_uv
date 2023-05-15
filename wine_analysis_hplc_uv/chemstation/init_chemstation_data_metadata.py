@@ -13,7 +13,7 @@ import duckdb as db
 import numpy as np
 import pandas as pd
 import rainbow as rb
-from ..devtools import (function_timer as ft, project_settings)
+from ..devtools import function_timer as ft, project_settings
 
 counter = None
 counter_lock = None
@@ -195,7 +195,7 @@ def uv_extractor_pool(dirpaths: list) -> tuple:
 
     # check contents of uv_file_tuples. if empty, raise error.
     check_if_uv_file_tuples_are_empty(uv_file_tuples)
-    
+
     if not isinstance(uv_file_tuples, list):
         print(f"in uv_extractor_pool..")
         print(f"uv_file_tuples should be list, but they are {type(uv_file_tuples)}")
@@ -204,9 +204,12 @@ def uv_extractor_pool(dirpaths: list) -> tuple:
     print("Finished processing files.")
     return uv_file_tuples
 
+
 def check_if_uv_file_tuples_are_empty(uv_file_tuples: tuple):
     for idx, item in enumerate(uv_file_tuples):
-        assert item, print(f'Error: after processing given chromatogram_spectrum_files, {idx} in uv_file_tuples was empty')
+        assert item, print(
+            f"Error: after processing given chromatogram_spectrum_files, {idx} in uv_file_tuples was empty"
+        )
     return None
 
 
@@ -215,6 +218,7 @@ def main():
     root_dir_path = "/Users/jonathan/0_jono_data"
     db_filename = "uv_database.db"
     db_filepath = os.path.join(os.getcwd(), db_filename)
+
 
 if __name__ == "__main__":
     main()
