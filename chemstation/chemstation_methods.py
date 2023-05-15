@@ -15,7 +15,7 @@ def uv_filepaths_to_list(root_dir_path: str) -> list:
     dirpaths = []
     filepath_suffix = ".UV"
 
-    print(f"Walking through {root_dir_path} to find {filepath_suffix} files")
+    print(f"Walking through {root_dir_path} to find {filepath_suffix} files", end = ' ')
     # Walk through the directory tree using os.walk()
     for dirpath, dirnames, filenames in os.walk(root_dir_path):
         # Check if the directory name ends with '.D'
