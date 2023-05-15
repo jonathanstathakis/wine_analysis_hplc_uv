@@ -6,29 +6,35 @@ Acts on a local table which is written by prototype_code/chemstation_db_tables_m
 import pandas as pd
 import numpy as np
 import duckdb as db
-from df_methods import df_cleaning_methods
-from db_methods import db_methods, write_df_to_table
-from devtools import function_timer as ft
+from ..df_methods import df_cleaning_methods, 
+from ..db_methods import db_methods, write_df_to_table
+from ..devtools import function_timer as ft
 
 
-def init_cleaned_chemstation_metadata_table(con, raw_table_name):
+def clean_ch_metadata_table(db_filepath: str, raw_table_name: str):
     """
     A pipe function that gets the raw chemstation table, cleans it and writes back to the db
     """
-
-    df = con.sql(
-        f"SELECT notebook, date, method, path, sequence_name, hash_key FROM {raw_table_name}"
-    ).df()
+    with db.connect(db_filepath) as con:
+        df = con.sql(
+            f"""
+            SELECT
+                notebook, date, method, path, sequence_name, hash_key
+            FROM {raw_table_name}
+            """
+        ).df()
 
     df = (
-        df.pipe(df_string_cleaner)
+        df.pipe(df_cleaning_methods.df_string_cleaner)
         .pipe(rename_chemstation_metadata_cols)
         .pipe(format_acq_date)
         .pipe(chemstation_id_cleaner)
         .pipe(chemstation_metadata_drop_unwanted_runs)
     )
+    new_table_name = raw_table_name.replace("raw", "cleaned")
+    write_cleaned_chemstation_metadata_table(df, db_filepath, new_table_name)
 
-    write_cleaned_chemstation_metadata_table(df, con, raw_table_name)
+    
 
     return None
 
@@ -148,20 +154,19 @@ def library_id_replacer(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def write_cleaned_chemstation_metadata_table(
-    df: pd.DataFrame, con: db.DuckDBPyConnection, raw_table_name: str
+    df: pd.DataFrame, db_filepath: str, table_name: str
 ) -> None:
     """
     1. create a table name based on the raw name, replacing 'raw' for 'cleaned'.
     2. get the information required to write the cleaned df to the db.
     3. write the df to db
     """
-    new_table_name = raw_table_name.replace("raw", "cleaned")
     schema, table_column_names, df_column_names = write_df_to_table_variables()
 
     try:
         print(f"\nwriting df of shape {df.shape}, columns: {df.columns} to db\n")
-        write_df_to_table(
-            df, con, new_table_name, schema, table_column_names, df_column_names
+        db_methods.write_df_to_table(
+            df, db_filepath, table_name, schema, table_column_names, df_column_names
         )
     except Exception as e:
         print(
@@ -173,7 +178,7 @@ def write_cleaned_chemstation_metadata_table(
 def main():
     con = db.connect("wine_auth_db.db")
     raw_table_name = "raw_chemstation_metadata"
-    init_cleaned_chemstation_metadata_table(con, raw_table_name)
+    clean_ch_metadata_table(con, raw_table_name)
 
 
 if __name__ == "__main__":
