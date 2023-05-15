@@ -6,25 +6,21 @@ import shutil
 
 import duckdb as db
 
-from ..cellartracker_methods import cellartracker_cleaner, init_raw_cellartracker_table
-from ..chemstation import chemstation_process_entry, chemstation_metadata_table_cleaner
+from ..cellartracker_methods import (cellartracker_cleaner,
+                                     init_raw_cellartracker_table)
+from ..chemstation import (chemstation_metadata_table_cleaner,
+                           chemstation_process_entry)
 from ..core import adapt_super_pipe_to_db
 from ..devtools import function_timer as ft
 from ..devtools import project_settings
-from ..sampletracker import init_raw_sample_tracker_table, sample_tracker_cleaner
+from ..sampletracker import (init_raw_sample_tracker_table,
+                             sample_tracker_cleaner)
 
 
 @ft.timeit
 def build_db_library(db_filepath: str, data_lib_path: str) -> None:
     """
     Pipeline function to construct the super_table, a cleaned algamation of chemstation, sample_tracker and cellartracker tables.
-
-    1. Create db if none exists.
-    1. delete specified files from data dir if present.
-    2. get a list of .D dir paths containing .UV files.
-    3. write raw tables.
-    4. write cleaned tables.
-    5. write super table.
     """
     # 1. create db file if none exists.
     if not os.path.isfile(db_filepath):
@@ -35,22 +31,27 @@ def build_db_library(db_filepath: str, data_lib_path: str) -> None:
     delete_unwanted_files(data_lib_path)
 
     #  3. write raw tables to db from sources
-    raw_chemstation_metadata_table_name = "raw_chemstation_metadata"
-    raw_chemstation_spectra_table_name = "raw_chromatogram_spectra"
-    raw_sample_tracker_table_name = "raw_sampletracker"
-    raw_cellartracker_table_name = "raw_cellartracker"
+    chemstation_metadata_table_name = "chemstation_metadata"
+    chemstation_sc_table_name = "chromatogram_spectra"
+    sampletracker_table_name = "sampletracker"
+    cellartracker_table_name = "cellartracker"
 
-    write_raw_tables(data_lib_path,
-                     db_filepath,
-                     raw_chemstation_metadata_table_name,
-                     raw_chemstation_spectra_table_name,
-                     raw_sample_tracker_table_name,
-                     raw_cellartracker_table_name)
-
+    write_raw_tables(
+        data_lib_path,
+        db_filepath,
+        chemstation_metadata_table_name,
+        chemstation_sc_table_name,
+        sampletracker_table_name,
+        cellartracker_table_name,
+    )
 
     # 4. clean the raw tables
-    load_cleaned_tables(db_filepath,
-                        )
+    load_cleaned_tables(
+        db_filepath,
+        chemstation_metadata_table_name,
+        sampletracker_table_name,
+        cellartracker_table_name,
+    )
 
     # 5. join the tables together.
     # adapt_super_pipe_to_db.load_super_table(con)
@@ -88,15 +89,18 @@ def remove_existing_db(db_path: str) -> None:
     return None
 
 
-def write_raw_tables(data_lib_path: str,
-                     db_filepath: str,
-                     raw_chemstation_metadata_table_name: str,
-                     raw_chemstation_spectra_table_name: str,
-                     raw_sample_tracker_table_name: str,
-                     raw_cellartracker_table_name: str):
-    chemstation_process_entry.chemstation_data_to_db(data_lib_path, db_filepath, raw_chemstation_metadata_table_name, raw_chemstation_spectra_table_name)
-    init_raw_sample_tracker_table.init_raw_sample_tracker_table(db_filepath)
-    # init_raw_cellartracker_table(con)
+def write_raw_tables(
+    data_lib_path: str,
+    db_filepath: str,
+    chemstation_metadata_table_name: str,
+    chemstation_sc_table_name: str,
+    sampletracker_table_name: str,
+    cellartracker_table_name: str,
+):
+    chemstation_process_entry.chemstation_data_to_db(data_lib_path, db_filepath, chemstation_metadata_table_name, chemstation_sc_table_name)
+
+    init_raw_sample_tracker_table.init_raw_sample_tracker_table(db_filepath, sampletracker_table_name)
+    #init_raw_cellartracker_table(con)
     return None
 
 
