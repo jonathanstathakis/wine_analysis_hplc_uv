@@ -6,8 +6,8 @@ Acts on a local table which is written by prototype_code/chemstation_db_tables_m
 import pandas as pd
 import numpy as np
 import duckdb as db
-from ..df_methods import df_cleaning_methods, 
-from ..db_methods import db_methods, write_df_to_table
+from ..df_methods import df_cleaning_methods
+from ..db_methods import db_methods
 from ..devtools import function_timer as ft
 
 
@@ -31,11 +31,10 @@ def clean_ch_metadata_table(db_filepath: str, raw_table_name: str):
         .pipe(chemstation_id_cleaner)
         .pipe(chemstation_metadata_drop_unwanted_runs)
     )
+    
     new_table_name = raw_table_name.replace("raw", "cleaned")
     write_cleaned_chemstation_metadata_table(df, db_filepath, new_table_name)
-
-    
-
+    db_methods.display_table_info(db_filepath, new_table_name)
     return None
 
 
