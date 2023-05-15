@@ -35,10 +35,22 @@ def build_db_library(db_filepath: str, data_lib_path: str) -> None:
     delete_unwanted_files(data_lib_path)
 
     #  3. write raw tables to db from sources
-    write_raw_tables(data_lib_path, db_filepath)
+    raw_chemstation_metadata_table_name = "raw_chemstation_metadata"
+    raw_chemstation_spectra_table_name = "raw_chromatogram_spectra"
+    raw_sample_tracker_table_name = "raw_sampletracker"
+    raw_cellartracker_table_name = "raw_cellartracker"
 
-    # # 4. clean the raw tables
-    load_cleaned_tables(db_filepath)
+    write_raw_tables(data_lib_path,
+                     db_filepath,
+                     raw_chemstation_metadata_table_name,
+                     raw_chemstation_spectra_table_name,
+                     raw_sample_tracker_table_name,
+                     raw_cellartracker_table_name)
+
+
+    # 4. clean the raw tables
+    load_cleaned_tables(db_filepath,
+                        )
 
     # 5. join the tables together.
     # adapt_super_pipe_to_db.load_super_table(con)
@@ -76,8 +88,13 @@ def remove_existing_db(db_path: str) -> None:
     return None
 
 
-def write_raw_tables(data_lib_path: str, db_filepath: str):
-    chemstation_process_entry.chemstation_data_to_db(data_lib_path, db_filepath)
+def write_raw_tables(data_lib_path: str,
+                     db_filepath: str,
+                     raw_chemstation_metadata_table_name: str,
+                     raw_chemstation_spectra_table_name: str,
+                     raw_sample_tracker_table_name: str,
+                     raw_cellartracker_table_name: str):
+    chemstation_process_entry.chemstation_data_to_db(data_lib_path, db_filepath, raw_chemstation_metadata_table_name, raw_chemstation_spectra_table_name)
     init_raw_sample_tracker_table.init_raw_sample_tracker_table(db_filepath)
     # init_raw_cellartracker_table(con)
     return None
@@ -90,16 +107,15 @@ def load_cleaned_tables(
     raw_cellartracker_table_name: str,
 ):
     # 1. Chemstation metadata table
-    ch_metadata_table_name = "raw_chemstation_metadata"
     chemstation_metadata_table_cleaner.clean_ch_metadata_table(
-        db_filepath, ch_metadata_table_name
+        db_filepath, raw_chemstation_metadata_table_name
     )
 
     # 2. Sampletracker table
     # sample_tracker_cleaner.init_cleaned_sample_tracker_table(
     #   db_filepath,
     # 3. cellartracker table
-    # cellartracker_cleaner.init_cleaned_cellartracker_table(con, 'raw_cellartracker')
+    # cellartracker_cleaner.init_cleaned_cellartracker_table(con,'raw_cellartracker')
     return None
 
 
