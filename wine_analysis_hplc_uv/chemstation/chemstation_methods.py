@@ -6,8 +6,6 @@ import os
 
 from ..devtools import function_timer as ft, project_settings
 
-
-@ft.timeit
 def uv_filepaths_to_list(root_dir_path: str) -> list:
     """
     Take a filepath and search it for .D dirs containing .UV files. Returns a list of filepaths matching the criteria.
@@ -16,7 +14,7 @@ def uv_filepaths_to_list(root_dir_path: str) -> list:
     dirpaths = []
     filepath_suffix = ".UV"
 
-    print(f"Walking through {root_dir_path} to find {filepath_suffix} files")
+    print(f"Walking through {root_dir_path} to find {filepath_suffix} files.. ")
     # Walk through the directory tree using os.walk()
     for dirpath, dirnames, filenames in os.walk(root_dir_path):
         # Check if the directory name ends with '.D'
@@ -27,7 +25,7 @@ def uv_filepaths_to_list(root_dir_path: str) -> list:
                 # If both conditions are met, append the directory path to the list
                 dirpaths.append(dirpath)
 
-    print(f"Found {len(dirpaths)} .UV files")
+    print(f"found {len(dirpaths)} .UV files.\n")
 
     return dirpaths
 

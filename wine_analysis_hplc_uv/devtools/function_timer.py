@@ -7,7 +7,7 @@ def timeit(func):
         result = func(*args, **kwargs)
         end_time = time.time()
         print(
-            f"Function {func.__name__} took {end_time - start_time:.4f} seconds to execute"
+            f"Function {func.__name__} took {end_time - start_time:.4f} seconds to execute\n"
         )
         return result
 
