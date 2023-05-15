@@ -2,6 +2,7 @@
 Basic clean on sample_tracker. as of 2023-04-19 doesn't need it, but good to be safe for future issues.
 """
 import html
+import os
 
 import duckdb as db
 import numpy as np
@@ -11,17 +12,24 @@ from ..db_methods import db_methods
 from ..df_methods import df_cleaning_methods
 
 
-def init_cleaned_sample_tracker_table(
-    con: db.DuckDBPyConnection, raw_table_name: str
+def clean_sample_tracker_table(
+    db_filepath: str,
+    raw_sample_tracker_table_name: str
 ) -> None:
     print("generating raw_sample_tracker_table from db")
-    raw_sample_tracker_df = con.sql(f"SELECT * FROM {raw_table_name}").df()
 
-    cleaned_sample_tracker_df = sample_tracker_df_cleaner(raw_sample_tracker_df)
+    with db.connect(db_filepath) as con:
+        raw_sample_tracker_df = con.sql(
+            f"SELECT * FROM {raw_sample_tracker_table_name}"
+            ).df()
 
-    out_name = raw_table_name.replace("raw", "cleaned")
+    cleaned_sample_tracker_df = sample_tracker_df_cleaner(
+        raw_sample_tracker_df)
 
-    write_clean_sample_tracker_to_db(cleaned_sample_tracker_df, con, out_name)
+    new_db_table_name = raw_sample_tracker_table_name.replace("raw", "cleaned")
+
+    write_clean_sample_tracker_to_db(
+        cleaned_sample_tracker_df, db_filepath, new_db_table_name)
 
     return None
 
@@ -37,7 +45,9 @@ def sample_tracker_df_cleaner(df):
     return df
 
 
-def write_clean_sample_tracker_to_db(df, con, table_name) -> None:
+def write_clean_sample_tracker_to_db(df: pd.DataFrame,
+                                     db_filepath: str,
+                                     table_name: str) -> None:
     schema = """
         id INTEGER,
         vintage VARCHAR,
@@ -62,7 +72,7 @@ def write_clean_sample_tracker_to_db(df, con, table_name) -> None:
 
     db_methods.write_df_to_table(
         df,
-        con,
+        db_filepath,
         table_name,
         schema,
         table_column_names=col_names,
@@ -73,7 +83,10 @@ def write_clean_sample_tracker_to_db(df, con, table_name) -> None:
 
 
 def main():
-    sample_tracker_df_cleaner()
+    def clean_sample_tracker_table(
+    db_filepath = os.environ.get("WINE_AUTH_DB_PATH", ),
+    raw_sample_tracker_table_name = r
+)
 
 
 if __name__ == "__main__":
