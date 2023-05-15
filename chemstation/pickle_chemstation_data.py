@@ -6,7 +6,6 @@ import pickle
 from sqlite3 import dbapi2
 
 import duckdb as db
-
 from devtools import function_timer as ft
 from devtools import project_settings
 
@@ -34,7 +33,7 @@ def pickle_interface(
             pickle_dump(chemstation_data_dicts_tuple, pickle_filepath)
     # if pickle doesnt exist, ask if want to create.
     elif not os.path.isfile(pickle_filepath):
-        use_pickle = input("no pickle found, create? (y/n): ")
+        use_pickle = input(f"no pickle found, create? at {pickle_filepath} (y/n): ")
         # if yes to create, run chemstation process and create pickle.
         if use_pickle == "y":
             chemstation_data_dicts_tuple = (
