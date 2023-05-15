@@ -1,7 +1,4 @@
-from re import U
-
-
-U#!/usr/bin/env python3
+#!/usr/bin/env python3
 """
 The main file of the wine_analysis_hplc_uv thesis project. Will act
 as the overarching pipeline to get to final results.
