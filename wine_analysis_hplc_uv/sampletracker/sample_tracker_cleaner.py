@@ -83,11 +83,7 @@ def write_clean_sample_tracker_to_db(df: pd.DataFrame,
 
 
 def main():
-    def clean_sample_tracker_table(
-    db_filepath = os.environ.get("WINE_AUTH_DB_PATH", ),
-    raw_sample_tracker_table_name = r
-)
-
+    return None
 
 if __name__ == "__main__":
     main()
