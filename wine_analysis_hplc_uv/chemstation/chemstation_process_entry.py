@@ -28,6 +28,7 @@ to db are as follows:
  the list of files to process, calls the processor, passes the processed data to the pickler, passes the processed data to the db writing function.
 """
 import os
+import sys
 
 import duckdb as db
 import pandas as pd
@@ -39,7 +40,10 @@ from ..devtools import function_timer as ft
 from ..devtools import project_settings
 
 
-def chemstation_data_to_db(data_lib_path: str, db_filepath: str):
+def chemstation_data_to_db(data_lib_path: str,
+                           db_filepath: str,
+                           raw_chemstation_metadata_table_name: str,
+                           raw_chemstation_spectra_table_name: str):
     """
     main driver file, handle any preprocessing then activate write_ch_metadata_table_to_db_entry.
     """
@@ -50,58 +54,63 @@ def chemstation_data_to_db(data_lib_path: str, db_filepath: str):
 
     uv_paths_list = chemstation_methods.uv_filepaths_to_list(data_lib_path)
     uv_paths_list = check_if_chemstation_tables_needs_updating(
-        uv_paths_list, db_filepath, "chemstation_metadata"
+        uv_paths_list,
+        db_filepath,
+        raw_chemstation_metadata_table_name
     )
-    if not uv_paths_list:
+    # if uv_paths_list is empty, skip rest of function.
+    if uv_paths_list:
+        # get the uv_metadata and data as lists either from the pickle or the process.
+        # pickle vars
+        pickle_filename = "chemstation_data_dicts_tuple.pk"
+        pickle_filepath = os.path.join(os.getcwd(), pickle_filename)
+        chemstation_data_dicts_tuple = pickle_chemstation_data.chemstation_pickle_interface(
+            pickle_filepath, uv_paths_list, db_filepath
+        )
+
+        assert isinstance(
+            chemstation_data_dicts_tuple, tuple
+        ), "the data_dicts var is expected to be of type tuple."
+
+        chemstation_metadata_list, chromatogram_spectrum_list = (
+            chemstation_data_dicts_tuple[0],
+            chemstation_data_dicts_tuple[1],
+        )
+
+        # extract the lists from the list object
+        assert isinstance(chemstation_metadata_list, tuple) & isinstance(
+            chromatogram_spectrum_list, tuple
+        ), f"chemstation_metadata_list is dtype {type(chemstation_metadata_list)}, chromatogram_spectrum_list is dtype {type(chromatogram_spectrum_list)}. Both should be list"
+
+        metadata_df = chemstation_to_db_methods.metadata_list_to_df(
+            chemstation_metadata_list
+        )
+        # cs: spectrum_chromatogram
+        cs_df = chemstation_to_db_methods.uv_data_list_to_df(chromatogram_spectrum_list)
+
+        # metadata_df.pipe
+        metadata_df.pipe(
+            db_methods.append_df_to_db_table_handler,
+            db_filepath,
+            raw_chemstation_metadata_table_name,
+        )
+        cs_df.pipe(
+            db_methods.append_df_to_db_table_handler,
+            db_filepath,
+            raw_chemstation_spectra_table_name,
+        )
+    elif not uv_paths_list:
         print(f"{len(uv_paths_list)} new uv_files to add to db.\n")
         print(f"Therefore, skipping remaining raw chemstation process. {os.path.abspath(__file__)}\n")
         return None
-    # get the uv_metadata and data as lists either from the pickle or the process.
-    # pickle vars
-    pickle_filename = "chemstation_data_dicts_tuple.pk"
-    pickle_filepath = os.path.join(os.getcwd(), pickle_filename)
-    chemstation_data_dicts_tuple = pickle_chemstation_data.chemstation_pickle_interface(
-        pickle_filepath, uv_paths_list, db_filepath
-    )
-
-    assert isinstance(
-        chemstation_data_dicts_tuple, tuple
-    ), "the data_dicts var is expected to be of type tuple."
-
-    chemstation_metadata_list, chromatogram_spectrum_list = (
-        chemstation_data_dicts_tuple[0],
-        chemstation_data_dicts_tuple[1],
-    )
-
-    # extract the lists from the list object
-    assert isinstance(chemstation_metadata_list, tuple) & isinstance(
-        chromatogram_spectrum_list, tuple
-    ), f"chemstation_metadata_list is dtype {type(chemstation_metadata_list)}, chromatogram_spectrum_list is dtype {type(chromatogram_spectrum_list)}. Both should be list"
-
-    metadata_df = chemstation_to_db_methods.metadata_list_to_df(
-        chemstation_metadata_list
-    )
-    # cs: spectrum_chromatogram
-    cs_df = chemstation_to_db_methods.uv_data_list_to_df(chromatogram_spectrum_list)
-
-    # get the intended table name
-    chemstation_metadata_table_name = "chemstation_metadata"
-    chromatogram_spectrum_table_name = "chromatogram_spectra"
-
-    # metadata_df.pipe
-    metadata_df.pipe(
-        db_methods.append_df_to_db_table_handler,
-        db_filepath,
-        chemstation_metadata_table_name,
-    )
-    cs_df.pipe(
-        db_methods.append_df_to_db_table_handler,
-        db_filepath,
-        chromatogram_spectrum_table_name,
-    )
-
+    pickle_cleanup(pickle_filepath)
     print("###\n\nEND CHEMSTATION RAW DATA PROCESSING\n\n###\n")
     return None
+
+
+def pickle_cleanup(pickle_filepath: str) -> None:
+    print("Cleaning up process pickle after writing data to db..")
+    os.remove(pickle_filepath)
 
 
 def check_if_chemstation_tables_needs_updating(
