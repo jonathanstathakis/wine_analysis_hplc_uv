@@ -1,11 +1,11 @@
 """
 A file to contain all the general data treatment methods: baseline correction, mean centering, normalization, peak alignment, peak finding, etc.
 """
-import pandas as pd
-from pybaselines import Baseline
 import numpy as np
-from scipy.signal import find_peaks
+import pandas as pd
 import streamlit as st
+from pybaselines import Baseline
+from scipy.signal import find_peaks
 
 
 def calc_baseline(
@@ -123,16 +123,14 @@ def test_baseline_correction():
     )
     baseline_subtracted_df["name_ct"] = names
 
-    import matplotlib.pyplot as plt
-
     # baseline_subtracted_df.plot(title = baseline_subtracted_df['name_ct'].values[0])
-
     import sys
 
-    sys.path.append("../../")
-    from scripts.core_scripts import hplc_dad_plots
+    import matplotlib.pyplot as plt
 
+    sys.path.append("../../")
     import streamlit as st
+    from scripts.core_scripts import hplc_dad_plots
 
     print(baseline_subtracted_df.columns)
 

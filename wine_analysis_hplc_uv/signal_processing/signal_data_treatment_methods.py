@@ -1,11 +1,11 @@
 """
 A file to contain all the general data treatment methods: baseline correction, mean centering, normalization, peak alignment, peak finding, etc.
 """
-import pandas as pd
-from pybaselines import Baseline
 import numpy as np
-from scipy.signal import find_peaks
+import pandas as pd
 import streamlit as st
+from pybaselines import Baseline
+from scipy.signal import find_peaks
 
 
 def calc_baseline(signal_df: pd.DataFrame) -> pd.DataFrame:
@@ -50,8 +50,9 @@ def peak_finder(
     return peak_df
 
 
+from typing import List, Union
+
 import pandas as pd
-from typing import Union, List
 
 
 def subset_spectra(

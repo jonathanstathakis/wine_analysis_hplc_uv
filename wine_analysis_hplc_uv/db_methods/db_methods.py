@@ -1,13 +1,14 @@
 """ 
 A file to contain general duckdb database methods.
 """
-from distutils.command.check import check
 import os
 import sys
 import duckdb as db
 import pandas as pd
-from ..devtools import (function_timer as ft, project_settings)
 from ..chemstation import chemstation_to_db_methods
+from ..devtools import function_timer as ft
+from ..devtools import project_settings
+
 
 def create_table(db_filepath: str, db_table_name: str, schema: str) -> None:
 
