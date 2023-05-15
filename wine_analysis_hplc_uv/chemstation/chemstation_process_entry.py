@@ -110,33 +110,56 @@ def check_if_chemstation_tables_needs_updating(
     """
     Check if the path column of the chemstation db table corresponds to the uv_paths_list. if any in uv_paths_list not in db, tell user.
     """
-    try:
-        query = f"""
-        SELECT
-            path
-        FROM
-            {db_table_name}
-        """
-        try:
-            with db.connect(db_filepath) as con:
-                db_path_list = con.sql(query).df()["path"]
-            uv_paths_series = pd.Series(uv_paths_list)
+    print(f"checking if any files in uv_paths_list not in {db_table_name}..\n")
+    
+    query = f"""
+    SELECT
+        path
+    FROM
+        {db_table_name}
+    """
 
-            uv_paths_list = uv_paths_series[
-                ~uv_paths_series.isin(db_path_list)
-            ].to_list()
-            assert uv_paths_list
-        except AssertionError as e:
-            print(e)
-        else:
-            print(f"The following files are in the specified filepath but are not in {db_table_name}:\n")
-            print(uv_paths_list)
-            print(f"adding to {db_table_name}..\n")
-        finally:
-            return uv_paths_list
+    uv_paths_series = pd.Series(uv_paths_list)
+
+    assert os.path.isfile(db_filepath), "db file not found"
+
+    try:
+        assert db_methods.test_db_table_exists(db_filepath, 
+        db_table_name)
+    except:
+        print('table not found, continuing..\n')
+        return uv_paths_list
+
+    # try to connect to the db table provided and extract the paths column as a pd series
+    try:
+        print(f'connecting to {db_filepath}..\n')
+        
+        with db.connect(db_filepath) as con:
+            db_path_series = con.sql(query).df()["path"]
+            print(f"in {db_table_name}, {len(uv_paths_series)} rows of \"path\" found..\n")
 
     except db.CatalogException as e:
         print(e)
+        with db.connect(db_filepath) as con:
+            con.sql("SELECT name FROM sqlite_master WHERE type='table'").show()
+        return uv_paths_list
+
+    uv_paths_list = uv_paths_series[
+        ~uv_paths_series.isin(db_path_series)
+    ].to_list()
+
+    print(f"{uv_paths_list} not found in db \"path\" column..\n")
+    
+    try:
+        assert uv_paths_list
+        
+    except AssertionError as e:
+        print(e)
+        return uv_paths_list
+    else:
+        print(f"The following files are in the specified filepath but are not in {db_table_name}:\n")
+        print(uv_paths_list)
+    finally:
         return uv_paths_list
 
 
