@@ -13,7 +13,7 @@ from ..df_methods import df_cleaning_methods
 
 
 def clean_sample_tracker_table(
-    db_filepath: str, raw_sample_tracker_table_name: str
+    db_filepath: str, raw_sample_tracker_table_name: str, cleaned_sampletracker_table_name: str
 ) -> None:
     print("generating raw_sample_tracker_table from db")
 
@@ -24,10 +24,8 @@ def clean_sample_tracker_table(
 
     cleaned_sample_tracker_df = sample_tracker_df_cleaner(raw_sample_tracker_df)
 
-    new_db_table_name = raw_sample_tracker_table_name.replace("raw", "cleaned")
-
     write_clean_sample_tracker_to_db(
-        cleaned_sample_tracker_df, db_filepath, new_db_table_name
+        cleaned_sample_tracker_df, db_filepath, cleaned_sampletracker_table_name
     )
 
     return None
