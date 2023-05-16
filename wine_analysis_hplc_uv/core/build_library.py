@@ -36,7 +36,7 @@ def build_db_library(db_filepath: str, data_lib_path: str) -> None:
     raw_chemstation_metadata_table_name = "raw_" + chemstation_metadata_table_name
     raw_chemstation_sc_table_name = "raw_" + chemstation_sc_table_name
     raw_sampletracker_table_name = "raw_" + sampletracker_table_name
-    raw_cellartracker_table_name = "raw_" + sampletracker_table_name
+    raw_cellartracker_table_name = "raw_" + cellartracker_table_name
 
     write_raw_tables(
         data_lib_path,
@@ -135,10 +135,10 @@ def load_cleaned_tables(
     )
 
     # 2. Sampletracker table
-    # sample_tracker_cleaner.init_cleaned_sample_tracker_table(
-    #   db_filepath,
+    sample_tracker_cleaner.clean_sample_tracker_table(
+      db_filepath, raw_sampletracker_table_name)
     # 3. cellartracker table
-    # cellartracker_cleaner.init_cleaned_cellartracker_table(con,'raw_cellartracker')
+    #cellartracker_cleaner.init_cleaned_cellartracker_table(con,'raw_cellartracker')
     return None
 
 
