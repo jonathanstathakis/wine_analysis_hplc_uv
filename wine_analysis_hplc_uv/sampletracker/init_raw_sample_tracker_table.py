@@ -14,7 +14,9 @@ def init_raw_sample_tracker_table(db_filepath: str, table_name: str) -> None:
     return None
 
 
-def write_raw_sample_tracker_to_db(df: pd.DataFrame, db_filepath: str, db_table_name: str):
+def write_raw_sample_tracker_to_db(
+    df: pd.DataFrame, db_filepath: str, db_table_name: str
+):
     schema = """
         id INTEGER,
         vintage VARCHAR,
@@ -41,7 +43,9 @@ def write_raw_sample_tracker_to_db(df: pd.DataFrame, db_filepath: str, db_table_
 
     assert isinstance(db_filepath, str)
 
-    db_methods.write_df_to_table(df, db_filepath, db_table_name, schema, target_columns, column_assignment)
+    db_methods.write_df_to_table(
+        df, db_filepath, db_table_name, schema, target_columns, column_assignment
+    )
     db_methods.display_table_info(db_filepath, db_table_name)
 
 

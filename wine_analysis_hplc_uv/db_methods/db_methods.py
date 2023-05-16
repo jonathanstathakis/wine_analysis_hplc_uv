@@ -11,14 +11,15 @@ from ..devtools import project_settings
 
 
 def create_table(db_filepath: str, db_table_name: str, schema: str) -> None:
-
     # check if table already exists
     if not test_db_table_exists(db_filepath, db_table_name):
         with db.connect(db_filepath) as con:
             # create table
-            response = con.execute(f"""
+            response = con.execute(
+                f"""
                 CREATE TABLE {db_table_name} ({schema})
-                """).fetchall()
+                """
+            ).fetchall()
         print(response)
 
 
@@ -94,26 +95,34 @@ def get_spectra(df: pd.DataFrame, con: db.DuckDBPyConnection) -> pd.DataFrame:
 
     return df
 
-def append_df_to_db_table_handler(df: pd.DataFrame, db_filepath: str, db_table_name: str)-> None:
+
+def append_df_to_db_table_handler(
+    df: pd.DataFrame, db_filepath: str, db_table_name: str
+) -> None:
     """
     A function to append an df to an already existing db table.
     """
+
     def append_df(df: pd.DataFrame, db_filepath: str, db_table_name: str) -> None:
         with db.connect(db_filepath) as con:
-            con.register('temp_table', df)
+            con.register("temp_table", df)
             con.execute(f"INSERT INTO {db_table_name} SELECT * FROM temp_table")
-            con.unregister('temp_table')
-    
-    def check_if_df_added_to_table(df: pd.DataFrame, db_filepath: str, db_table_name: str)-> bool:
+            con.unregister("temp_table")
+
+    def check_if_df_added_to_table(
+        df: pd.DataFrame, db_filepath: str, db_table_name: str
+    ) -> bool:
         with db.connect(db_filepath) as con:
             db_new_id_df = con.execute(f"SELECT hash_key from {db_table_name}").df()
-            assert not df['hash_key'].isin(db_new_id_df['hash_key']).empty
-    
+            assert not df["hash_key"].isin(db_new_id_df["hash_key"]).empty
+
     assert os.path.isfile(db_filepath), f"database not found at {db_filepath}."
 
     if not test_db_table_exists(db_filepath, db_table_name):
-        chemstation_to_db_methods.create_db_table_from_df(df, db_table_name, db_filepath)
-    else:        
+        chemstation_to_db_methods.create_db_table_from_df(
+            df, db_table_name, db_filepath
+        )
+    else:
         # check if the db exists.
         # check if table exists
         test_db_table_exists(db_filepath, db_table_name)
@@ -121,9 +130,11 @@ def append_df_to_db_table_handler(df: pd.DataFrame, db_filepath: str, db_table_n
     check_if_df_added_to_table(df, db_filepath, db_table_name)
     return None
 
+
 def test_db_table_exists(db_filepath: str, db_table_name: str) -> bool:
     with db.connect(db_filepath) as con:
-        tables = con.execute(f"""
+        tables = con.execute(
+            f"""
         SELECT
             name
         FROM
@@ -132,8 +143,9 @@ def test_db_table_exists(db_filepath: str, db_table_name: str) -> bool:
             type = 'table'
             AND
             name = '{db_table_name}'
-                """).fetchall()
-        
+                """
+        ).fetchall()
+
     if len(tables) == 1:
         return True
     else:
