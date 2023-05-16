@@ -136,9 +136,9 @@ def load_cleaned_tables(
 
     # 2. Sampletracker table
     sample_tracker_cleaner.clean_sample_tracker_table(
-      db_filepath, raw_sampletracker_table_name)
+      db_filepath, raw_sampletracker_table_name, cleaned_sampletracker_table_name)
     # 3. cellartracker table
-    #cellartracker_cleaner.init_cleaned_cellartracker_table(con,'raw_cellartracker')
+    cellartracker_cleaner.init_cleaned_cellartracker_table(db_filepath, raw_cellartracker_table_name, cleaned_cellartracker_table_name)
     return None
 
 
