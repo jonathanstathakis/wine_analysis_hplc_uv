@@ -10,8 +10,11 @@ def selected_avantor_runs(df: pd.DataFrame) -> pd.DataFrame:
     print(
         f"Filtering for selected underivatized avantor column runs. df starts with {df.shape[0]} runs"
     )
+    try:
+        df = df[(df["acq_date"] > "2023-01-01")]
+    except:
+        print(df.columns)
 
-    df = df[(df["acq_date"] > "2023-01-01")]
 
     print(f"after filtering for 2023 runs, {df.shape[0]} runs remaining\n")
 
@@ -49,4 +52,5 @@ def selected_avantor_runs(df: pd.DataFrame) -> pd.DataFrame:
 
     df = df[sequence_drop_mask]
 
+    assert not df.empty, "selected_avantor_runs df is empty"
     return df

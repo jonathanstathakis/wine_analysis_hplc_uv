@@ -47,16 +47,26 @@ def build_db_library(db_filepath: str, data_lib_path: str) -> None:
         raw_cellartracker_table_name,
     )
 
+    cleaned_chemstation_metadata_table_name = "cleaned_" + raw_chemstation_metadata_table_name
+    cleaned_sampletracker_table_name = "cleaned_" + raw_sampletracker_table_name
+    cleaned_cellartracker_table_name = "cleaned_" + raw_cellartracker_table_name
+
     # 4. clean the raw tables
     load_cleaned_tables(
         db_filepath,
         raw_chemstation_metadata_table_name,
         raw_sampletracker_table_name,
         raw_cellartracker_table_name,
+        cleaned_chemstation_metadata_table_name,
+        cleaned_sampletracker_table_name,
+        cleaned_cellartracker_table_name,
     )
 
+    super_tbl_name = 'super_table'
     # 5. join the tables together.
-    # adapt_super_pipe_to_db.load_super_table(con)
+    adapt_super_pipe_to_db.load_super_table(db_filepath, table_1=cleaned_chemstation_metadata_table_name, table_2=cleaned_sampletracker_table_name,
+    table_3=cleaned_cellartracker_table_name,
+    tbl_name = super_tbl_name)
 
     # con.sql('DESCRIBE').show()
     return None
@@ -121,12 +131,10 @@ def load_cleaned_tables(
     raw_chemstation_metadata_table_name: str,
     raw_sampletracker_table_name: str,
     raw_cellartracker_table_name: str,
+    cleaned_chemstation_metadata_table_name: str,
+    cleaned_sampletracker_table_name: str,
+    cleaned_cellartracker_table_name: str,
 ):
-    cleaned_chemstation_metadata_table_name = (
-        "cleaned_" + raw_chemstation_metadata_table_name
-    )
-    cleaned_sampletracker_table_name = "cleaned_" + raw_sampletracker_table_name
-    cleaned_cellartracker_table_name = "cleaned_" + raw_cellartracker_table_name
     # 1. Chemstation metadata table
     chemstation_metadata_table_cleaner.clean_ch_metadata_table(
         db_filepath,
