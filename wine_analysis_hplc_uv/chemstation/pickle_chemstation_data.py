@@ -3,11 +3,9 @@ A submodule to handle chemstation data pickling to speed up testing and dev.
 """
 import os
 import pickle
-from sqlite3 import dbapi2
-
 import duckdb as db
-
-from ..devtools import function_timer as ft, project_settings
+from ..devtools import function_timer as ft
+from ..devtools import project_settings
 from . import init_chemstation_data_metadata
 
 
@@ -49,7 +47,7 @@ def chemstation_pickle_interface(
         return chemstation_data_dicts_tuple
     else:
         use_pickle = input("no pickle found, would you like to create one? (y/n): ")
-    return None
+    return chemstation_data_dicts_tuple
 
 
 def pickle_dump(obj, filepath):
@@ -62,6 +60,24 @@ def pickle_load(filepath):
     with open(filepath, "rb") as f:
         obj = pickle.load(f)
         return obj
+
+
+def pickle_path(
+    pickle_fname: str = "chemstation_process.pk",
+    pickle_jar_path: str = "chemstation_process_pickle_jar",
+):
+    pkg_root_filepath = os.path.abspath(__file__)
+    pkg_root = os.path.dirname(pkg_root_filepath)
+
+    pickle_jar_path = os.path.join(pkg_root, pickle_jar_path)
+
+    if not os.path.isdir(pickle_jar_path):
+        os.mkdir(pickle_jar_path)
+
+    pickle_rel_path = os.path.join(pickle_jar_path, pickle_fname)
+
+    pickle_path = os.path.join(pkg_root, pickle_rel_path)
+    return pickle_path
 
 
 def main():
