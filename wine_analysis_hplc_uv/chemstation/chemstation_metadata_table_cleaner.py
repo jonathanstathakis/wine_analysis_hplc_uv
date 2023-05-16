@@ -11,15 +11,16 @@ from ..db_methods import db_methods
 from ..devtools import function_timer as ft
 
 
-def clean_ch_metadata_table(db_filepath: str, raw_table_name: str):
+def clean_ch_metadata_table(
+    db_filepath: str, raw_table_name: str, cleaned_metadata_table_name: str
+):
     """
     A pipe function that gets the raw chemstation table, cleans it and writes back to the db
     """
     with db.connect(db_filepath) as con:
         df = con.sql(
             f"""
-            SELECT
-                notebook, date, method, path, sequence_name, hash_key
+            SELECT                 notebook, date, method, path, sequence_name, hash_key
             FROM {raw_table_name}
             """
         ).df()
@@ -31,10 +32,11 @@ def clean_ch_metadata_table(db_filepath: str, raw_table_name: str):
         .pipe(chemstation_id_cleaner)
         .pipe(chemstation_metadata_drop_unwanted_runs)
     )
-    
-    new_table_name = raw_table_name.replace("raw", "cleaned")
-    write_cleaned_chemstation_metadata_table(df, db_filepath, new_table_name)
-    db_methods.display_table_info(db_filepath, new_table_name)
+
+    write_cleaned_chemstation_metadata_table(
+        df, db_filepath, cleaned_metadata_table_name
+    )
+    db_methods.display_table_info(db_filepath, cleaned_metadata_table_name)
     return None
 
 
