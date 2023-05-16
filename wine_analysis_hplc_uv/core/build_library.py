@@ -6,15 +6,12 @@ import shutil
 
 import duckdb as db
 
-from ..cellartracker_methods import (cellartracker_cleaner,
-                                     init_raw_cellartracker_table)
-from ..chemstation import (chemstation_metadata_table_cleaner,
-                           chemstation_process_entry)
+from ..cellartracker_methods import cellartracker_cleaner, init_raw_cellartracker_table
+from ..chemstation import chemstation_metadata_table_cleaner, chemstation_process_entry
 from ..core import adapt_super_pipe_to_db
 from ..devtools import function_timer as ft
 from ..devtools import project_settings
-from ..sampletracker import (init_raw_sample_tracker_table,
-                             sample_tracker_cleaner)
+from ..sampletracker import init_raw_sample_tracker_table, sample_tracker_cleaner
 
 
 @ft.timeit
@@ -36,21 +33,26 @@ def build_db_library(db_filepath: str, data_lib_path: str) -> None:
     sampletracker_table_name = "sampletracker"
     cellartracker_table_name = "cellartracker"
 
+    raw_chemstation_metadata_table_name = "raw_" + chemstation_metadata_table_name
+    raw_chemstation_sc_table_name = "raw_" + chemstation_sc_table_name
+    raw_sampletracker_table_name = "raw_" + sampletracker_table_name
+    raw_cellartracker_table_name = "raw_" + sampletracker_table_name
+
     write_raw_tables(
         data_lib_path,
         db_filepath,
-        chemstation_metadata_table_name,
-        chemstation_sc_table_name,
-        sampletracker_table_name,
-        cellartracker_table_name,
+        raw_chemstation_metadata_table_name,
+        raw_chemstation_sc_table_name,
+        raw_sampletracker_table_name,
+        raw_cellartracker_table_name,
     )
 
     # 4. clean the raw tables
     load_cleaned_tables(
         db_filepath,
-        chemstation_metadata_table_name,
-        sampletracker_table_name,
-        cellartracker_table_name,
+        raw_chemstation_metadata_table_name,
+        raw_sampletracker_table_name,
+        raw_cellartracker_table_name,
     )
 
     # 5. join the tables together.
@@ -97,22 +99,39 @@ def write_raw_tables(
     sampletracker_table_name: str,
     cellartracker_table_name: str,
 ):
-    chemstation_process_entry.chemstation_data_to_db(data_lib_path, db_filepath, chemstation_metadata_table_name, chemstation_sc_table_name)
+    chemstation_process_entry.chemstation_data_to_db(
+        data_lib_path,
+        db_filepath,
+        chemstation_metadata_table_name,
+        chemstation_sc_table_name,
+    )
 
-    init_raw_sample_tracker_table.init_raw_sample_tracker_table(db_filepath, sampletracker_table_name)
-    #init_raw_cellartracker_table(con)
+    init_raw_sample_tracker_table.init_raw_sample_tracker_table(
+        db_filepath, sampletracker_table_name
+    )
+
+    init_raw_cellartracker_table.init_raw_cellartracker_table(
+        db_filepath, cellartracker_table_name
+    )
     return None
 
 
 def load_cleaned_tables(
     db_filepath: str,
     raw_chemstation_metadata_table_name: str,
-    raw_sample_tracker_table_name: str,
+    raw_sampletracker_table_name: str,
     raw_cellartracker_table_name: str,
 ):
+    cleaned_chemstation_metadata_table_name = (
+        "cleaned_" + raw_chemstation_metadata_table_name
+    )
+    cleaned_sampletracker_table_name = "cleaned_" + raw_sampletracker_table_name
+    cleaned_cellartracker_table_name = "cleaned_" + raw_cellartracker_table_name
     # 1. Chemstation metadata table
     chemstation_metadata_table_cleaner.clean_ch_metadata_table(
-        db_filepath, raw_chemstation_metadata_table_name
+        db_filepath,
+        raw_chemstation_metadata_table_name,
+        cleaned_chemstation_metadata_table_name,
     )
 
     # 2. Sampletracker table

@@ -20,9 +20,13 @@ def reagent_calculator(desired_vol: float):
     neocup["molar_mass"] = 208.26
     amac["molar_mass"] = 77.08
 
+    cop_chlor["solvent"] = "H2O"
+    neocup["solvent"] = "MeOH"
+    amac["solvent"] = "H2O"
+
     # mol/L
     cop_chlor["final_conc"] = 0.01
-    neocup["final_conc"] = 0.075
+    neocup["final_conc"] = 0.0075
     amac["final_conc"] = 1
     """
     calculate volume of each required sample
