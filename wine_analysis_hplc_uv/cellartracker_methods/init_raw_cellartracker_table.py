@@ -9,18 +9,25 @@ from ..cellartracker_methods import download_cellartracker_table
 from ..db_methods import db_methods
 
 
-def init_raw_cellartracker_table(con):
+def init_raw_cellartracker_table(db_filepath: str, db_table_name: str):
     cellartracker_df = download_cellartracker_table.get_cellar_tracker_table()
 
-    table_name = "raw_cellartracker"
+    with db.connect(db_filepath) as con:
+        con.sql(f"DROP TABLE IF EXISTS {db_table_name}")
 
-    con.sql(f"DROP TABLE IF EXISTS {table_name}")
+        con.sql(
+            f"""
+            CREATE TABLE IF NOT EXISTS 
+                {db_table_name}
+            AS
+                SELECT 
+                    * 
+                FROM
+                    cellartracker_df
+            """
+        )
 
-    con.sql(
-        f"CREATE TABLE IF NOT EXISTS {table_name} AS SELECT * FROM cellartracker_df"
-    )
-
-    db_methods.display_table_info(con, table_name)
+    db_methods.display_table_info(db_filepath, db_table_name)
 
 
 def main():
