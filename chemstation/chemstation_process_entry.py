@@ -22,6 +22,7 @@ def entry_func(data_lib_path: str, con: db.DuckDBPyConnection):
     pickle_filename = "chemstation_data_dicts_tuple.pk"
     pickle_filepath = os.path.join(os.getcwd(), pickle_filename)
 
+
     # get the .D paths
     uv_paths_list = chemstation_methods.uv_filepaths_to_list(data_lib_path)
 

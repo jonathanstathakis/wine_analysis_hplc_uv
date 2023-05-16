@@ -50,6 +50,7 @@ def ch_dirs_to_dict_lists(dirpath_list: list):
 
     return uv_metadata_list, uv_data_list
 
+
 def duplicate_hash_keys(uv_metadata_list: list):
     # observe how many unique hash_keys were generated. duplicates are probably caused by duplicate files/filenames.
     num_unique_hash = len(set(d["hash_key"] for d in uv_metadata_list))

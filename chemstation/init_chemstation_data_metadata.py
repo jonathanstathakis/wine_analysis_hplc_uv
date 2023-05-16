@@ -21,8 +21,7 @@ from devtools import function_timer as ft
 from devtools import project_settings
 from genericpath import isfile
 
-from . import (chemstation_methods, chemstation_to_db_methods,
-               pickle_chemstation_data)
+from . import chemstation_methods, chemstation_to_db_methods, pickle_chemstation_data
 
 counter = None
 counter_lock = None
