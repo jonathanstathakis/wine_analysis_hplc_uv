@@ -13,7 +13,9 @@ from ..df_methods import df_cleaning_methods
 
 
 def clean_sample_tracker_table(
-    db_filepath: str, raw_sample_tracker_table_name: str, cleaned_sampletracker_table_name: str
+    db_filepath: str,
+    raw_sample_tracker_table_name: str,
+    cleaned_sampletracker_table_name: str,
 ) -> None:
     print("generating raw_sample_tracker_table from db")
 
@@ -32,9 +34,9 @@ def clean_sample_tracker_table(
 
 
 def sample_tracker_df_cleaner(df):
-    print("cleaning raw_sample_tracker_df")
+    print("cleaning raw_sample_tracker_df..")
     try:
-        df = df_cleaning_methods.df_cleaning_methods.df_string_cleaner(df)
+        df = df_cleaning_methods.df_string_cleaner(df)
         df.columns = df.columns.str.lower()
     except Exception as e:
         print(f"while cleaning raw_sample_tracker_df, encountered Exception: {e}")
@@ -75,6 +77,8 @@ def write_clean_sample_tracker_to_db(
         table_column_names=col_names,
         df_column_names=col_names,
     )
+
+    db_methods.display_table_info(db_filepath, table_name)
 
     return None
 
