@@ -12,15 +12,7 @@ def chemstation_sample_tracker_join(
     assert not in_df.empty, "in_df is empty"
     assert not sample_tracker_df.empty, "in_df is empty"
 
-    sample_tracker_df = sample_tracker_df[
-        ["id", "vintage", "name", "open_date", "sampled_date", "notes"]
-    ]
-
-    sample_tracker_df["id"] = sample_tracker_df["id"].astype("object")
-
     # drop "new_id" entries with characters..
-    
-    # rows of in_df that are sample_tracker_df['id'] in in_df['new_id']
 
     assert 'new_id' in in_df.columns, "Column 'new_id' does not exist in in_df"
     assert 'id' in sample_tracker_df.columns, "Column 'id' does not exist in sample_tracker_df"
