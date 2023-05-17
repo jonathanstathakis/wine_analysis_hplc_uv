@@ -16,10 +16,12 @@ def ask_user_and_execute(prompt: str, func: Callable[..., Any], *args: Any, **kw
         print("")
         if user_input == 'y':
             bad_input = False
-            func(*args, **kwargs)
+            result = func(*args, **kwargs)
         elif user_input == 'n':
             bad_input = False
+            result = None
             break
         else:
             print("Bad input, try again..\n")
             continue
+    return result
