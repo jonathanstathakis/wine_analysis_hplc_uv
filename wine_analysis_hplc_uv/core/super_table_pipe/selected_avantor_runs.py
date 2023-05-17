@@ -1,15 +1,16 @@
 import pandas as pd
 
 from ...devtools import project_settings
+from ...ux_methods import ux_methods as ux
 
 
 def selected_avantor_runs(df: pd.DataFrame) -> pd.DataFrame:
+    return ux.ask_user_and_execute("I will now filter out all runs not on the avantor column. Proceed?", not_avantor_run_filter, df)
+    
+def not_avantor_run_filter(df: pd.DataFrame) -> pd.DataFrame:
     """
     Selects runs to be included in study dataset.
     """
-    print(
-        f"Filtering for selected underivatized avantor column runs. df starts with {df.shape[0]} runs"
-    )
     try:
         df = df[(df["acq_date"] > "2023-01-01")]
     except:
