@@ -5,6 +5,7 @@ import os
 import shutil
 
 import duckdb as db
+from numpy.random import f
 
 from ..cellartracker_methods import cellartracker_cleaner, init_raw_cellartracker_table
 from ..chemstation import chemstation_metadata_table_cleaner, chemstation_process_entry
@@ -12,6 +13,7 @@ from ..core import adapt_super_pipe_to_db
 from ..devtools import function_timer as ft
 from ..devtools import project_settings
 from ..sampletracker import init_raw_sample_tracker_table, sample_tracker_cleaner
+from ..ux_methods import ux_methods as ux
 
 
 @ft.timeit
@@ -38,7 +40,9 @@ def build_db_library(db_filepath: str, data_lib_path: str) -> None:
     raw_sampletracker_table_name = "raw_" + sampletracker_table_name
     raw_cellartracker_table_name = "raw_" + cellartracker_table_name
 
-    write_raw_tables(
+    ux.ask_user_and_execute(
+        "write raw tables?\n",
+        write_raw_tables,
         data_lib_path,
         db_filepath,
         raw_chemstation_metadata_table_name,
@@ -47,12 +51,16 @@ def build_db_library(db_filepath: str, data_lib_path: str) -> None:
         raw_cellartracker_table_name,
     )
 
-    cleaned_chemstation_metadata_table_name = "cleaned_" + raw_chemstation_metadata_table_name
-    cleaned_sampletracker_table_name = "cleaned_" + raw_sampletracker_table_name
-    cleaned_cellartracker_table_name = "cleaned_" + raw_cellartracker_table_name
+    cleaned_chemstation_metadata_table_name = (
+        "cleaned_" + chemstation_metadata_table_name
+    )
+    cleaned_sampletracker_table_name = "cleaned_" + sampletracker_table_name
+    cleaned_cellartracker_table_name = "cleaned_" + cellartracker_table_name
 
     # 4. clean the raw tables
-    load_cleaned_tables(
+    ux.ask_user_and_execute(
+        "write cleaned tables?\n",
+        load_cleaned_tables,
         db_filepath,
         raw_chemstation_metadata_table_name,
         raw_sampletracker_table_name,
@@ -62,13 +70,17 @@ def build_db_library(db_filepath: str, data_lib_path: str) -> None:
         cleaned_cellartracker_table_name,
     )
 
-    super_tbl_name = 'super_table'
+    super_tbl_name = "super_table"
     # 5. join the tables together.
-    adapt_super_pipe_to_db.load_super_table(db_filepath, table_1=cleaned_chemstation_metadata_table_name, table_2=cleaned_sampletracker_table_name,
-    table_3=cleaned_cellartracker_table_name,
-    tbl_name = super_tbl_name)
-
-    # con.sql('DESCRIBE').show()
+    ux.ask_user_and_execute(
+        "write super table?\n",
+        adapt_super_pipe_to_db.load_super_table,
+        db_filepath,
+        table_1=cleaned_chemstation_metadata_table_name,
+        table_2=cleaned_sampletracker_table_name,
+        table_3=cleaned_cellartracker_table_name,
+        tbl_name=super_tbl_name,
+    )
     return None
 
 
@@ -109,19 +121,26 @@ def write_raw_tables(
     sampletracker_table_name: str,
     cellartracker_table_name: str,
 ):
-    chemstation_process_entry.chemstation_data_to_db(
+    ux.ask_user_and_execute(
+        "Writing chemstation data to db, proceed?",
+        chemstation_process_entry.chemstation_data_to_db,
         data_lib_path,
         db_filepath,
         chemstation_metadata_table_name,
         chemstation_sc_table_name,
     )
-
-    init_raw_sample_tracker_table.init_raw_sample_tracker_table(
-        db_filepath, sampletracker_table_name
+    ux.ask_user_and_execute(
+        "Writing sampletracker data to db, proceed?",
+        init_raw_sample_tracker_table.init_raw_sample_tracker_table,
+        db_filepath,
+        sampletracker_table_name,
     )
 
-    init_raw_cellartracker_table.init_raw_cellartracker_table(
-        db_filepath, cellartracker_table_name
+    ux.ask_user_and_execute(
+        "Writing cellartracker data to db, proceed?",
+        init_raw_cellartracker_table.init_raw_cellartracker_table,
+        db_filepath,
+        cellartracker_table_name,
     )
     return None
 
@@ -136,17 +155,30 @@ def load_cleaned_tables(
     cleaned_cellartracker_table_name: str,
 ):
     # 1. Chemstation metadata table
-    chemstation_metadata_table_cleaner.clean_ch_metadata_table(
+    ux.ask_user_and_execute(
+        f"Write {cleaned_chemstation_metadata_table_name} to db?",
+        chemstation_metadata_table_cleaner.clean_ch_metadata_table,
         db_filepath,
         raw_chemstation_metadata_table_name,
         cleaned_chemstation_metadata_table_name,
     )
 
     # 2. Sampletracker table
-    sample_tracker_cleaner.clean_sample_tracker_table(
-      db_filepath, raw_sampletracker_table_name, cleaned_sampletracker_table_name)
+    ux.ask_user_and_execute(
+        f"Write {cleaned_sampletracker_table_name} to db?",
+        sample_tracker_cleaner.clean_sample_tracker_table,
+        db_filepath,
+        raw_sampletracker_table_name,
+        cleaned_sampletracker_table_name,
+    )
     # 3. cellartracker table
-    cellartracker_cleaner.init_cleaned_cellartracker_table(db_filepath, raw_cellartracker_table_name, cleaned_cellartracker_table_name)
+    ux.ask_user_and_execute(
+        f"Write {cleaned_cellartracker_table_name} to db?",
+        cellartracker_cleaner.init_cleaned_cellartracker_table,
+        db_filepath,
+        raw_cellartracker_table_name,
+        cleaned_cellartracker_table_name,
+    )
     return None
 
 
