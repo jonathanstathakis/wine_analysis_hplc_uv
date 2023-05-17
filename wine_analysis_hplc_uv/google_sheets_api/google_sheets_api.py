@@ -52,9 +52,7 @@ def get_credentials(creds_parent_path: str):
                 creds.refresh(Request())
             except exceptions.RefreshError as e:
                 print(e)
-                os.remove(
-                    "/Users/jonathan/mres_thesis/wine_analysis_hplc_uv.py/credientals_tokens/credentials_sheets.json"
-                )
+                os.remove(path_to_token)
                 creds.refresh(Request())
         else:
             flow = InstalledAppFlow.from_client_secrets_file(
