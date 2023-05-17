@@ -2,13 +2,12 @@
 
 """
 from traceback import print_tb
-
 import pandas as pd
 from fuzzywuzzy import fuzz, process
-
 from ...devtools import function_timer as ft
 from ...devtools import project_settings
 from . import form_join_col
+from ...ux_methods import ux_methods as ux
 
 
 def join_dfs_with_fuzzy(df1: pd.DataFrame, df2: pd.DataFrame) -> pd.DataFrame:
@@ -78,24 +77,37 @@ def join_dfs_with_fuzzy(df1: pd.DataFrame, df2: pd.DataFrame) -> pd.DataFrame:
 def cellar_tracker_fuzzy_join(
     in_df: pd.DataFrame, cellartracker_df: pd.DataFrame
 ) -> pd.DataFrame:
-    """
-    change all id edits to 'new id'. merge sample_tracker on new_id. Spectrum table will be joined on exp_id.
+    
+    def fuzzy_join(in_df: pd.DataFrame, cellartracker_df: pd.DataFrame) -> pd.DataFrame:   
+        """
+        change all id edits to 'new id'. merge sample_tracker on new_id. Spectrum table will be joined on exp_id.
+        in df can be anything, but for the main pipe at 2023-05-16 15:01:54 it is the joined chemstation, sampletracker table.
+        """
 
-    in df can be anything, but for the main pipe at 2023-05-16 15:01:54 it is the joined chemstation, sampletracker table.
-    """
-    assert not in_df.empty, "in_df is empty\n"
+        assert not in_df.empty, "in_df is empty\n"
 
-    assert not cellartracker_df.empty, "cellartracker_df is empty\n"
-    print("####\n\njoining metadata_table+sample_tracker with cellar_tracker\n\n####\n")
-    cellartracker_df.attrs["name"] = "cellar tracker table"
+        assert not cellartracker_df.empty, "cellartracker_df is empty\n"
+        print("joining metadata_table+sample_tracker with cellar_tracker\n")
+        cellartracker_df.attrs["name"] = "cellar tracker table"
 
 
-    in_df = form_join_col.form_join_col(in_df)
-    cellartracker_df = form_join_col.form_join_col(cellartracker_df)
+        in_df = form_join_col.form_join_col(in_df)
+        cellartracker_df = form_join_col.form_join_col(cellartracker_df)
 
-    merge_df = join_dfs_with_fuzzy(in_df, cellartracker_df)
+        merge_df = join_dfs_with_fuzzy(in_df, cellartracker_df)
+
+        return merge_df
+
+    prompt_string = "I will now attempt to join the in_df and ct_df by fuzzy matching on the join column. Proceed?"
+    merge_df = ux.ask_user_and_execute(prompt_string,fuzzy_join,
+                            in_df,
+                            cellartracker_df)
+    
+    assert not merge_df.empty, "merge_df formed after fuzzy join is empty"
 
     print("df of dims", merge_df.shape, "formed after merge")
+    print(merge_df.head(1))
+
     return merge_df
 
 
