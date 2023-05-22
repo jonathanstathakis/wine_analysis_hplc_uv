@@ -16,9 +16,8 @@ import duckdb as db
 import numpy as np
 import pandas as pd
 import rainbow as rb
-from db_methods import db_methods
-from devtools import function_timer as ft
-from devtools import project_settings
+from ..db_methods import db_methods
+from ..devtools import function_timer as ft, project_settings
 from genericpath import isfile
 
 from . import chemstation_methods, chemstation_to_db_methods, pickle_chemstation_data
