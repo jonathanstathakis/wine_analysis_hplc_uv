@@ -3,8 +3,8 @@ import pandas as pd
 import duckdb as db
 import numpy as np
 
-from df_methods import df_cleaning_methods
-from db_methods import db_methods
+from ..df_methods import df_cleaning_methods
+from ..db_methods import db_methods
 
 """
 A file to contain all of the necessary cellartracker cleaning functions, to be run once the raw table is downloaded but before other operations. Works in conjuction with prototype_code/init_table_cellartracker.py

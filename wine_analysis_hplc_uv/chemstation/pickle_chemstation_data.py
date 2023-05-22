@@ -6,8 +6,7 @@ import pickle
 from sqlite3 import dbapi2
 
 import duckdb as db
-from devtools import function_timer as ft
-from devtools import project_settings
+from ..devtools import function_timer as ft, project_settings
 
 from . import init_chemstation_data_metadata
 

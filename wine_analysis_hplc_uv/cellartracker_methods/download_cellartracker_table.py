@@ -1,6 +1,6 @@
 """
 """
-from devtools import project_settings
+from ..devtools import project_settings
 import cellartracker
 import pandas as pd
 

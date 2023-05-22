@@ -3,8 +3,8 @@ import sys
 import duckdb as db
 import pandas as pd
 import numpy as np
-from db_methods import db_methods
-from cellartracker_methods import download_cellartracker_table
+from ..db_methods import db_methods
+from ..cellartracker_methods import download_cellartracker_table
 
 
 def init_raw_cellartracker_table(con):

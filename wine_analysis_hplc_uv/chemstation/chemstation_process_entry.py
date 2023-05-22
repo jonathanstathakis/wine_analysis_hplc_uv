@@ -5,13 +5,12 @@ import os
 
 import duckdb as db
 
-from chemstation import (
+from ..chemstation import (
     chemstation_methods,
     chemstation_to_db_methods,
     pickle_chemstation_data,
 )
-from devtools import function_timer as ft
-from devtools import project_settings
+from ..devtools import function_timer as ft, project_settings
 
 
 def entry_func(data_lib_path: str, con: db.DuckDBPyConnection):
