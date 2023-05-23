@@ -14,9 +14,7 @@ def core():
     """
     Project main file driver function. A pipe to go from start to finish.
     """
-    data_lib_path = (
-        "/Users/jonathan/0_jono_data",
-    )
+    data_lib_path = "/Users/jonathan/0_jono_data"
     db_filename = "wine_auth_db.db"
     db_filepath = os.path.join(data_lib_path, db_filename)
     # Phase 1: collect and preprocess data
