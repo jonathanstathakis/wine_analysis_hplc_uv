@@ -48,7 +48,7 @@ def write_clean_sample_tracker_to_db(
     df: pd.DataFrame, db_filepath: str, table_name: str
 ) -> None:
     schema = """
-        id INTEGER,
+        id VARCHAR,
         vintage VARCHAR,
         name VARCHAR,
         open_date DATE,
