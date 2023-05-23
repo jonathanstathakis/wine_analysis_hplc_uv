@@ -58,8 +58,6 @@ def write_clean_cellartracker_to_db(
     subregion VARCHAR,
     appellation VARCHAR,
     producer VARCHAR,
-    locale VARCHAR,
-    country VARCHAR,
     type VARCHAR,
     color VARCHAR,
     category VARCHAR,
