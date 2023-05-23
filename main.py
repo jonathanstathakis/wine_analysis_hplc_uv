@@ -14,10 +14,11 @@ def core():
     """
     Project main file driver function. A pipe to go from start to finish.
     """
-    db_filepath, data_lib_path = (
-        os.environ.get("WINE_AUTH_DB_PATH"),
+    data_lib_path = (
         "/Users/jonathan/0_jono_data",
     )
+    db_filename = "wine_auth_db.db"
+    db_filepath = os.path.join(data_lib_path, db_filename)
     # Phase 1: collect and preprocess data
     build_library.build_db_library(db_filepath, data_lib_path)
 
