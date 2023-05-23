@@ -89,9 +89,10 @@ def check_if_table_exists_write_df_to_db(
     """
     # if yes, ask whether to overwrite. if not, ask to write.
     if table_in_db_query(tblname, db_filepath):
-        if input(f"table {tblname} in {db}. overwrite? (y/n):") == "y":
+        print(f"{__file__}\n")
+        if input(f"table {tblname} in {db_filepath}. overwrite? (y/n):") == "y":
             with db.connect(db_filepath) as con:
-                con.sql(f"DROP TABLE IF EXISTS {tblname}").execute()
+                con.sql(f"DROP TABLE IF EXISTS {tblname}")
             write_df_to_db(df, tblname, db_filepath)
         else:
             print(f"leaving {tblname} as is.")
