@@ -8,7 +8,7 @@ import duckdb as db
 from numpy.random import f
 
 from ..cellartracker_methods import cellartracker_cleaner, init_raw_cellartracker_table
-from ..chemstation import chemstation_metadata_table_cleaner, process_chemstation
+from ..chemstation import ch_metadata_tbl_cleaner, process_chemstation
 from ..core import adapt_super_pipe_to_db
 from ..devtools import function_timer as ft
 from ..devtools import project_settings
@@ -158,7 +158,7 @@ def load_cleaned_tables(
     # 1. Chemstation metadata table
     ux.ask_user_and_execute(
         f"Write {cleaned_chemstation_metadata_table_name} to db?",
-        chemstation_metadata_table_cleaner.clean_ch_metadata_table,
+        ch_metadata_tbl_cleaner.ch_metadata_tbl_cleaner,
         db_filepath,
         raw_chemstation_metadata_table_name,
         cleaned_chemstation_metadata_table_name,
