@@ -18,20 +18,27 @@ def pickle_interface(
 ) -> Tuple[list[dict], list[dict]]:
     # if pickle file exists, ask if want to use, or overwrite.
     if os.path.isfile(pickle_filepath):
-        use_pickle = input("pickle found, use, or overwrite? (u/o): ")
+        overwrite_pickle = input("pickle found, use, or overwrite? (u/o): ")
+        print("")
         # if use pickle is selected, load pickle and continue program.
-        if use_pickle == "u":
+        if overwrite_pickle == "u":
             chemstation_data_dicts_tuple = pickle_load(pickle_filepath)
             return chemstation_data_dicts_tuple
         # if overrwite is selected, deleted old pickle, run chemstation process, write new pickle
-        elif use_pickle == "o":
+        elif overwrite_pickle == "o":
+            print(f"{__file__}\n\nremoving {pickle_filepath}..\n")
             os.remove(pickle_filepath)
+
             chemstation_data_dicts_tuple = (
                 init_chemstation_data_metadata.process_chemstation_uv_files(
                     uv_paths_list
                 )
             )
+            assert (
+                chemstation_data_dicts_tuple
+            ), f"{__file__} chemstation_data_dicts_tuple is empty..\n"
             pickle_dump(chemstation_data_dicts_tuple, pickle_filepath)
+            return chemstation_data_dicts_tuple
     # if pickle doesnt exist, ask if want to create.
     elif not os.path.isfile(pickle_filepath):
         use_pickle = input(f"no pickle found, create? at {pickle_filepath} (y/n): ")
