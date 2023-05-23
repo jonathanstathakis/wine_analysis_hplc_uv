@@ -14,7 +14,7 @@ from ..devtools import function_timer as ft
 from ..devtools import project_settings
 
 
-def entry_func(data_lib_path: str, con: db.DuckDBPyConnection):
+def entry_func(data_lib_path: str, dbfilepath: str):
     """
     main driver file, handle any preprocessing then activate write_ch_metadata_table_to_db_entry.
     """
@@ -27,12 +27,12 @@ def entry_func(data_lib_path: str, con: db.DuckDBPyConnection):
 
     # get the uv_metadata and data as lists either from the pickle or the process
     chemstation_data_dicts_tuple = pickle_chemstation_data.pickle_interface(
-        pickle_filepath, uv_paths_list, con
+        pickle_filepath, uv_paths_list, dbfilepath
     )
 
     # write the uv_metadata and data to tables in the given db.
     chemstation_to_db_methods.write_chemstation_data_to_db_entry(
-        chemstation_data_dicts_tuple, con
+        chemstation_data_dicts_tuple, dbfilepath
     )
 
     return None
