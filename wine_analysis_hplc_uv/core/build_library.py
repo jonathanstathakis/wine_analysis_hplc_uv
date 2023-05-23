@@ -183,9 +183,9 @@ def load_cleaned_tables(
 
 
 def main():
-    build_db_library(
-        db_filepath="wine_auth_db.db", data_lib_path="/Users/jonathan/0_jono_data"
-    )
+    data_lib_path = "/Users/jonathan/0_jono_data"
+    db_filepath = os.path.join(data_lib_path, "wine_auth_db.db")
+    build_db_library(data_lib_path, db_filepath)
 
 
 if __name__ == "__main__":
