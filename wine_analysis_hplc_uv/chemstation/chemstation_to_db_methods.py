@@ -13,10 +13,8 @@ from ..devtools import function_timer as ft
 @ft.timeit
 def write_chemstation_data_to_db_entry(
     chemstation_data_dicts_tuple: Tuple[dict, dict], db_filepath: str
-) -> None:
+, ch_metadata_tblname: str, ch_sc_tblname: str) -> None:
     # get the intended table name
-    chromatogram_spectrum_tblname = "chromatogram_spectra"
-    chemstation_metadata_tblname = "chemstation_metadata"
 
     # extract the lists from the list object
     chemstation_metadata_list, chromatogram_spectrum_list = (
@@ -29,9 +27,9 @@ def write_chemstation_data_to_db_entry(
     ):
         write_chemstation_to_db(
             chemstation_metadata_list,
-            chemstation_metadata_tblname,
+            ch_metadata_tblname,
             chromatogram_spectrum_list,
-            chromatogram_spectrum_tblname,
+            ch_sc_tblname,
             db_filepath,
         )
     else:
