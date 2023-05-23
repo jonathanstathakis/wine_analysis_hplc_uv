@@ -34,7 +34,7 @@ def process_chemstation(
 
     # write the uv_metadata and data to tables in the given db.
     chemstation_to_db_methods.write_chemstation_data_to_db_entry(
-        chemstation_data_dicts_tuple, db_filepath
+        chemstation_data_dicts_tuple, db_filepath, ch_metadata_tblname, ch_sc_tblname
     )
 
     return None
