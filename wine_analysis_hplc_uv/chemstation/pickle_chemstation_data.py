@@ -38,7 +38,7 @@ def pickle_interface(
         if use_pickle == "y":
             chemstation_data_dicts_tuple = (
                 init_chemstation_data_metadata.process_chemstation_uv_files(
-                    uv_paths_list, con
+                    uv_paths_list
                 )
             )
             pickle_dump(chemstation_data_dicts_tuple, pickle_filepath)
