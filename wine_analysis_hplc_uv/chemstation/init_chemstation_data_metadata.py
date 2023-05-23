@@ -192,22 +192,22 @@ def uv_extractor_pool(dirpaths: List[str]) -> tuple:
     counter = mp.Value("i", 0)  # 'i' indicates an integer
     counter_lock = mp.Lock()
 
-    print("Initializing multiprocessing pool...")
+    print("Initializing multiprocessing pool...\n")
     pool = mp.Pool(initializer=init_pool, initargs=(counter, counter_lock))
 
-    print(f"Processing {len(dirpaths)} directories using a multiprocessing pool...")
+    print(f"Processing {len(dirpaths)} directories using a multiprocessing pool...\n")
     uv_file_tuples = pool.map(uv_extractor, dirpaths)
 
-    print("Closing and joining the multiprocessing pool...")
+    print("Closing and joining the multiprocessing pool...\n")
     pool.close()
     pool.join()
 
     if not isinstance(uv_file_tuples, list):
-        print(f"in uv_extractor_pool..")
+        print(__file__)
         print(f"uv_file_tuples should be list, but they are {type(uv_file_tuples)}")
         raise TypeError
 
-    print("Finished processing files.")
+    print(f"{__file__}\n\nFinished processing files..\n")
     return uv_file_tuples
 
 
