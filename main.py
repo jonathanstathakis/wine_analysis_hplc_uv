@@ -10,15 +10,12 @@ from wine_analysis_hplc_uv.devtools import project_settings
 from wine_analysis_hplc_uv.signal_processing.peak_alignment import peak_alignment_pipe
 
 
-def core():
+def core(data_lib_path: str) -> None:
     """
     Project main file driver function. A pipe to go from start to finish.
     """
-    data_lib_path = "/Users/jonathan/0_jono_data"
-    db_filename = "wine_auth_db.db"
-    db_filepath = os.path.join(data_lib_path, db_filename)
     # Phase 1: collect and preprocess data
-    build_library.build_db_library(db_filepath, data_lib_path)
+    build_library.build_db_library(data_lib_path)
 
     # Phase 2: process data
 
@@ -33,7 +30,10 @@ def core():
 
 
 def main():
-    core()
+    data_lib_path = (
+        "/Users/jonathan/mres_thesis/wine_analysis_hplc_uv.py/data/cuprac_data"
+    )
+    core(data_lib_path)
 
 
 if __name__ == "__main__":
