@@ -69,42 +69,9 @@ def write_clean_cellartracker_to_db(
     with db.connect(db_filepath) as con:
         con.sql(f"DROP TABLE IF EXISTS {clean_tbl_name};")
 
-        con.sql(f"CREATE TABLE IF NOT EXISTS {clean_tbl_name} ({schema});")
-
-        con.sql(
-            f"""
-            INSERT INTO {clean_tbl_name} (
-            size,
-            vintage,
-            name,
-            locale,
-            country,
-            region,
-            subregion,
-            appellation,
-            producer,
-            type,
-            color,
-            category,
-            varietal
-            )
-            SELECT
-            size,
-            vintage,
-            name,
-            locale,
-            country,
-            region,
-            subregion,
-            appellation,
-            producer,
-            type,
-            color,
-            category,
-            varietal
-            FROM df;
-            """
-        )
+    db_methods.write_df_to_table(
+        df, db_filepath, clean_tbl_name, schema, tbl_colnames, df_colnames
+    )
 
     db_methods.display_table_info(db_filepath, clean_tbl_name)
 
