@@ -123,7 +123,7 @@ def write_raw_tables(
 ):
     ux.ask_user_and_execute(
         "Writing chemstation data to db, proceed?",
-        process_chemstationto_db,
+        process_chemstation.process_chemstation,
         data_lib_path,
         db_filepath,
         chemstation_metadata_table_name,
