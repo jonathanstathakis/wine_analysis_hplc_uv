@@ -85,13 +85,13 @@ def check_if_table_exists_write_df_to_db(
             drop table
             write table
         if no:
-            db_filepathtinue.
+            continue.
     """
     # if yes, ask whether to overwrite. if not, ask to write.
     if table_in_db_query(tblname, db_filepath):
         if input(f"table {tblname} in {db}. overwrite? (y/n):") == "y":
             with db.connect(db_filepath) as con:
-                db_filepath.sql(f"DROP TABLE IF EXISTS {tblname}").execute()
+                con.sql(f"DROP TABLE IF EXISTS {tblname}").execute()
             write_df_to_db(df, tblname, db_filepath)
         else:
             print(f"leaving {tblname} as is.")
@@ -106,7 +106,7 @@ def check_if_table_exists_write_df_to_db(
 
 def table_in_db_query(tblname, db_filepath):
     query = (
-        f"SELECT COUNT(*) FROM information_schema.tables WHERE tblname = '{tblname}'"
+        f"SELECT COUNT(*) FROM information_schema.tables WHERE table_name = '{tblname}'"
     )
     with db.connect(db_filepath) as con:
         result = con.sql(query).fetchone()
@@ -125,7 +125,7 @@ def uv_data_list_to_df(uv_data_list: list, db_filepath: str) -> None:
         data["hash_key"] = uv_data["hash_key"]
         spectrum_dfs.append(data)
 
-    combined_df = pd.db_filepathcat(spectrum_dfs)
+    combined_df = pd.concat(spectrum_dfs)
     return combined_df
 
 
