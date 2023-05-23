@@ -66,8 +66,8 @@ def write_clean_cellartracker_to_db(
     varietal VARCHAR
     """
 
-    with db.connect(db_filepath) as con:
-        con.sql(f"DROP TABLE IF EXISTS {clean_tbl_name};")
+    tbl_colnames = schema.replace(" VARCHAR", "").replace(" INTEGER", "")
+    df_colnames = tbl_colnames
 
     db_methods.write_df_to_table(
         df, db_filepath, clean_tbl_name, schema, tbl_colnames, df_colnames
