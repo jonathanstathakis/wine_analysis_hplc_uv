@@ -12,15 +12,19 @@ A file to contain all of the necessary cellartracker cleaning functions, to be r
 
 
 def init_cleaned_cellartracker_table(
-    con: db.DuckDBPyConnection, raw_table_name: str
+    db_filepath: str, raw_table_name: str, cleaned_tbl_name: str
 ) -> None:
-    raw_cellartracker_df = con.sql(f"SELECT * FROM {raw_table_name}").df()
+    raw_df = pd.DataFrame()
+    with db.connect(db_filepath) as con:
+        raw_df = con.sql(f"SELECT * FROM {raw_table_name}").df()
 
-    clean_cellartracker_df = cellartracker_df_cleaner(raw_cellartracker_df)
+    clean_cellartracker_df = cellartracker_df_cleaner(raw_df)
 
-    out_name = raw_table_name.replace("raw", "cleaned")
-
-    write_clean_cellartracker_to_db(clean_cellartracker_df, con, out_name)
+    write_clean_cellartracker_to_db(db_filepath, 
+                                    clean_cellartracker_df,
+                                    cleaned_tbl_name
+    )
+    return None
 
 
 def cellartracker_df_cleaner(df):
