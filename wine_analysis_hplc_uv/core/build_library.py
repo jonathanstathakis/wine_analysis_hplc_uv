@@ -17,10 +17,12 @@ from ..ux_methods import ux_methods as ux
 
 
 @ft.timeit
-def build_db_library(db_filepath: str, data_lib_path: str) -> None:
+def build_db_library(data_lib_path: str) -> None:
     """
     Pipeline function to construct the super_table, a cleaned algamation of chemstation, sample_tracker and cellartracker tables.
     """
+    db_filename = f"{os.path.basename(data_lib_path).split()[0]}.db"
+    db_filepath = os.path.join(data_lib_path, db_filename)
     # 1. create db file if none exists.
     # dont use context management here because simply opening and closing a connection, forcing the creation of the .db file
     if not os.path.isfile(db_filepath):
