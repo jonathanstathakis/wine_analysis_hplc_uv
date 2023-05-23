@@ -13,7 +13,7 @@ from typing import List, Tuple
 
 
 def pickle_interface(
-    pickle_filepath: str, uv_paths_list: List[str], dbfilepath: str
+    pickle_filepath: str, uv_paths_list: List[str], db_filepath: str
 ) -> Tuple[list[dict], list[dict]]:
     # if pickle file exists, ask if want to use, or overwrite.
     if os.path.isfile(pickle_filepath):
@@ -27,7 +27,7 @@ def pickle_interface(
             os.remove(pickle_filepath)
             chemstation_data_dicts_tuple = (
                 init_chemstation_data_metadata.process_chemstation_uv_files(
-                    uv_paths_list, dbfilepath
+                    uv_paths_list, db_filepath
                 )
             )
             pickle_dump(chemstation_data_dicts_tuple, pickle_filepath)
