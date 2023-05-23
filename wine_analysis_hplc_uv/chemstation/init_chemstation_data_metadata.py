@@ -9,30 +9,32 @@ import json
 import multiprocessing as mp
 import os
 import sys
+import uuid
 from ast import dump
 from re import L
+from typing import List, Tuple
 
 import duckdb as db
 import numpy as np
 import pandas as pd
 import rainbow as rb
-from ..db_methods import db_methods
-from ..devtools import function_timer as ft, project_settings
-from genericpath import isfile
 
+from ..db_methods import db_methods
+from ..devtools import function_timer as ft
+from ..devtools import project_settings
 from . import chemstation_methods, chemstation_to_db_methods, pickle_chemstation_data
 
 counter = None
 counter_lock = None
 
 
-def process_chemstation_uv_files(uv_paths_list, con) -> tuple:
+def process_chemstation_uv_files(uv_paths_list: List[str]) -> Tuple[dict, dict]:
     print("Processing files..")
-    uv_metadata_list, uv_data_list = ch_dirs_to_dict_lists(uv_paths_list, con)
+    uv_metadata_list, uv_data_list = ch_dirs_to_dict_lists(uv_paths_list)
     return uv_metadata_list, uv_data_list
 
 
-def ch_dirs_to_dict_lists(dirpath_list: list, con: db.DuckDBPyConnection):
+def ch_dirs_to_dict_lists(dirpath_list: List[str]) -> Tuple[List[dict], List[dict]]:
     """
     1. Create the metadata and data dicts from each .D file.
     2. check that the hash keys are unique.
@@ -58,7 +60,7 @@ def ch_dirs_to_dict_lists(dirpath_list: list, con: db.DuckDBPyConnection):
     return uv_metadata_list, uv_data_list
 
 
-def duplicate_hash_keys(uv_metadata_list: list):
+def duplicate_hash_keys(uv_metadata_list: List[dict]) -> None:
     # observe how many unique hash_keys were generated. duplicates are probably caused by duplicate files/filenames.
     num_unique_hash = len(set(d["hash_key"] for d in uv_metadata_list))
     print("num unqiue hash keys", num_unique_hash)
@@ -78,7 +80,7 @@ def duplicate_hash_keys(uv_metadata_list: list):
     return None
 
 
-def uv_data_to_df(uv_file):
+def uv_data_to_df(uv_file: rb.DataFile) -> pd.DataFrame:
     spectrum = np.concatenate((uv_file.xlabels.reshape(-1, 1), uv_file.data), axis=1)
 
     column_names = ["mins"] + list(uv_file.ylabels)
@@ -92,9 +94,6 @@ def uv_data_to_df(uv_file):
     except Exception as e:
         print(e)
         print(uv_file.metadata.get("notebook"), uv_file.metadata.get("date"))
-
-
-import uuid
 
 
 def primary_key_generator(metadata_dict):
@@ -119,7 +118,7 @@ def init_pool(c, l):
     counter_lock = l
 
 
-def uv_extractor(path: str) -> tuple:
+def uv_extractor(path: str) -> Tuple[dict, dict]:
     """
     Form two dicts linked by a hash_key for each chemstation .D dir, representing a run.
     Takes a filepath as a str, returns a tuple of dicts, metadata_dict and uv_data_dict.
@@ -215,8 +214,7 @@ def uv_extractor_pool(dirpaths: list) -> tuple:
 @ft.timeit
 def main():
     root_dir_path = "/Users/jonathan/0_jono_data"
-    con = db.connect("uv_database.db")
-    init_chemstation_data_metadata_tables(root_dir_path, con)
+    dbfilepath = os.environ.get("WINE_AUTH_DB_PATH")
 
 
 if __name__ == "__main__":
