@@ -8,7 +8,7 @@ import duckdb as db
 from numpy.random import f
 
 from ..cellartracker_methods import cellartracker_cleaner, init_raw_cellartracker_table
-from ..chemstation import chemstation_metadata_table_cleaner, chemstation_process_entry
+from ..chemstation import chemstation_metadata_table_cleaner, process_chemstation
 from ..core import adapt_super_pipe_to_db
 from ..devtools import function_timer as ft
 from ..devtools import project_settings
@@ -123,7 +123,7 @@ def write_raw_tables(
 ):
     ux.ask_user_and_execute(
         "Writing chemstation data to db, proceed?",
-        chemstation_process_entry.chemstation_data_to_db,
+        process_chemstationto_db,
         data_lib_path,
         db_filepath,
         chemstation_metadata_table_name,
