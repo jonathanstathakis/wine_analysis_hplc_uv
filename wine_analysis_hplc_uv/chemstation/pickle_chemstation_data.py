@@ -9,11 +9,12 @@ import duckdb as db
 from ..devtools import function_timer as ft, project_settings
 
 from . import init_chemstation_data_metadata
+from typing import List, Tuple
 
 
 def pickle_interface(
-    pickle_filepath: str, uv_paths_list: list, con: db.DuckDBPyConnection
-):
+    pickle_filepath: str, uv_paths_list: List[str], dbfilepath: str
+) -> Tuple[list[dict], list[dict]]:
     # if pickle file exists, ask if want to use, or overwrite.
     if os.path.isfile(pickle_filepath):
         use_pickle = input("pickle found, use, or overwrite? (u/o): ")
@@ -26,7 +27,7 @@ def pickle_interface(
             os.remove(pickle_filepath)
             chemstation_data_dicts_tuple = (
                 init_chemstation_data_metadata.process_chemstation_uv_files(
-                    uv_paths_list, con
+                    uv_paths_list, dbfilepath
                 )
             )
             pickle_dump(chemstation_data_dicts_tuple, pickle_filepath)
@@ -52,13 +53,13 @@ def pickle_interface(
     return None
 
 
-def pickle_dump(obj, filepath):
+def pickle_dump(obj: object, filepath: str) -> None:
     with open(filepath, "wb") as f:
         pickle.dump(obj, f)
         return None
 
 
-def pickle_load(filepath):
+def pickle_load(filepath: str) -> object:
     with open(filepath, "rb") as f:
         obj = pickle.load(f)
         return obj
