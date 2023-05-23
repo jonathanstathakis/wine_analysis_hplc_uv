@@ -28,7 +28,7 @@ def pickle_interface(
             os.remove(pickle_filepath)
             chemstation_data_dicts_tuple = (
                 init_chemstation_data_metadata.process_chemstation_uv_files(
-                    uv_paths_list, db_filepath
+                    uv_paths_list
                 )
             )
             pickle_dump(chemstation_data_dicts_tuple, pickle_filepath)
@@ -42,6 +42,7 @@ def pickle_interface(
                     uv_paths_list
                 )
             )
+            os.mkdir(os.path.dirname(pickle_filepath))
             pickle_dump(chemstation_data_dicts_tuple, pickle_filepath)
         # for any other response, just continue process.
         else:
