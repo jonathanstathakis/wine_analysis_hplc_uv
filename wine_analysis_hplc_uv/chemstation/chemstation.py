@@ -1,20 +1,18 @@
 """
-An entry function for chemstation file processing
+
 """
 import os
+from typing import List, Tuple
 
-import duckdb as db
-
-from ..chemstation import (
-    chemstation_methods,
-    chemstation_to_db_methods,
-    pickle_chemstation_data,
-)
+import chemstation_methods
+import chemstation_to_db_methods
+import pickle_chemstation_data
+from ch_data_multiprocess import ch_data_multiprocess
 from ..devtools import function_timer as ft
 from ..devtools import project_settings
 
 
-def process_chemstation(
+def chemstation(
     data_lib_path: str, db_filepath: str, ch_metadata_tblname: str, ch_sc_tblname: str
 ):
     """
@@ -40,9 +38,15 @@ def process_chemstation(
     return None
 
 
-def main():
+def process_chemstation_uv_files(uv_paths_list: List[str]) -> Tuple[dict, dict]:
+    print(f"{__file__}\n\nProcessing files..\n")
+    uv_metadata_list, uv_data_list = ch_data_multiprocess(uv_paths_list)
+    return uv_metadata_list, uv_data_list
+
+
+def main():    
     return None
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":    
     main()
