@@ -14,7 +14,7 @@ from . import init_chemstation_data_metadata
 
 
 def pickle_interface(
-    pickle_filepath: str, uv_paths_list: List[str], db_filepath: str
+    pickle_filepath: str, uv_paths_list: List[str]
 ) -> Tuple[list[dict], list[dict]]:
     # if pickle file exists, ask if want to use, or overwrite.
     if os.path.isfile(pickle_filepath):
