@@ -1,8 +1,9 @@
-import pandas as pd
-from ..sampletracker import sample_tracker_methods
-from ..db_methods import db_methods
 import duckdb as db
+import pandas as pd
+
+from ..db_methods import db_methods
 from ..google_sheets_api import google_sheets_api
+from ..sampletracker import sample_tracker_methods
 
 
 def init_raw_sample_tracker_table(db_filepath: str, table_name: str) -> None:
@@ -18,7 +19,9 @@ def write_raw_sample_tracker_to_db(
     df: pd.DataFrame, db_filepath: str, db_table_name: str
 ):
     schema = """
-        id INTEGER,
+        sampler VARCHAR,
+        detection VARCHAR,
+        id VARCHAR,
         vintage VARCHAR,
         name VARCHAR,
         open_date DATE,
@@ -29,6 +32,8 @@ def write_raw_sample_tracker_to_db(
     """
 
     target_columns = """
+        sampler,
+        detection,
         id,
         vintage,
         name,
