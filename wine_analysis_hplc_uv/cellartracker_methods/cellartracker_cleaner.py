@@ -21,9 +21,8 @@ def init_cleaned_cellartracker_table(
 
     clean_cellartracker_df = cellartracker_df_cleaner(raw_df)
 
-    write_clean_cellartracker_to_db(db_filepath, 
-                                    clean_cellartracker_df,
-                                    cleaned_tbl_name
+    write_clean_cellartracker_to_db(
+        db_filepath, clean_cellartracker_df, cleaned_tbl_name
     )
     return None
 
