@@ -12,8 +12,11 @@ from ..devtools import function_timer as ft
 
 @ft.timeit
 def write_chemstation_data_to_db_entry(
-    chemstation_data_dicts_tuple: Tuple[dict, dict], db_filepath: str
-, ch_metadata_tblname: str, ch_sc_tblname: str) -> None:
+    chemstation_data_dicts_tuple: Tuple[dict, dict],
+    db_filepath: str,
+    ch_metadata_tblname: str,
+    ch_sc_tblname: str,
+) -> None:
     # get the intended table name
 
     # extract the lists from the list object
