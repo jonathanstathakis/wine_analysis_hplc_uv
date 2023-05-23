@@ -14,7 +14,9 @@ from ..devtools import function_timer as ft
 from ..devtools import project_settings
 
 
-def process_chemstation(data_lib_path: str, db_filepath: str):
+def process_chemstation(
+    data_lib_path: str, db_filepath: str, ch_metadata_tblname: str, ch_sc_tblname: str
+):
     """
     main driver file, handle any preprocessing then activate write_ch_metadata_table_to_db_entry.
     """
