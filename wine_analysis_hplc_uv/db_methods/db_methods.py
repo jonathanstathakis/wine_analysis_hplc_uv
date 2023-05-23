@@ -3,8 +3,10 @@ A file to contain general duckdb database methods.
 """
 import os
 import sys
+
 import duckdb as db
 import pandas as pd
+
 from ..chemstation import chemstation_to_db_methods
 from ..devtools import function_timer as ft
 from ..devtools import project_settings
