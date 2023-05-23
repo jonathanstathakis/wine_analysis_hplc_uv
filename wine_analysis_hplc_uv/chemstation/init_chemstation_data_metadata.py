@@ -184,7 +184,7 @@ def uv_data_table_builder(uv_data_list, con):
 
 
 @ft.timeit
-def uv_extractor_pool(dirpaths: list) -> tuple:
+def uv_extractor_pool(dirpaths: List[str]) -> tuple:
     """
     Form a multiprocess pool to apply uv_extractor, returning a tuple of dicts for each .D file in the dirpath list.
     """
