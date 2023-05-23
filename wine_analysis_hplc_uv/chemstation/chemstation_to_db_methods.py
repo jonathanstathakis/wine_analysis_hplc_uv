@@ -1,19 +1,19 @@
 """
 A module to dbfilepathtain chemstation database interface methods
 """
-import json
-import os
-import sys
+from typing import Tuple
 
 import duckdb as db
 import pandas as pd
+
 from ..db_methods import db_methods
 from ..devtools import function_timer as ft
-from typing import Tuple
 
 
 @ft.timeit
-def write_chemstation_data_to_db_entry(chemstation_data_dicts_tuple: Tuple[dict, dict], dbfilepath: str) -> None:
+def write_chemstation_data_to_db_entry(
+    chemstation_data_dicts_tuple: Tuple[dict, dict], dbfilepath: str
+) -> None:
     # get the intended table name
     chromatogram_spectrum_tblname = "chromatogram_spectra"
     chemstation_metadata_tblname = "chemstation_metadata"
@@ -44,7 +44,7 @@ def write_chemstation_data_to_db_entry(chemstation_data_dicts_tuple: Tuple[dict,
 
 def write_chemstation_to_db(
     chemstation_metadata_list: list,
-    chemstation_metadata_tblname : str,
+    chemstation_metadata_tblname: str,
     chromatogram_spectrum_list: list,
     chromatogram_spectrum_tblname: str,
     dbfilepath: str,
@@ -59,19 +59,25 @@ def write_chemstation_to_db(
     return None
 
 
-def chemstation_metadata_to_db(chemstation_metadata_list: list, tblname: str, dbfilepath: str):
+def chemstation_metadata_to_db(
+    chemstation_metadata_list: list, tblname: str, dbfilepath: str
+):
     df = metadata_list_to_df(chemstation_metadata_list)
     df.pipe(check_if_table_exists_write_df_to_db, tblname, dbfilepath)
     return None
 
 
-def chromatogram_spectra_to_db(chromatogram_spectrum_list: list, tblname: str, dbfilepath: str)->None:
+def chromatogram_spectra_to_db(
+    chromatogram_spectrum_list: list, tblname: str, dbfilepath: str
+) -> None:
     df = uv_data_list_to_df(chromatogram_spectrum_list, dbfilepath)
     df.pipe(check_if_table_exists_write_df_to_db, tblname, dbfilepath)
     return None
 
 
-def check_if_table_exists_write_df_to_db(df: pd.DataFrame, tblname: str, dbfilepath)-> None:
+def check_if_table_exists_write_df_to_db(
+    df: pd.DataFrame, tblname: str, dbfilepath
+) -> None:
     """check if table currently exists:
     if does, prompt whether overwrite.
         if yes:
@@ -83,7 +89,8 @@ def check_if_table_exists_write_df_to_db(df: pd.DataFrame, tblname: str, dbfilep
     # if yes, ask whether to overwrite. if not, ask to write.
     if table_in_db_query(tblname, dbfilepath):
         if input(f"table {tblname} in {db}. overwrite? (y/n):") == "y":
-            dbfilepath.sql(f"DROP TABLE IF EXISTS {tblname}").execute()
+            with db.connect(dbfilepath) as con:
+                dbfilepath.sql(f"DROP TABLE IF EXISTS {tblname}").execute()
             write_df_to_db(df, tblname, dbfilepath)
         else:
             print(f"leaving {tblname} as is.")
@@ -97,12 +104,15 @@ def check_if_table_exists_write_df_to_db(df: pd.DataFrame, tblname: str, dbfilep
 
 
 def table_in_db_query(tblname, dbfilepath):
-    query = f"SELECT COUNT(*) FROM information_schema.tables WHERE tblname = '{tblname}'"
-    result = dbfilepath.sql(query).fetchone()
+    query = (
+        f"SELECT COUNT(*) FROM information_schema.tables WHERE tblname = '{tblname}'"
+    )
+    with db.connect(dbfilepath) as con:
+        result = con.sql(query).fetchone()
     return result[0] > 0
 
 
-def metadata_list_to_df(uv_metadata_list: list)-> pd.DataFrame:
+def metadata_list_to_df(uv_metadata_list: list) -> pd.DataFrame:
     return pd.json_normalize(data=uv_metadata_list)
 
 
@@ -121,7 +131,8 @@ def uv_data_list_to_df(uv_data_list: list, dbfilepath: str) -> None:
 def write_df_to_db(df: pd.DataFrame, tblname: str, dbfilepath: str):
     try:
         print(f"creating {tblname} table from df")
-        dbfilepath.execute(f"CREATE TABLE {tblname} AS SElECT * FROM df")
+        with db.connect(dbfilepath) as con:
+            con.execute(f"CREATE TABLE {tblname} AS SElECT * FROM df")
     except Exception as e:
         print(e)
 
