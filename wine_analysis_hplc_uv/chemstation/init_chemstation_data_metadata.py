@@ -214,7 +214,7 @@ def uv_extractor_pool(dirpaths: list) -> tuple:
 @ft.timeit
 def main():
     root_dir_path = "/Users/jonathan/0_jono_data"
-    dbfilepath = os.environ.get("WINE_AUTH_DB_PATH")
+    db_filepath = os.environ.get("WINE_AUTH_DB_PATH")
 
 
 if __name__ == "__main__":
