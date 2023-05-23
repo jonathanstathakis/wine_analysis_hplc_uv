@@ -29,7 +29,7 @@ counter_lock = None
 
 
 def process_chemstation_uv_files(uv_paths_list: List[str]) -> Tuple[dict, dict]:
-    print("Processing files..")
+    print(f"{__file__}\n\nProcessing files..\n")
     uv_metadata_list, uv_data_list = ch_dirs_to_dict_lists(uv_paths_list)
     return uv_metadata_list, uv_data_list
 
