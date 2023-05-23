@@ -45,6 +45,8 @@ def write_df_to_table(
     table_column_names: str,
     df_column_names: str,
 ) -> None:
+    print(f"{__file__}\n")
+    print(f"writing {table_name} to {db_filepath}..\n")
     try:
         with db.connect(db_filepath) as con:
             con.sql(
