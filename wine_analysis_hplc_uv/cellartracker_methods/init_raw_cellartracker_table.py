@@ -1,24 +1,34 @@
 import os
 import sys
+
 import duckdb as db
-import pandas as pd
 import numpy as np
-from ..db_methods import db_methods
+import pandas as pd
+
 from ..cellartracker_methods import download_cellartracker_table
+from ..db_methods import db_methods
 
 
-def init_raw_cellartracker_table(con):
+def init_raw_cellartracker_table(db_filepath: str, tbl_name: str) -> None:
     cellartracker_df = download_cellartracker_table.get_cellar_tracker_table()
 
-    table_name = "raw_cellartracker"
+    with db.connect(db_filepath) as con:
+        con.sql(
+            f"""
+        DROP TABLE IF EXISTS
+            {tbl_name}; 
+        CREATE TABLE IF NOT EXISTS
+            {tbl_name}
+        AS SELECT
+            *
+        FROM
+            cellartracker_df
+            """
+        )
 
-    con.sql(f"DROP TABLE IF EXISTS {table_name}")
+    db_methods.display_table_info(db_filepath, tbl_name)
 
-    con.sql(
-        f"CREATE TABLE IF NOT EXISTS {table_name} AS SELECT * FROM cellartracker_df"
-    )
-
-    db_methods.display_table_info(con, table_name)
+    return None
 
 
 def main():
