@@ -38,7 +38,7 @@ def ch_metadata_tbl_cleaner(
         .pipe(chemstation_metadata_drop_unwanted_runs)
     )
 
-    write_cleaned_chemstation_metadata_table(df, db_filepath, clean_tbl_name)
+    write_cleaned_ch_metadata_tbl_to_db(df, db_filepath, clean_tbl_name)
 
     return None
 
@@ -157,8 +157,8 @@ def library_id_replacer(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def write_cleaned_chemstation_metadata_table(
-    df: pd.DataFrame, con: db.DuckDBPyConnection, raw_table_name: str
+def write_cleaned_ch_metadata_tbl_to_db(
+    df: pd.DataFrame, db_filepath: str, raw_table_name: str
 ) -> None:
     """
     1. create a table name based on the raw name, replacing 'raw' for 'cleaned'.
@@ -171,7 +171,7 @@ def write_cleaned_chemstation_metadata_table(
     try:
         print(f"\nwriting df of shape {df.shape}, columns: {df.columns} to db\n")
         db_methods.write_df_to_table(
-            df, con, new_table_name, schema, table_column_names, df_column_names
+            df, db_filepath, new_table_name, schema, table_column_names, df_column_names
         )
     except Exception as e:
         print(
