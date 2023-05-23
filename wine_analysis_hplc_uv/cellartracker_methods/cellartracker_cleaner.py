@@ -40,19 +40,19 @@ def cellartracker_df_cleaner(df):
     return df
 
 
+    size VARCHAR,
+    vintage INTEGER,
+    name VARCHAR,
+    schema = """
+    size VARCHAR,
+    vintage INTEGER,
     name VARCHAR,
     locale VARCHAR,
     country VARCHAR,
-    schema = """
-def write_clean_cellartracker_to_db(
-    db_filepath: str, df: pd.DataFrame, clean_tbl_name: str
-) -> None:
     region VARCHAR,
     subregion VARCHAR,
     appellation VARCHAR,
     producer VARCHAR,
-    locale VARCHAR,
-    country VARCHAR,
     type VARCHAR,
     color VARCHAR,
     category VARCHAR,
@@ -60,52 +60,40 @@ def write_clean_cellartracker_to_db(
     """
     con.sql(f"DROP TABLE IF EXISTS {table_name};")
 
-        INSERT INTO {table_name} (
-        size,
+        locale,
 
-    with db.connect(db_filepath) as con:
-        con.sql(f"DROP TABLE IF EXISTS {clean_tbl_name};")
-
-        con.sql(f"CREATE TABLE IF NOT EXISTS {clean_tbl_name} ({schema});")
-
-        con.sql(
-            f"""
-            INSERT INTO {clean_tbl_name} (
-            size,
-            vintage,
-            name,
-            locale,
-            country,
-            region,
-            subregion,
-            appellation,
-            producer,
-            type,
-            color,
-            category,
-            varietal
-            )
-            SELECT
-            size,
-            vintage,
-            name,
-            locale,
-            country,
-            region,
-            subregion,
-            appellation,
-            producer,
-            type,
-            color,
-            category,
-            varietal
-            FROM df;
-            """
+        region,
+        subregion,
+        appellation,
+        producer,
+        type,
+        color,
+        category,
+        varietal
         )
-def main():
-    db_methods.display_table_info(db_filepath, clean_tbl_name)
+        SELECT
+        size,
+        vintage,
+        name,
+        locale,
+        country,
+        region,
+        subregion,
+        appellation,
+        producer,
+        type,
+        color,
+        category,
+        varietal
+        FROM df;
+        """
+    )
 
-    return None
+    db_methods.display_table_info(con, table_name)
+
+
+def main():
+    cellartracker_df_cleaner()
 
 
 
