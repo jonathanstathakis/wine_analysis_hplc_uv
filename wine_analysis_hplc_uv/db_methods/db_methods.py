@@ -7,10 +7,29 @@ import sys
 import duckdb as db
 import pandas as pd
 
-from ..chemstation import chemstation_to_db_methods
-from ..devtools import function_timer as ft
-from ..devtools import project_settings
+from wine_analysis_hplc_uv.chemstation import chemstation_to_db_methods
+from wine_analysis_hplc_uv.devtools import function_timer as ft
+from wine_analysis_hplc_uv.devtools import project_settings
 
+from typing import List
+
+def table_as_df(db_filepath: str, tblname:str, cols: List[str]=['*']) -> pd.DataFrame:
+    """
+    Get a duckdb table as a dataframe    
+    """
+    
+    df = pd.DataFrame()
+    print(f"connecting to {db_filepath}..\n")
+    with db.connect(db_filepath) as con:
+        df = con.sql(
+            f"""
+            SELECT
+                {cols}
+            FROM
+                {tblname}
+            """
+        ).df()
+    return df
 
 def create_table(db_filepath: str, db_table_name: str, schema: str) -> None:
     # check if table already exists
