@@ -1,9 +1,10 @@
 """
 
 """
-from devtools import project_settings, function_timer as ft
+from wine_analysis_hplc_uv.devtools import project_settings, function_timer as ft
 from typing import List
 import multiprocessing as mp
+
 
 @ft.timeit
 def uv_extractor_pool(dirpaths: List[str]) -> tuple:
