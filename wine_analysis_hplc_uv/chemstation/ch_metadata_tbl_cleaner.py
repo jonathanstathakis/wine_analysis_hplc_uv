@@ -4,31 +4,19 @@ Contain all the methods to clean the chemstation metadata table before input int
 Acts on a local table which is written by prototype_code/chemstation_db_tables_metadata_data.py
 """
 import duckdb as db
-import numpy as np
 import pandas as pd
 
-from ..db_methods import db_methods
-from ..devtools import function_timer as ft
-from ..df_methods import df_cleaning_methods
+from wine_analysis_hplc_uv.db_methods import db_methods
+from wine_analysis_hplc_uv.devtools import function_timer as ft
+from wine_analysis_hplc_uv.df_methods import df_cleaning_methods
 
 
 def ch_metadata_tbl_cleaner(
-    db_filepath: str, raw_table_name: str, clean_tbl_name: str
-) -> None:
+    df: pd.DataFrame
+) -> pd.DataFrame:
     """
     A pipe function that gets the raw chemstation table, cleans it and writes back to the db
     """
-    df = pd.DataFrame()
-    print(f"connecting to {db_filepath}..\n")
-    with db.connect(db_filepath) as con:
-        df = con.sql(
-            f"""
-            SELECT
-                notebook, date, method, path, sequence_name, hash_key
-            FROM
-                {raw_table_name}
-            """
-        ).df()
 
     df = (
         df.pipe(df_cleaning_methods.df_string_cleaner)
@@ -38,9 +26,9 @@ def ch_metadata_tbl_cleaner(
         .pipe(chemstation_metadata_drop_unwanted_runs)
     )
 
-    write_cleaned_ch_metadata_tbl_to_db(df, db_filepath, clean_tbl_name)
+    return df
 
-    return None
+    write_cleaned_ch_metadata_tbl_to_db(df, db_filepath, clean_tbl_name)
 
 
 def format_acq_date(df):
