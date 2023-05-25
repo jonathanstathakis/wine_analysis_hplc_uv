@@ -1,61 +1,34 @@
 """
 A module to db_filepathtain chemstation database interface methods
 """
-from typing import Tuple
+from typing import Tuple, List, Dict
 
 import duckdb as db
 import pandas as pd
 
-import wine_analysis_hplc_uv.db_methods.db_methods
+from wine_analysis_hplc_uv.db_methods import db_methods
 from wine_analysis_hplc_uv.devtools import function_timer as ft
 
 
-@ft.timeit
-def write_chemstation_data_to_db_entry(
-    chemstation_data_dicts_tuple: Tuple[dict, dict],
-    db_filepath: str,
-    ch_metadata_tblname: str,
-    ch_sc_tblname: str,
-) -> None:
-    # get the intended table name
-
-    # extract the lists from the list object
-    chemstation_metadata_list, chromatogram_spectrum_list = (
-        chemstation_data_dicts_tuple[0],
-        chemstation_data_dicts_tuple[1],
-    )
-
-    if isinstance(chemstation_metadata_list, tuple) & isinstance(
-        chromatogram_spectrum_list, tuple
-    ):
-        write_chemstation_to_db(
-            chemstation_metadata_list,
-            ch_metadata_tblname,
-            chromatogram_spectrum_list,
-            ch_sc_tblname,
-            db_filepath,
-        )
-    else:
-        print(
-            f"chemstation_metadata_list is dtype {type(chemstation_metadata_list)}, chromatogram_spectrum_list is dtype {type(chromatogram_spectrum_list)}. Both should be list"
-        )
-        print(f"{chemstation_metadata_list}")
-        raise TypeError
-
-
 def write_chemstation_to_db(
-    chemstation_metadata_list: list,
+    ch_tuple: Tuple[
+        List[Dict[str, str]],
+        List[Dict[str, str | pd.DataFrame]]],
     chemstation_metadata_tblname: str,
-    chromatogram_spectrum_list: list,
     chromatogram_spectrum_tblname: str,
     db_filepath: str,
-):
+) -> None:
     # write metadata table, chromatogram_spectra table.
+    
+    # extract the lists from the tuple
+    metadata: List[Dict[str, str]] = ch_tuple[0]
+    data: List[Dict[str, str | pd.DataFrame]] = ch_tuple[1]
+    
     chemstation_metadata_to_db(
-        chemstation_metadata_list, chemstation_metadata_tblname, db_filepath
+        chemstation_metadata_list=metadata, tblname=chemstation_metadata_tblname, db_filepath=db_filepath
     )
     chromatogram_spectra_to_db(
-        chromatogram_spectrum_list, chromatogram_spectrum_tblname, db_filepath
+        chromatogram_spectrum_list=data, tblname=chromatogram_spectrum_tblname, db_filepath=db_filepath
     )
     return None
 

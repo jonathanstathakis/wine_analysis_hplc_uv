@@ -32,14 +32,14 @@ class ChemstationProcessor:
     def to_db(
         self,
         db_filepath: str,
-        ch_metadata_tblname: str = "ch metadata",
-        ch_sc_tblname: str = "ch sc data",
+        ch_metadata_tblname: str = "ch_metadata",
+        ch_sc_tblname: str = "ch_sc_data",
     ) -> None:
-        chemstation_to_db_methods.write_chemstation_data_to_db_entry(
-            chemstation_data_dicts_tuple=self.ch_data_dicts_tuple,
+        chemstation_to_db_methods.write_chemstation_to_db(
+            ch_tuple=self.ch_data_dicts_tuple,
             db_filepath=db_filepath,
-            ch_metadata_tblname=ch_metadata_tblname,
-            ch_sc_tblname=ch_sc_tblname,
+            chemstation_metadata_tblname=ch_metadata_tblname,
+            chromatogram_spectrum_tblname=ch_sc_tblname
         )
 
 
@@ -48,4 +48,4 @@ if __name__ == "__main__":
         "/Users/jonathan/mres_thesis/wine_analysis_hplc_uv/data/cuprac_data"
     )
     
-    print(chprocess.ch_data_dicts_tuple[0])
+    chprocess.to_db(db_filepath=(os.path.join(chprocess.datalibpath, 'test.db')))
