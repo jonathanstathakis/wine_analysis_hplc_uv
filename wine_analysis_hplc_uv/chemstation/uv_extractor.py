@@ -1,7 +1,7 @@
 import json
 import os
 import uuid
-from typing import List, Tuple
+from typing import List, Tuple, Dict, Union
 
 import numpy as np
 import pandas as pd
@@ -11,7 +11,9 @@ counter = None
 counter_lock = None
 
 
-def extract_data(path: str) -> Tuple[dict, dict]:
+def extract_data(
+    path: str,
+) -> Dict[str, Union[Dict[str, str], Dict[str, Union[str, pd.DataFrame]]]]:
     """
     Form two dicts linked by a hash_key for each chemstation .D dir, representing a run.
     Takes a filepath as a str, returns a tuple of dicts, metadata_dict and uv_data_dict.
@@ -21,16 +23,16 @@ def extract_data(path: str) -> Tuple[dict, dict]:
     uv_name = "DAD1.UV"
     global counter, counter_lock
 
-    if os.path.isfile(os.path.join(path, uv_name)):
-        uv_file = rb.read(path).get_file(uv_name)
+    if os.path.isfile(path=os.path.join(path, uv_name)):
+        uv_file = rb.read(path=path).get_file(filename=uv_name)
 
-        metadata_dict = uv_file.metadata
+        metadata_dict: Dict[str, str] = uv_file.metadata
         metadata_dict["path"] = path
         metadata_dict["sequence_name"] = get_sequence_name(metadata_dict["path"])
         metadata_dict["hash_key"] = primary_key_generator(metadata_dict)
 
         uv_data_dict = {}
-        uv_data_dict["data"] = uv_data_to_df(uv_file)
+        uv_data_dict["data"] = uv_data_to_df(uv_file=uv_file)
         uv_data_dict["hash_key"] = metadata_dict["hash_key"]
 
         with counter_lock:
@@ -41,7 +43,14 @@ def extract_data(path: str) -> Tuple[dict, dict]:
     else:
         print(f"{path} does not contain a .UV file. Remove from the library?")
 
-    return metadata_dict, uv_data_dict
+    returndict: Dict[
+        str, Union[Dict[str, str], Dict[str, Union[str, pd.DataFrame]]]
+    ] = {
+        "metadata": metadata_dict,
+        "data": uv_data_dict,
+    }
+
+    return returndict
 
 
 def get_sequence_name(path: str) -> str:
@@ -89,7 +98,9 @@ from . import uv_extractor
 
 
 @ft.timeit
-def uv_extractor_pool(dirpaths: List[str]) -> tuple:
+def uv_extractor_pool(
+    dirpaths: List[str],
+) -> List[Dict[str, Dict[str, str] | Dict[str, str | pd.DataFrame]]]:
     """
     Form a multiprocess pool to apply uv_extractor, returning a tuple of dicts for each .D file in the dirpath list.
     """
@@ -101,19 +112,16 @@ def uv_extractor_pool(dirpaths: List[str]) -> tuple:
     pool = mp.Pool(initializer=init_pool, initargs=(counter, counter_lock))
 
     print(f"Processing {len(dirpaths)} directories using a multiprocessing pool...\n")
-    uv_file_tuples = pool.map(uv_extractor.extract_data, dirpaths)
+    uv_file_dicts: List[
+        Dict[str, Dict[str, str] | Dict[str, str | pd.DataFrame]]
+    ] = pool.map(uv_extractor.extract_data, dirpaths)
 
     print("Closing and joining the multiprocessing pool...\n")
     pool.close()
     pool.join()
 
-    if not isinstance(uv_file_tuples, list):
-        print(__file__)
-        print(f"uv_file_tuples should be list, but they are {type(uv_file_tuples)}")
-        raise TypeError
-
     print(f"{__file__}\n\nFinished processing files..\n")
-    return uv_file_tuples
+    return uv_file_dicts
 
 
 def init_pool(c, l) -> None:
