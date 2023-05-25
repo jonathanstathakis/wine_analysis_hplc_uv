@@ -31,7 +31,7 @@ def core(data_lib_path: str) -> None:
 
 def main():
     data_lib_path = (
-        "/Users/jonathan/mres_thesis/wine_analysis_hplc_uv.py/data/cuprac_data"
+        "/Users/jonathan/mres_thesis/wine_analysis_hplc_uv/data/cuprac_data"
     )
     core(data_lib_path)
 
