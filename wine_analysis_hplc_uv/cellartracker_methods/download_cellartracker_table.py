@@ -1,6 +1,6 @@
 """
 """
-from ..devtools import project_settings
+from wine_analysis_hplc_uv.devtools import project_settings
 from cellartracker import cellartracker
 import pandas as pd
 

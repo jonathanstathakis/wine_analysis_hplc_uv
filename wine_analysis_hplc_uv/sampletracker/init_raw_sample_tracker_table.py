@@ -1,9 +1,9 @@
 import duckdb as db
 import pandas as pd
 
-from ..db_methods import db_methods
-from ..google_sheets_api import google_sheets_api
-from ..sampletracker import sample_tracker_methods
+from wine_analysis_hplc_uv.db_methods import db_methods
+from wine_analysis_hplc_uv.google_sheets_api import google_sheets_api
+from wine_analysis_hplc_uv.sampletracker import sample_tracker_methods
 
 
 def init_raw_sample_tracker_table(db_filepath: str, table_name: str) -> None:
