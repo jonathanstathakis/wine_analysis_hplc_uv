@@ -1,6 +1,7 @@
-from typing import List, Tuple
+from typing import List, Tuple, Dict
 import collections
 from . import uv_extractor
+import pandas as pd
 
 def ch_data_multiprocess(dirpath_list: List[str]) -> Tuple[List[dict], List[dict]]:
     """
@@ -8,36 +9,26 @@ def ch_data_multiprocess(dirpath_list: List[str]) -> Tuple[List[dict], List[dict
     2. check that the hash keys are unique.
     3. return uv_metadata_list and uv_data_list
     """
-    if isinstance(dirpath_list, list):
-        uv_file_pool = uv_extractor.uv_extractor_pool(dirpath_list)
+    assert isinstance(dirpath_list, list), f"dirpath_list must be list, is {type(dirpath_list)}."
 
-        try:
-            uv_metadata_list, uv_data_list = zip(*uv_file_pool)
-        except TypeError as e:
-            print(f"Tried to unpack uv_file_pool but {e}")
-            print(f"the datatype of uv_file_pool is {type(uv_file_pool)}")
-            print(f"the contents of uv_file_pool is:")
-            [print(file) for file in uv_file_pool]
-            raise TypeError
+    uv_files: List[Dict[str, Dict[str, str] | Dict[str, str | pd.DataFrame]]] = uv_extractor.uv_extractor_pool(dirpaths=dirpath_list)
+    
+    uv_metadata: List = [file['metadata'] for file in uv_files]
+    uv_data: List = [file['data'] for file in uv_files]
+    print(uv_metadata)
+    duplicate_hash_keys(uv_metadata_list=uv_metadata)
 
-        duplicate_hash_keys(uv_metadata_list)
-    else:
-        print(f"dirpath_list must be list, is {type(dirpath_list)}. Exiting.")
-        raise TypeError
-
-    return uv_metadata_list, uv_data_list
+    return uv_metadata, uv_data
 
 
 def duplicate_hash_keys(uv_metadata_list: List[dict]) -> None:
     # observe how many unique hash_keys were generated. duplicates are probably caused by duplicate files/filenames.
-    num_unique_hash = len(set(d["hash_key"] for d in uv_metadata_list))
-    print("num unqiue hash keys", num_unique_hash)
     print("size of metadata_list", len(uv_metadata_list))
 
     # print the UUIDs that occur more than once.
-    list_of_keys = [d["hash_key"] for d in uv_metadata_list]
+    list_of_keys: List[str] = [d["hash_key"] for d in uv_metadata_list]
     uuid_counts = collections.Counter(list_of_keys)
-    duplicates = [uuid for uuid, count in uuid_counts.items() if count > 1]
+    duplicates: List[str] = [uuid for uuid, count in uuid_counts.items() if count > 1]
     print("Duplicate UUIDs:", len(duplicates))
 
     for uuid in duplicates:
