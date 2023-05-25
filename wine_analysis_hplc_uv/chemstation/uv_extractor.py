@@ -82,8 +82,8 @@ def uv_data_to_df(uv_file: rb.DataFile) -> pd.DataFrame:
 import multiprocessing as mp
 from typing import List
 
-from devtools import function_timer as ft
-from devtools import project_settings
+from wine_analysis_hplc_uv.devtools import function_timer as ft
+from wine_analysis_hplc_uv.devtools import project_settings
 
 from . import uv_extractor
 

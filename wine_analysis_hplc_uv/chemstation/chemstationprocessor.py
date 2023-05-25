@@ -2,9 +2,7 @@ import os
 
 from rainbow.agilent import chemstation
 
-import chemstation_methods
-import chemstation_to_db_methods
-import pickle_chemstation_data
+from wine_analysis_hplc_uv.chemstation import chemstation_methods, chemstation_to_db_methods, pickle_chemstation_data
 from typing import List, Tuple
 
 class ChemstationProcessor():
