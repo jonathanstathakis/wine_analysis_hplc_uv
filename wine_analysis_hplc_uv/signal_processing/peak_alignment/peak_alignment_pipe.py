@@ -22,9 +22,9 @@ import streamlit as st
 st.set_page_config(layout="wide")
 from typing import List, Union
 
-from ...plot_methods import plotly_plot_methods
-from ...scripts.core_scripts import signal_data_treatment_methods as dt
-from ...signal_processing import signal_alignment_methods as sa
+from wine_analysis_hplc_uv.plot_methods import plotly_plot_methods
+from wine_analysis_hplc_uv.scripts.core_scripts import signal_data_treatment_methods as dt
+from wine_analysis_hplc_uv.signal_processing import signal_alignment_methods as sa
 
 # create your figure and get the figure object returned
 
