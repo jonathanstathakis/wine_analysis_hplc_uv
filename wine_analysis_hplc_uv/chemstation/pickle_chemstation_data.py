@@ -13,53 +13,28 @@ from ..devtools import project_settings
 from ..chemstation import process_chemstation
 
 
-def pickle_interface(
-    pickle_filepath: str, uv_paths_list: List[str]
-) -> Tuple[list[dict], list[dict]]:
-    # if pickle file exists, ask if want to use, or overwrite.
-    if os.path.isfile(pickle_filepath):
-        overwrite_pickle = input("pickle found, use, or overwrite? (u/o): ")
-        print("")
-        # if use pickle is selected, load pickle and continue program.
-        if overwrite_pickle == "u":
-            chemstation_data_dicts_tuple = pickle_load(pickle_filepath)
-            return chemstation_data_dicts_tuple
-        # if overrwite is selected, deleted old pickle, run chemstation process, write new pickle
-        elif overwrite_pickle == "o":
-            print(f"{__file__}\n\nremoving {pickle_filepath}..\n")
-            os.remove(pickle_filepath)
+def process_and_pickle(uv_paths_list: List[str], pickle_filepath: str) -> Tuple[list[dict], list[dict]]:
+    chemstation_data_dicts_tuple = process_chemstation.process_chemstation_uv_files(uv_paths_list)
+    os.makedirs(os.path.dirname(pickle_filepath), exist_ok=True)
+    pickle_dump(chemstation_data_dicts_tuple, pickle_filepath)
+    return chemstation_data_dicts_tuple
 
-            chemstation_data_dicts_tuple = (
-                process_chemstation.process_chemstation_uv_files(
-                    uv_paths_list
-                )
-            )
-            assert (
-                chemstation_data_dicts_tuple
-            ), f"{__file__} chemstation_data_dicts_tuple is empty..\n"
-            pickle_dump(chemstation_data_dicts_tuple, pickle_filepath)
-            return chemstation_data_dicts_tuple
-    # if pickle doesnt exist, ask if want to create.
-    elif not os.path.isfile(pickle_filepath):
-        use_pickle = input(f"no pickle found, create? at {pickle_filepath} (y/n): ")
-        # if yes to create, run chemstation process and create pickle.
-        if use_pickle == "y":
-            chemstation_data_dicts_tuple = (
-                process_chemstation.process_chemstation_uv_files(
-                    uv_paths_list
-                )
-            )
-            os.mkdir(os.path.dirname(pickle_filepath))
-            pickle_dump(chemstation_data_dicts_tuple, pickle_filepath)
-        # for any other response, just continue process.
-        else:
-            chemstation_data_dicts_tuple = (
-                process_chemstation.process_chemstation_uv_files(uv_paths_list)
-            )
-        return chemstation_data_dicts_tuple
+def pickle_interface(pickle_filepath: str, uv_paths_list: List[str]) -> Tuple[list[dict], list[dict]]:
+    actions = {
+        "u": lambda: pickle_load(pickle_filepath),
+        "o": lambda: process_and_pickle(uv_paths_list, pickle_filepath),
+        "y": lambda: process_and_pickle(uv_paths_list, pickle_filepath),
+        "n": lambda: process_chemstation.process_chemstation_uv_files(uv_paths_list),
+    }
+
+    if os.path.isfile(pickle_filepath):
+        action_key: str = input("pickle found, use, or overwrite? (u/o): ")
     else:
-        use_pickle = input("no pickle found, would you like to create one? (y/n): ")
-    return None
+        action_key = input(f"no pickle found, create? at {pickle_filepath} (y/n): ")
+    
+    action = actions.get(action_key, actions["n"])
+    return action()
+
 
 
 def pickle_dump(obj: object, filepath: str) -> None:
