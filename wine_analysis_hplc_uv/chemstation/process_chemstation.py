@@ -4,7 +4,7 @@
 import os
 from typing import List, Tuple, Any
 
-from . import chemstation_methods, chemstation_to_db_methods, pickle_chemstation_data
+from wine_analysis_hplc_uv.chemstation import chemstation_methods, chemstation_to_db_methods, pickle_chemstation_data
 from . import ch_data_multiprocess
 
 
@@ -27,7 +27,7 @@ def chemstation(
     )
 
     # write the uv_metadata and data to tables in the given db.
-    chemstation_to_db_methods.write_chemstation_data_to_db_entry(
+    chemstation_to_db_methods.write_chemstation_to_db(
         ch_data, db_filepath, ch_metadata_tblname, ch_sc_tblname
     )
 
