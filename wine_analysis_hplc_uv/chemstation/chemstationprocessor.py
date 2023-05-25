@@ -1,16 +1,17 @@
 import os
-
-from rainbow.agilent import chemstation
+import pandas as pd
 
 from wine_analysis_hplc_uv.chemstation import (
     chemstation_methods,
     chemstation_to_db_methods,
     pickle_chemstation_data,
+    ch_metadata_tbl_cleaner
 )
 from typing import List, Tuple
 
 
 class ChemstationProcessor:
+
     def __init__(self, datalibpath: str):
         assert os.path.isdir(s=datalibpath)
         self.datalibpath: str = datalibpath
@@ -28,6 +29,7 @@ class ChemstationProcessor:
         ] = pickle_chemstation_data.pickle_interface(
             pickle_filepath=self.pkfpath, uv_paths_list=self.fpathlist
         )
+        self.metadata_df = chemstation_to_db_methods.metadata_list_to_df(self.ch_data_dicts_tuple[0])
 
     def to_db(
         self,
@@ -41,6 +43,9 @@ class ChemstationProcessor:
             chemstation_metadata_tblname=ch_metadata_tblname,
             chromatogram_spectrum_tblname=ch_sc_tblname
         )
+
+    def clean_metadata(self) -> pd.DataFrame:
+        return ch_metadata_tbl_cleaner.ch_metadata_tbl_cleaner(self.metadata_df)
 
 
 if __name__ == "__main__":
