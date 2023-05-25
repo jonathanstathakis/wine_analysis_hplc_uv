@@ -6,26 +6,6 @@ __pycache__/
 # C extensions
 *.so
 
-# Distribution / packaging
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-share/python-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-MANIFEST
-
 # PyInstaller
 #  Usually these files are written by a python script from a template
 #  before PyInstaller builds the exe, so as to inject date/other infos into it.
@@ -191,3 +171,5 @@ scripts/reagent_calculator.py
 **/*.pk
 data/2023-02-09_14-30-37_Z3_uv-data.csv data/
 data/*
+build/*
+*.egg-info/
