@@ -10,12 +10,12 @@ def init_raw_sample_tracker_table(db_filepath: str, table_name: str) -> None:
     # download the current sample tracker table
     df = sample_tracker_methods.sample_tracker_df_builder()
     df = df.replace({"": None})
-    write_raw_sample_tracker_to_db(df, db_filepath, table_name)
+    sampletracker_to_db(df, db_filepath, table_name)
     db_methods.display_table_info(db_filepath, table_name)
     return None
 
 
-def write_raw_sample_tracker_to_db(
+def sampletracker_to_db(
     df: pd.DataFrame, db_filepath: str, db_table_name: str
 ):
     schema = """
