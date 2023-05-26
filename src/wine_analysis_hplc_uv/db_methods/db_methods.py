@@ -97,13 +97,10 @@ def write_df_to_table(
         sys.exit()
     return None
 
-
-@ft.timeit
-def get_spectra(df: pd.DataFrame, con: db.DuckDBPyConnection) -> pd.DataFrame:
+def sc_to_df(df: pd.DataFrame, db_filepath: str) -> pd.DataFrame:
     """
     Pass a wine metadata dataframe with relevant hash_key to join to spectrums contained in spectrum table found through the con object. returns the metadata df with a spectrum column, where spectrums are nested dataframes.
     """
-
     def get_spectra(con: db.DuckDBPyConnection, hash_key: str) -> pd.DataFrame:
         query = f"""
             SELECT * EXCLUDE (hash_key) from spectrums
@@ -111,8 +108,9 @@ def get_spectra(df: pd.DataFrame, con: db.DuckDBPyConnection) -> pd.DataFrame:
             """
         df = con.sql(query).df()
         return df
-
-    df["spectra"] = df.apply(lambda row: get_spectra(con, row["hash_key"]), axis=1)
+    
+    with db.connect(db_filepath) as con:
+        df["spectra"] = df.apply(lambda row: get_spectra(con, row["hash_key"]), axis=1)
 
     df = df.drop("hash_key", axis=1)
 
