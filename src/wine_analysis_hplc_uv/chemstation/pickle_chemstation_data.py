@@ -3,14 +3,13 @@ A submodule to handle chemstation data pickling to speed up testing and dev.
 """
 import os
 import pickle
-from sqlite3 import dbapi2
 from typing import List, Tuple
 
 import duckdb as db
 
-from ..devtools import function_timer as ft
-from ..devtools import project_settings
-from ..chemstation import process_chemstation
+from wine_analysis_hplc_uv.devtools import function_timer as ft
+from wine_analysis_hplc_uv.devtools import project_settings
+from wine_analysis_hplc_uv.chemstation import process_chemstation
 
 
 def process_and_pickle(uv_paths_list: List[str], pickle_filepath: str) -> Tuple[list[dict], list[dict]]:
@@ -20,11 +19,21 @@ def process_and_pickle(uv_paths_list: List[str], pickle_filepath: str) -> Tuple[
     return chemstation_data_dicts_tuple
 
 def pickle_interface(pickle_filepath: str, uv_paths_list: List[str]) -> Tuple[list[dict], list[dict]]:
+    """
+    
+    
+    Args:
+        pickle_filepath (str): _description_
+        uv_paths_list (List[str]): _description_
+
+    Returns:
+        Tuple[list[dict], list[dict]]: _description_
+    """
     actions = {
         "u": lambda: pickle_load(pickle_filepath),
-        "o": lambda: process_and_pickle(uv_paths_list, pickle_filepath),
-        "y": lambda: process_and_pickle(uv_paths_list, pickle_filepath),
-        "n": lambda: process_chemstation.process_chemstation_uv_files(uv_paths_list),
+        "o": lambda: process_and_pickle(uv_paths_list=uv_paths_list, pickle_filepath=pickle_filepath),
+        "y": lambda: process_and_pickle(uv_paths_list=uv_paths_list, pickle_filepath=pickle_filepath),
+        "n": lambda: process_chemstation.process_chemstation_uv_files(uv_paths_list=uv_paths_list),
     }
 
     if os.path.isfile(pickle_filepath):
