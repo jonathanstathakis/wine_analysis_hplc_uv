@@ -1,5 +1,6 @@
 import os
 import pandas as pd
+import shutil
 
 from wine_analysis_hplc_uv.chemstation import (
     chemstation_methods,
@@ -11,7 +12,9 @@ from typing import List, Tuple
 
 
 class ChemstationProcessor:
-    
+    """
+    Chemstation data processor. Make sure to run ChemstationProcessor.cleanup_pickle() at the end to clean up the picklejar and pickle at the end of the process.
+    """
 
     def __init__(self, datalibpath: str):
         assert os.path.isdir(s=datalibpath)
@@ -47,6 +50,13 @@ class ChemstationProcessor:
 
     def clean_metadata(self) -> pd.DataFrame:
         return ch_metadata_tbl_cleaner.ch_metadata_tbl_cleaner(self.metadata_df)
+    
+    def cleanup_pickle(self) -> None:
+        assert os.path.exists(self.pkfpath)
+        print(f"removing process pickle at {self.pkfpath}..\n")
+        shutil.rmtree(os.path.dirname(self.pkfpath))
+        print(f"file removed..\n")
+        return None
 
 
 if __name__ == "__main__":
@@ -54,4 +64,4 @@ if __name__ == "__main__":
         "/Users/jonathan/mres_thesis/wine_analysis_hplc_uv/data/cuprac_data"
     )
     
-    chprocess.to_db(db_filepath=(os.path.join(chprocess.datalibpath, 'test.db')))
+    chprocess.to_db(db_filepath=(os.path.join(chprocess.pkfpath, 'test.db')))
