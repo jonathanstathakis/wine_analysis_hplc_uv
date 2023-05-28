@@ -5,35 +5,10 @@ import html
 import os
 
 import duckdb as db
-import numpy as np
 import pandas as pd
 
-from ..db_methods import db_methods
-from ..df_methods import df_cleaning_methods
-
-
-def clean_sample_tracker_table(
-    db_filepath: str,
-    tbl_name: str,
-
-) -> None:
-    clean_tbl_name = "cleaned_" + tbl_name
-    
-    print("generating raw_sample_tracker_table from db..\n")
-
-    with db.connect(db_filepath) as con:
-        raw_sample_tracker_df = con.sql(
-            f"SELECT * FROM {tbl_name}"
-        ).df()
-
-    cleaned_sample_tracker_df = sample_tracker_df_cleaner(raw_sample_tracker_df)
-
-    write_clean_sample_tracker_to_db(
-        cleaned_sample_tracker_df, db_filepath, clean_tbl_name
-    )
-
-    return None
-
+from wine_analysis_hplc_uv.db_methods import db_methods
+from wine_analysis_hplc_uv.df_methods import df_cleaning_methods
 
 def sample_tracker_df_cleaner(df):
     print("cleaning raw_sample_tracker_df..")
