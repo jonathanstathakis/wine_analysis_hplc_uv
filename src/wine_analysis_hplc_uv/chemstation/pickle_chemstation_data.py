@@ -18,7 +18,7 @@ def process_and_pickle(uv_paths_list: List[str], pickle_filepath: str) -> Tuple[
     pickle_dump(chemstation_data_dicts_tuple, pickle_filepath)
     return chemstation_data_dicts_tuple
 
-def pickle_interface(pickle_filepath: str, uv_paths_list: List[str]) -> Tuple[list[dict], list[dict]]:
+def pickle_interface(pickle_filepath: str, uv_paths_list: List[str], usepickle: bool = True) -> Tuple[list[dict], list[dict]]:
     """
     
     
@@ -38,8 +38,10 @@ def pickle_interface(pickle_filepath: str, uv_paths_list: List[str]) -> Tuple[li
 
     if os.path.isfile(pickle_filepath):
         action_key: str = input("pickle found, use, or overwrite? (u/o): ")
-    else:
+    elif usepickle == True:
         action_key = input(f"no pickle found, create? at {pickle_filepath} (y/n): ")
+    else:
+        action_key = "n"
     
     action = actions.get(action_key, actions["n"])
     return action()

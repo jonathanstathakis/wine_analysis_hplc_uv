@@ -16,7 +16,7 @@ class ChemstationProcessor:
     Chemstation data processor. Make sure to run ChemstationProcessor.cleanup_pickle() at the end to clean up the picklejar and pickle at the end of the process.
     """
 
-    def __init__(self, datalibpath: str):
+    def __init__(self, datalibpath: str, usepickle: bool = True):
         assert os.path.isdir(s=datalibpath)
         self.datalibpath: str = datalibpath
 
@@ -31,9 +31,12 @@ class ChemstationProcessor:
         self.ch_data_dicts_tuple: Tuple[
             list[dict], list[dict]
         ] = pickle_chemstation_data.pickle_interface(
-            pickle_filepath=self.pkfpath, uv_paths_list=self.fpathlist
+            pickle_filepath=self.pkfpath, uv_paths_list=self.fpathlist, usepickle = usepickle
         )
         self.metadata_df = chemstation_to_db_methods.metadata_list_to_df(self.ch_data_dicts_tuple[0])
+        
+        if usepickle:
+            self.cleanup_pickle()
 
     def to_db(
         self,
