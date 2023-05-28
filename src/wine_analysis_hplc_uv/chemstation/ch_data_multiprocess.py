@@ -15,7 +15,6 @@ def ch_data_multiprocess(dirpath_list: List[str]) -> Tuple[List[dict], List[dict
     
     uv_metadata: List = [file['metadata'] for file in uv_files]
     uv_data: List = [file['data'] for file in uv_files]
-    print(uv_metadata)
     duplicate_hash_keys(uv_metadata_list=uv_metadata)
 
     return uv_metadata, uv_data
