@@ -13,7 +13,7 @@ from wine_analysis_hplc_uv.chemstation import ch_metadata_tbl_cleaner, chemstati
 from wine_analysis_hplc_uv.core import adapt_super_pipe_to_db
 from wine_analysis_hplc_uv.devtools import function_timer as ft
 from wine_analysis_hplc_uv.devtools import project_settings
-from wine_analysis_hplc_uv.sampletracker import init_raw_sample_tracker_table, sample_tracker_cleaner
+from wine_analysis_hplc_uv.sampletracker import sampletrackerprocesser
 from wine_analysis_hplc_uv.ux_methods import ux_methods as ux
 import pandas as pd
 
@@ -44,8 +44,8 @@ def build_db_library(data_lib_path: str) -> None:
 
     #  3. write raw tables to db from sources
     chemstation_metadata_table_name = "chemstation_metadata"
-    chemstation_sc_table_name = "chromatogram_spectra"
-    sampletracker_table_name = "sampletracker"
+    sctblname = "chromatogram_spectra"
+    sampletracker_tbl_name = "sampletracker"
     cellartracker_table_name = "cellartracker"
 
     # write sampletracker
@@ -55,7 +55,11 @@ def build_db_library(data_lib_path: str) -> None:
     # chemstation
     
     chemstation_to_db(data_lib_path, 
-                      db_filepath, chemstation_metadata_table_name, chemstation_sc_table_name)
+    db_filepath, chemstation_metadata_table_name, chemstation_sc_table_name)
+    
+    # sampletracker
+    
+    sampletracker_to_db(db_filepath=db_filepath, sampletracker_tbl_name=sampletracker_tbl_name)
 
     # 4. clean the raw tables
     ux.ask_user_and_execute(
@@ -82,6 +86,19 @@ def build_db_library(data_lib_path: str) -> None:
         tbl_name=super_tbl_name,
     )
     return None
+
+def sampletracker_to_db(db_filepath: str, sampletracker_tbl_name: str) -> None:
+    
+    def st_interface(db_filepath: str, sampletracker_tbl_name: str)->None:
+        sampletrackerprocesser.SampleTracker()
+    
+    ux.ask_user_and_execute(
+        prompt='Process sampletracker?\n',
+        func=sampletrackerprocesser.SampleTracker,
+        args=db_filepath
+    )
+    return None
+    
 
 def chemstation_to_db(data_lib_path: str, db_filepath: str, mdatatblname: str, scdatatblname: str) -> None:
     chprocess = ux.ask_user_and_execute(
