@@ -11,9 +11,7 @@ from wine_analysis_hplc_uv.mydevtools import function_timer as ft
 from wine_analysis_hplc_uv.df_methods import df_cleaning_methods
 
 
-def ch_metadata_tbl_cleaner(
-    df: pd.DataFrame
-) -> pd.DataFrame:
+def ch_metadata_tbl_cleaner(df: pd.DataFrame) -> pd.DataFrame:
     """
     A pipe function that gets the raw chemstation table, cleans it and writes back to the db
     """
