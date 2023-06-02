@@ -25,7 +25,7 @@
 ├── db_methods
 │   ├── __init__.py
 │   └── db_methods.py
-├── devtools
+├── mydevtools
 │   ├── __init__.py
 │   ├── function_timer.py
 │   └── project_settings.py
