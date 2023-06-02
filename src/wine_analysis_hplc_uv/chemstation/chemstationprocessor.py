@@ -55,12 +55,12 @@ class ChemstationProcessor:
             ch_tuple=self.data_dict_tuple,
             db_filepath=db_filepath,
             chemstation_metadata_tblname=ch_metadata_tblname,
-            chromatogram_spectrum_tblname=ch_sc_tblname
+            chromatogram_spectrum_tblname=ch_sc_tblname,
         )
 
     def clean_metadata(self) -> pd.DataFrame:
         return ch_metadata_tbl_cleaner.ch_metadata_tbl_cleaner(self.metadata_df)
-    
+
     def cleanup_pickle(self) -> None:
         assert os.path.exists(self.pkfpath)
         print(f"removing process pickle at {self.pkfpath}..\n")
