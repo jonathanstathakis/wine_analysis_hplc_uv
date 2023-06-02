@@ -10,24 +10,26 @@ from wine_analysis_hplc_uv.db_methods import db_methods
 
 
 def write_chemstation_to_db(
-    ch_tuple: Tuple[
-        List[Dict[str, str]],
-        List[Dict[str, str | pd.DataFrame]]],
+    ch_tuple: Tuple[List[Dict[str, str]], List[Dict[str, str | pd.DataFrame]]],
     chemstation_metadata_tblname: str,
     chromatogram_spectrum_tblname: str,
     db_filepath: str,
 ) -> None:
     # write metadata table, chromatogram_spectra table.
-    
+
     # extract the lists from the tuple
     metadata: List[Dict[str, str]] = ch_tuple[0]
     data: List[Dict[str, str | pd.DataFrame]] = ch_tuple[1]
-    
+
     chemstation_metadata_to_db(
-        chemstation_metadata_list=metadata, tblname=chemstation_metadata_tblname, db_filepath=db_filepath
+        chemstation_metadata_list=metadata,
+        tblname=chemstation_metadata_tblname,
+        db_filepath=db_filepath,
     )
     chromatogram_spectra_to_db(
-        chromatogram_spectrum_list=data, tblname=chromatogram_spectrum_tblname, db_filepath=db_filepath
+        chromatogram_spectrum_list=data,
+        tblname=chromatogram_spectrum_tblname,
+        db_filepath=db_filepath,
     )
     return None
 
