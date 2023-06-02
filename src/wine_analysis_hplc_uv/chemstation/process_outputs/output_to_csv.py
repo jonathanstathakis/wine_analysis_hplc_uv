@@ -133,8 +133,10 @@ def data_to_csv(data_df: pd.DataFrame, wavelengths: List[str] = ["*"]) -> None:
     for path, data in data_df.groupby("datapath"):
         if wavelengths[0] == "*":
             print(f"writing {path}..")
-            data.drop(columns=["datapath"]).to_csv(path, index=False)
-            assert os.path.exists(path), "writing failed..\n"
+            basepath, ext = os.path.splitext(path)
+            newfilepath = basepath + "_spectrum" + ext
+            data.drop(columns=["datapath"]).to_csv(newfilepath, index=False)
+            assert os.path.exists(newfilepath), "writing failed..\n"
         else:
             for wavelength in wavelengths:
                 new_df = data.loc[:, ["mins", wavelength]]
