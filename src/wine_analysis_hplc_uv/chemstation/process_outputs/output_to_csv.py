@@ -57,6 +57,7 @@ def chprocess_to_csv(
     join_data_df["datapath"] = join_data_df["metadatapath"].apply(create_data_outpath)
 
     # creates the directory tree that the data/metadata is destined to be in
+
     def make_target_dir(path_series: pd.Series, exist_ok: bool = False):
         path_series["parent_dir"] = os.path.dirname(path_series["metadatapath"])
         os.makedirs(path_series["parent_dir"], exist_ok=exist_ok)
