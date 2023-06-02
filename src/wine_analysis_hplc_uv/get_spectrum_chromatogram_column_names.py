@@ -1,7 +1,6 @@
 """
 
 """
-from wine_analysis_hplc_uv.devtools import project_settings, function_timer as ft
 import os
 import duckdb as db
 

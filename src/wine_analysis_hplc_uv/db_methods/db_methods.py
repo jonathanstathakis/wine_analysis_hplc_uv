@@ -8,8 +8,7 @@ import duckdb as db
 import pandas as pd
 
 from wine_analysis_hplc_uv.chemstation import chemstation_to_db_methods
-from wine_analysis_hplc_uv.devtools import function_timer as ft
-from wine_analysis_hplc_uv.devtools import project_settings
+
 
 from typing import List
 

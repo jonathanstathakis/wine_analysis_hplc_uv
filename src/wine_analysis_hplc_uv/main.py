@@ -6,7 +6,6 @@ as the overarching pipeline to get to final results.
 import os
 
 from wine_analysis_hplc_uv.core import build_library
-from wine_analysis_hplc_uv.devtools import project_settings
 from wine_analysis_hplc_uv.signal_processing.peak_alignment import peak_alignment_pipe
 
 

@@ -4,8 +4,6 @@ import pandas as pd
 
 from ..core.super_table_pipe import super_table_pipe
 from ..db_methods import db_methods
-from ..devtools import function_timer as ft
-from ..devtools import project_settings
 from ..ux_methods import ux_methods as ux
 
 

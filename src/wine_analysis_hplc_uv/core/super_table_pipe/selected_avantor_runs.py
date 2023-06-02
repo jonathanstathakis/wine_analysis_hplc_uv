@@ -1,6 +1,5 @@
 import pandas as pd
 
-from ...devtools import project_settings
 from ...ux_methods import ux_methods as ux
 
 
