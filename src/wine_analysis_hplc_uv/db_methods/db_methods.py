@@ -12,11 +12,14 @@ from wine_analysis_hplc_uv.chemstation import chemstation_to_db_methods
 
 from typing import List
 
-def table_as_df(db_filepath: str, tblname:str, cols: List[str]=['*']) -> pd.DataFrame:
+
+def table_as_df(
+    db_filepath: str, tblname: str, cols: List[str] = ["*"]
+) -> pd.DataFrame:
     """
-    Get a duckdb table as a dataframe    
+    Get a duckdb table as a dataframe
     """
-    
+
     df = pd.DataFrame()
     print(f"connecting to {db_filepath}..\n")
     with db.connect(db_filepath) as con:
@@ -29,6 +32,7 @@ def table_as_df(db_filepath: str, tblname:str, cols: List[str]=['*']) -> pd.Data
             """
         ).df()
     return df
+
 
 def create_table(db_filepath: str, db_table_name: str, schema: str) -> None:
     # check if table already exists
@@ -96,10 +100,12 @@ def write_df_to_table(
         sys.exit()
     return None
 
+
 def sc_to_df(df: pd.DataFrame, db_filepath: str) -> pd.DataFrame:
     """
     Pass a wine metadata dataframe with relevant hash_key to join to spectrums contained in spectrum table found through the con object. returns the metadata df with a spectrum column, where spectrums are nested dataframes.
     """
+
     def get_spectra(con: db.DuckDBPyConnection, hash_key: str) -> pd.DataFrame:
         query = f"""
             SELECT * EXCLUDE (hash_key) from spectrums
@@ -107,7 +113,7 @@ def sc_to_df(df: pd.DataFrame, db_filepath: str) -> pd.DataFrame:
             """
         df = con.sql(query).df()
         return df
-    
+
     with db.connect(db_filepath) as con:
         df["spectra"] = df.apply(lambda row: get_spectra(con, row["hash_key"]), axis=1)
 

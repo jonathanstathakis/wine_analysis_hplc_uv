@@ -4,8 +4,13 @@ from ...ux_methods import ux_methods as ux
 
 
 def selected_avantor_runs(df: pd.DataFrame) -> pd.DataFrame:
-    return ux.ask_user_and_execute("I will now filter out all runs not on the avantor column. Proceed?", not_avantor_run_filter, df)
-    
+    return ux.ask_user_and_execute(
+        "I will now filter out all runs not on the avantor column. Proceed?",
+        not_avantor_run_filter,
+        df,
+    )
+
+
 def not_avantor_run_filter(df: pd.DataFrame) -> pd.DataFrame:
     """
     Selects runs to be included in study dataset.
@@ -14,7 +19,6 @@ def not_avantor_run_filter(df: pd.DataFrame) -> pd.DataFrame:
         df = df[(df["acq_date"] > "2023-01-01")]
     except:
         print(df.columns)
-
 
     print(f"after filtering for 2023 runs, {df.shape[0]} runs remaining\n")
 

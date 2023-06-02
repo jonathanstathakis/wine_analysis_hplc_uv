@@ -8,12 +8,19 @@ import shutil
 import duckdb as db
 from numpy.random import f
 
-from wine_analysis_hplc_uv.cellartracker_methods import cellartracker_cleaner, init_raw_cellartracker_table
-from wine_analysis_hplc_uv.chemstation import ch_metadata_tbl_cleaner, chemstationprocessor
+from wine_analysis_hplc_uv.cellartracker_methods import (
+    cellartracker_cleaner,
+    init_raw_cellartracker_table,
+)
+from wine_analysis_hplc_uv.chemstation import (
+    ch_metadata_tbl_cleaner,
+    chemstationprocessor,
+)
 from wine_analysis_hplc_uv.core import adapt_super_pipe_to_db
-from wine_analysis_hplc_uv.devtools import function_timer as ft
-from wine_analysis_hplc_uv.devtools import project_settings
-from wine_analysis_hplc_uv.sampletracker import init_raw_sample_tracker_table, sample_tracker_cleaner
+from wine_analysis_hplc_uv.sampletracker import (
+    init_raw_sample_tracker_table,
+    sample_tracker_cleaner,
+)
 from wine_analysis_hplc_uv.ux_methods import ux_methods as ux
 import pandas as pd
 
@@ -24,15 +31,15 @@ def build_db_library(data_lib_path: str) -> None:
     Pipeline function to construct the super_table, a cleaned algamation of chemstation, sample_tracker and cellartracker tables.
     """
     assert os.path.isdir(data_lib_path), "need an existing directory"
-    
+
     def get_db_filepath(data_lib_path: str) -> str:
         db_filename = f"{os.path.basename(data_lib_path).split()[0]}.db"
         db_filepath = os.path.join(data_lib_path, db_filename)
-        
+
         return db_filepath
-    
+
     db_filepath = get_db_filepath(data_lib_path)
-    
+
     # 1. create db file if none exists.
     # dont use context management here because simply opening and closing a connection, forcing the creation of the .db file
     if not os.path.isfile(db_filepath):
@@ -51,11 +58,15 @@ def build_db_library(data_lib_path: str) -> None:
     # write sampletracker
     # write cellartracker
     # write chemstation
-    
+
     # chemstation
-    
-    chemstation_to_db(data_lib_path, 
-                      db_filepath, chemstation_metadata_table_name, chemstation_sc_table_name)
+
+    chemstation_to_db(
+        data_lib_path,
+        db_filepath,
+        chemstation_metadata_table_name,
+        chemstation_sc_table_name,
+    )
 
     # 4. clean the raw tables
     ux.ask_user_and_execute(
@@ -83,34 +94,45 @@ def build_db_library(data_lib_path: str) -> None:
     )
     return None
 
-def chemstation_to_db(data_lib_path: str, db_filepath: str, mdatatblname: str, scdatatblname: str) -> None:
+
+def chemstation_to_db(
+    data_lib_path: str, db_filepath: str, mdatatblname: str, scdatatblname: str
+) -> None:
     chprocess = ux.ask_user_and_execute(
-    "Process chemstation files?\n",
-    chemstationprocessor.ChemstationProcessor,
-    data_lib_path)
-    
+        "Process chemstation files?\n",
+        chemstationprocessor.ChemstationProcessor,
+        data_lib_path,
+    )
+
     def clean_ch_metadata(chprocess) -> pd.DataFrame:
         df = chprocess.clean_metadata()
         return df
-        
-    chprocess.metadata_df = ux.ask_user_and_execute(
-    "Clean chemstation metadata?\n",
-    clean_ch_metadata,
-    chprocess)
-    
-    def ch_to_db(chprocess: chemstationprocessor.ChemstationProcessor, db_filepath: str, metadatatblname: str, sctblname: str):
-        chprocess.to_db(db_filepath=db_filepath,                            ch_metadata_tblname=metadatatblname,
-                        ch_sc_tblname=sctblname)
-        
-    
+
+    metadata_df = ux.ask_user_and_execute(
+        "Clean chemstation metadata?\n", clean_ch_metadata, chprocess
+    )
+
+    def ch_to_db(
+        chprocess: chemstationprocessor.ChemstationProcessor,
+        db_filepath: str,
+        metadatatblname: str,
+        sctblname: str,
+    ):
+        chprocess.to_db(
+            db_filepath=db_filepath,
+            ch_metadata_tblname=metadatatblname,
+            ch_sc_tblname=sctblname,
+        )
+
     ux.ask_user_and_execute(
-    "Write chemstation to db?",
-    ch_to_db,
-    chprocess,
-    db_filepath,
-    mdatatblname,
-    scdatatblname)
-            
+        "Write chemstation to db?",
+        ch_to_db,
+        chprocess,
+        db_filepath,
+        mdatatblname,
+        scdatatblname,
+    )
+
     return None
 
 
@@ -151,8 +173,6 @@ def write_raw_tables(
     sampletracker_table_name: str,
     cellartracker_table_name: str,
 ) -> None:
-
-    
     ux.ask_user_and_execute(
         "Writing sampletracker data to db, proceed?",
         init_raw_sample_tracker_table.init_raw_sample_tracker_table,

@@ -42,9 +42,9 @@ def process_chemstation_uv_files(uv_paths_list: List[str]) -> Tuple[dict, dict]:
     return uv_metadata_list, uv_data_list
 
 
-def main():    
+def main():
     return None
 
 
-if __name__ == "__main__":    
+if __name__ == "__main__":
     main()
