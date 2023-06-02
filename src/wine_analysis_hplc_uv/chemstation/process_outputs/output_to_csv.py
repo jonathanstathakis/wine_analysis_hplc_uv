@@ -34,7 +34,11 @@ def chprocess_to_csv(
     processed_files_dirname: str = "processed_dirs"
     processed_files_root_path = os.path.join(data_lib_path, processed_files_dirname)
 
-    metadata_df = chprocess.metadata_df
+    if os.path.exists(processed_files_root_path):
+        print(
+            f"path exists at {processed_files_root_path}, since forceoverwrite set to {forceoverwrite}, deleting..\n"
+        )
+        shutil.rmtree(processed_files_root_path)
 
     # generate the intended filepaths
 
@@ -59,7 +63,7 @@ def chprocess_to_csv(
         os.makedirs(path_series["parent_dir"], exist_ok=exist_ok)
         return None
 
-    metadata_df.apply(make_target_dir, exist_ok=True, axis=1)
+    metadata_df.apply(make_target_dir, exist_ok=forceoverwrite, axis=1)
 
     # print the created directory tree structure from its root
     print("")
