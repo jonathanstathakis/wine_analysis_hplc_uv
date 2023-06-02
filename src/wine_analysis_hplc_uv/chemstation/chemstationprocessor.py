@@ -32,12 +32,16 @@ class ChemstationProcessor:
         self.data_dict_tuple: Tuple[
             list[dict], list[dict]
         ] = pickle_chemstation_data.pickle_interface(
-            pickle_filepath=self.pkfpath, uv_paths_list=self.fpathlist, usepickle = usepickle
+            pickle_filepath=self.pkfpath,
+            uv_paths_list=self.fpathlist,
+            usepickle=usepickle,
         )
-        self.metadata_df: pd.DataFrame = chemstation_to_db_methods.metadata_list_to_df(self.data_dict_tuple[0])
-        
+        self.metadata_df: pd.DataFrame = chemstation_to_db_methods.metadata_list_to_df(
+            self.data_dict_tuple[0]
+        )
+
         self.data_df: pd.DataFrame = data_to_df(self.data_dict_tuple)
-        
+
         if usepickle:
             self.cleanup_pickle()
 
