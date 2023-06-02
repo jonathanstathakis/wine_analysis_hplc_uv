@@ -1,12 +1,9 @@
 """
-Output to csv.
+Output chemstation process data to csv.
 
-filepaths are in the metadata. Want to store the csv versions of the data in a new, mirror tree whose structure  can be compared to the original, branching from the data_lib_path, one level down then mirroring.
-
-1. Get the paths.
-2. Create the directory tree.
-3. write metadata to dir.
-4. write spectrum to dir.
+TODO:
+- [ ] write tests
+- [ ] clean up pickling and other dev artifacts. 
 """
 from typing import Tuple, Dict, List
 import os
@@ -19,7 +16,7 @@ from wine_analysis_hplc_uv.chemstation import chemstationprocessor
 import pickle
 
 
-def datadirpath():
+def data_lib_path():
     return "/Users/jonathan/mres_thesis/raw_uv_cuprac_comparison/files"
 
 
@@ -29,10 +26,10 @@ def chprocess_to_csv(
     data_lib_path: str,
     cleanup: bool = True,
     forceoverwrite: bool = False,
-    wavelengths=["254", "450"],
+    wavelengths: List[str] = ["*"],
 ) -> None:
     # input vars
-    processed_files_dirname: str = "processed_dirs"
+    processed_files_dirname: str = "processed_files"
     processed_files_root_path = os.path.join(data_lib_path, processed_files_dirname)
 
     if os.path.exists(processed_files_root_path):
