@@ -87,7 +87,8 @@ def table_in_db_query(tblname, db_filepath):
 
 
 def metadata_list_to_df(uv_metadata_list: list) -> pd.DataFrame:
-    return pd.json_normalize(data=uv_metadata_list)
+    metadata_df = pd.json_normalize(data=uv_metadata_list)
+    return metadata_df
 
 
 def uv_data_list_to_df(uv_data_list: list, db_filepath: str) -> None:
