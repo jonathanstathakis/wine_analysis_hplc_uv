@@ -71,32 +71,33 @@ class ChemstationProcessor:
     def to_csv_helper(self):
         output_to_csv.data_to_csv(self.data_dict_tuple, self.datalibpath, cleanup=True)
 
-    
+
 def data_to_df(data_dict_tuple: Tuple) -> pd.DataFrame:
     """
-    For a given list of dicts of ch data: {'hash_key':str,'data': pd.DataFrame}, add the hash key as a column of the dataframe and concat all the data in the list into 1 dataframe. Ideal for joins, writing to db without loops. 
+    For a given list of dicts of ch data: {'hash_key':str,'data': pd.DataFrame}, add the hash key as a column of the dataframe and concat all the data in the list into 1 dataframe. Ideal for joins, writing to db without loops.
     """
-        
+
     def form_data_df(data_dict: Dict) -> pd.DataFrame:
         """
         Form a data df of format: [hash_column, [data_columns]] from the dict.
         """
-        data_df: pd.DataFrame = data_dict['data']
-        data_df['hash_key'] = data_dict['hash_key']
-    
+        data_df: pd.DataFrame = data_dict["data"]
+        data_df["hash_key"] = data_dict["hash_key"]
+
         return data_df
-        
+
     data_list = data_dict_tuple[1]
-    
+
     data_hash_df_list = [form_data_df(data_dict) for data_dict in data_list]
-        
-    data_df: pd.DataFrame = pd.concat(data_hash_df_list, axis = 0, ignore_index=True)
-    
+
+    data_df: pd.DataFrame = pd.concat(data_hash_df_list, axis=0, ignore_index=True)
+
     return data_df
-    
+
+
 if __name__ == "__main__":
     chprocess = ChemstationProcessor(
         "/Users/jonathan/mres_thesis/wine_analysis_hplc_uv/data/cuprac_data"
     )
-    
-    chprocess.to_db(db_filepath=(os.path.join(chprocess.pkfpath, 'test.db')))
+
+    chprocess.to_db(db_filepath=(os.path.join(chprocess.pkfpath, "test.db")))
