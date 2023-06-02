@@ -67,9 +67,23 @@ class ChemstationProcessor:
         shutil.rmtree(os.path.dirname(self.pkfpath))
         print(f"file removed..\n")
         return None
-    
-    def to_csv_helper(self):
-        output_to_csv.data_to_csv(self.data_dict_tuple, self.datalibpath, cleanup=True)
+
+    def to_csv_helper(
+        self,
+        wavelengths: List[str] = ["*"],
+        cleanup: bool = True,
+        forceoverwrite: bool = False,
+    ) -> None:
+        output_to_csv.chprocess_to_csv(
+            metadata_df=self.metadata_df,
+            data_df=self.data_df,
+            data_lib_path=self.datalibpath,
+            wavelengths=wavelengths,
+            cleanup=cleanup,
+            forceoverwrite=forceoverwrite,
+        )
+
+        return None
 
 
 def data_to_df(data_dict_tuple: Tuple) -> pd.DataFrame:
