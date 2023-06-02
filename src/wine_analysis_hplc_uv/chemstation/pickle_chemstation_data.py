@@ -11,16 +11,23 @@ import duckdb as db
 from wine_analysis_hplc_uv.chemstation import process_chemstation
 
 
-def process_and_pickle(uv_paths_list: List[str], pickle_filepath: str) -> Tuple[list[dict], list[dict]]:
-    chemstation_data_dicts_tuple = process_chemstation.process_chemstation_uv_files(uv_paths_list)
+def process_and_pickle(
+    uv_paths_list: List[str], pickle_filepath: str
+) -> Tuple[list[dict], list[dict]]:
+    chemstation_data_dicts_tuple = process_chemstation.process_chemstation_uv_files(
+        uv_paths_list
+    )
     os.makedirs(os.path.dirname(pickle_filepath), exist_ok=True)
     pickle_dump(chemstation_data_dicts_tuple, pickle_filepath)
     return chemstation_data_dicts_tuple
 
-def pickle_interface(pickle_filepath: str, uv_paths_list: List[str], usepickle: bool = True) -> Tuple[list[dict], list[dict]]:
+
+def pickle_interface(
+    pickle_filepath: str, uv_paths_list: List[str], usepickle: bool = True
+) -> Tuple[list[dict], list[dict]]:
     """
-    
-    
+
+
     Args:
         pickle_filepath (str): _description_
         uv_paths_list (List[str]): _description_
@@ -30,9 +37,15 @@ def pickle_interface(pickle_filepath: str, uv_paths_list: List[str], usepickle: 
     """
     actions = {
         "u": lambda: pickle_load(pickle_filepath),
-        "o": lambda: process_and_pickle(uv_paths_list=uv_paths_list, pickle_filepath=pickle_filepath),
-        "y": lambda: process_and_pickle(uv_paths_list=uv_paths_list, pickle_filepath=pickle_filepath),
-        "n": lambda: process_chemstation.process_chemstation_uv_files(uv_paths_list=uv_paths_list),
+        "o": lambda: process_and_pickle(
+            uv_paths_list=uv_paths_list, pickle_filepath=pickle_filepath
+        ),
+        "y": lambda: process_and_pickle(
+            uv_paths_list=uv_paths_list, pickle_filepath=pickle_filepath
+        ),
+        "n": lambda: process_chemstation.process_chemstation_uv_files(
+            uv_paths_list=uv_paths_list
+        ),
     }
 
     if os.path.isfile(pickle_filepath):
@@ -41,10 +54,9 @@ def pickle_interface(pickle_filepath: str, uv_paths_list: List[str], usepickle: 
         action_key = input(f"no pickle found, create? at {pickle_filepath} (y/n): ")
     else:
         action_key = "n"
-    
+
     action = actions.get(action_key, actions["n"])
     return action()
-
 
 
 def pickle_dump(obj: object, filepath: str) -> None:
