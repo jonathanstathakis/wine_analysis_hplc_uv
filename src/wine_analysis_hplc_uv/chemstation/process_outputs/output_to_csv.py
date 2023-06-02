@@ -24,7 +24,8 @@ def datadirpath():
 
 
 def chprocess_to_csv(
-    chprocess,
+    metadata_df: pd.DataFrame,
+    data_df: pd.DataFrame,
     data_lib_path: str,
     cleanup: bool = True,
     forceoverwrite: bool = False,
@@ -44,15 +45,13 @@ def chprocess_to_csv(
 
     # generate paths for the extracted data/metadata as strings of 'metadatapath' column
     metadata_df["metadatapath"] = create_metadata_outpath(
-        path_series=chprocess.metadata_df["path"],
+        path_series=metadata_df["path"],
         processed_files_root_path=processed_files_root_path,
         cleanup=cleanup,
     )
 
     # generate a metadata/data join table
-    join_data_df = join_metadata_data(
-        data_df=chprocess.data_df, metadata_df=chprocess.metadata_df
-    )
+    join_data_df = join_metadata_data(data_df=data_df, metadata_df=metadata_df)
 
     # create data outpaths
     join_data_df["datapath"] = join_data_df["metadatapath"].apply(create_data_outpath)
@@ -74,7 +73,7 @@ def chprocess_to_csv(
     # functions to organise the data/metadata into a format appropriate for writing to csv
     # and writing them to the generated 'metadatapath'
 
-    metadata_to_csv(metadata_df=chprocess.metadata_df)
+    metadata_to_csv(metadata_df=metadata_df)
 
     data_to_csv(data_df=join_data_df, wavelengths=wavelengths)
 
