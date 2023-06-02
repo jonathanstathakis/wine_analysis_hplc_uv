@@ -3,7 +3,6 @@ from . import (
     chemstation_sample_tracker_join,
     selected_avantor_runs,
 )
-from ...devtools import function_timer as ft, project_settings
 from ...ux_methods import ux_methods as ux
 
 

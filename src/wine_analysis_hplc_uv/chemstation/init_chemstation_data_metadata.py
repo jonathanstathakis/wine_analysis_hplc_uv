@@ -6,7 +6,6 @@ TODO:
 import collections
 import os
 from typing import List, Tuple
-from wine_analysis_hplc_uv.devtools import function_timer as ft
 
 
 @ft.timeit

@@ -4,8 +4,6 @@
 from traceback import print_tb
 import pandas as pd
 from fuzzywuzzy import fuzz, process
-from ...devtools import function_timer as ft
-from ...devtools import project_settings
 from . import form_join_col
 from ...ux_methods import ux_methods as ux
 

@@ -4,8 +4,6 @@ Test db_methods
 import os
 
 from db_methods import db_methods
-from devtools import function_timer as ft
-from devtools import project_settings
 
 
 def test_db_methods():

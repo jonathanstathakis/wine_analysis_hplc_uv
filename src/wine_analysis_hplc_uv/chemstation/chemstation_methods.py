@@ -3,7 +3,6 @@ All the methods used to preprocess the chemstation files into the db
 """
 import os
 import fnmatch
-from wine_analysis_hplc_uv.devtools import function_timer as ft
 
 
 @ft.timeit

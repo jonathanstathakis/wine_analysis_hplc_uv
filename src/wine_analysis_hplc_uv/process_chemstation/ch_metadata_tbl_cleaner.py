@@ -8,7 +8,6 @@ import numpy as np
 import pandas as pd
 
 from ..db_methods import db_methods
-from ..devtools import function_timer as ft
 from ..df_methods import df_cleaning_methods
 
 

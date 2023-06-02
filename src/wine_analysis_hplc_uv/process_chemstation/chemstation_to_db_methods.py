@@ -7,7 +7,6 @@ import duckdb as db
 import pandas as pd
 
 from ..db_methods import db_methods
-from ..devtools import function_timer as ft
 
 
 @ft.timeit

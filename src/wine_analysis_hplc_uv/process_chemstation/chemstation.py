@@ -8,8 +8,6 @@ import chemstation_methods
 import chemstation_to_db_methods
 import pickle_chemstation_data
 from ch_data_multiprocess import ch_data_multiprocess
-from ..devtools import function_timer as ft
-from ..devtools import project_settings
 
 
 def chemstation(

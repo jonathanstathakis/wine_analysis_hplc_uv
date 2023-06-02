@@ -7,7 +7,7 @@ import duckdb as db
 import pandas as pd
 
 from wine_analysis_hplc_uv.db_methods import db_methods
-from wine_analysis_hplc_uv.devtools import function_timer as ft
+from wine_analysis_hplc_uv.mydevtools import function_timer as ft
 from wine_analysis_hplc_uv.df_methods import df_cleaning_methods
 
 
