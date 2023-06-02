@@ -4,7 +4,11 @@
 import os
 from typing import List, Tuple, Any
 
-from wine_analysis_hplc_uv.chemstation import chemstation_methods, chemstation_to_db_methods, pickle_chemstation_data
+from wine_analysis_hplc_uv.chemstation import (
+    chemstation_methods,
+    chemstation_to_db_methods,
+    pickle_chemstation_data,
+)
 from . import ch_data_multiprocess
 
 
@@ -19,7 +23,9 @@ def chemstation(
     pickle_filepath = os.path.join(data_lib_path, pickle_filename)
 
     # get the .D paths
-    uv_paths_list: list[str] = chemstation_methods.uv_filepaths_to_list(root_dir_path=data_lib_path)
+    uv_paths_list: list[str] = chemstation_methods.uv_filepaths_to_list(
+        root_dir_path=data_lib_path
+    )
 
     # get the uv_metadata and data as lists either from the pickle or the process
     ch_data: Tuple[List[dict], List[dict]] = pickle_chemstation_data.pickle_interface(
@@ -34,15 +40,19 @@ def chemstation(
     return None
 
 
-def process_chemstation_uv_files(uv_paths_list: List[str]) -> Tuple[List[dict], List[dict]]:
+def process_chemstation_uv_files(
+    uv_paths_list: List[str],
+) -> Tuple[List[dict], List[dict]]:
     print(f"{__file__}\n\nProcessing files..\n")
-    uv_metadata_list, uv_data_list = ch_data_multiprocess.ch_data_multiprocess(uv_paths_list)
+    uv_metadata_list, uv_data_list = ch_data_multiprocess.ch_data_multiprocess(
+        uv_paths_list
+    )
     return uv_metadata_list, uv_data_list
 
 
-def main():    
+def main():
     return None
 
 
-if __name__ == "__main__":    
+if __name__ == "__main__":
     main()
