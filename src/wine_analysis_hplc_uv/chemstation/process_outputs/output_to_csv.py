@@ -229,12 +229,14 @@ def cleanup_pickle(pkpath: str, cleanup: bool) -> None:
 
 
 def main():
-    pkpath = os.path.join(datadirpath(), "chprocesspickle.pk")
+    pkpath = os.path.join(data_lib_path(), "chprocesspickle.pk")
 
-    chprocess = chprocess_pickle_interface(False, datadirpath(), pkpath)
+    chprocess = chemstationprocessor.ChemstationProcessor(datalibpath=data_lib_path())
 
-    chprocess_to_csv(chprocess, datadirpath(), cleanup = False)
-    
+    chprocess.to_csv_helper(
+        wavelengths=["254", "450"], cleanup=True, forceoverwrite=True
+    )
+
     cleanup_pickle(pkpath, True)
 
     return None
