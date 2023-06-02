@@ -8,8 +8,6 @@ from typing import List, Tuple
 
 import duckdb as db
 
-from ..devtools import function_timer as ft
-from ..devtools import project_settings
 from . import init_chemstation_data_metadata
 
 
