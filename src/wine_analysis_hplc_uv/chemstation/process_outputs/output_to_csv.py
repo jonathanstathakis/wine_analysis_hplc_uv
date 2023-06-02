@@ -188,7 +188,7 @@ def metadata_to_csv(metadata_df: pd.DataFrame) -> None:
 
     def write_metadata_to_new_path(metadata_series: pd.Series):
         print(f"writing {metadata_series['metadatapath']}..")
-        metadata_series.to_csv(metadata_series["metadatapath"], index=False)
+        metadata_series.to_csv(metadata_series["metadatapath"], index_label="index")
         return metadata_series
 
     metadata_df.apply(write_metadata_to_new_path, axis=1)
