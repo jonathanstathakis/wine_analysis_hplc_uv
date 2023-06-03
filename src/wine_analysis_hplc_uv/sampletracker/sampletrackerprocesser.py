@@ -49,4 +49,16 @@ class SampleTracker:
             self.df.pipe(self.st_to_db, db_filepath)
         return None
 
+    def to_sheets(self, google_api_dict: dict, sheet_title: str) -> None:
+        """_summary_
+        Push current clean_df to the google sheets workbook as a new sheet.
+        """
+
+        assert isinstance(sheet_title, str)
+        assert isinstance(google_api_dict, dict)
+
+        st_methods.st_to_sheets(self.clean_df, google_api_dict, sheet_title)
+
+        return None
+
     # def to_sheets(self)-> None:
