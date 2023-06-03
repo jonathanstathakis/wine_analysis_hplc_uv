@@ -5,6 +5,7 @@ Test new SampleTracker Class
 import os
 import pandas as pd
 from wine_analysis_hplc_uv.sampletracker import sampletrackerprocesser as stracker
+from wine_analysis_hplc_uv.google_sheets_api import google_sheets_api
 
 
 def get_columns_dict() -> dict:
@@ -29,9 +30,12 @@ def get_columns_dict() -> dict:
 
 
 def get_google_api_dict() -> dict:
+    sheet_name = "sample_tracker"
+    cell_range = "!A1:Z200"
+
     return dict(
         spreadsheet_id="15S2wm8t6ol2MRwTzgKTjlTcUgaStNlA22wJmFYhcwAY",
-        range="sample_tracker!A1:Z200",
+        range=sheet_name + cell_range,
         creds_parent_path=os.environ.get("GOOGLE_SHEETS_API_CREDS_PARENT_PATH"),
     )
 
@@ -64,6 +68,7 @@ def test_strack_clean_df_not_empty(strack: stracker.SampleTracker = strack()) ->
     assert not strack.clean_df.empty
 
 
+def test_post_new_sheet(strack: stracker.SampleTracker = strack()) -> None:
     google_api_dict = get_google_api_dict()
     assert isinstance(google_api_dict, dict)
     sheet_title = "testpostcleants"
@@ -71,8 +76,21 @@ def test_strack_clean_df_not_empty(strack: stracker.SampleTracker = strack()) ->
     creds_parent_path = google_api_dict["creds_parent_path"]
 
     google_sheets_api.delete_sheet(spreadsheet_id, sheet_title, creds_parent_path)
-    
+
     new_range = sheet_title + "!A1:Z200"
+
+    new_google_api_dict = google_api_dict
+    new_google_api_dict["range"] = new_range
+
+    strack.to_sheets(new_google_api_dict, sheet_title)
+
+    stracker.SampleTracker(get_columns_dict(), new_google_api_dict)
+
+    # google_sheets_api.delete_sheet(spreadsheet_id, sheet_title, creds_parent_path)
+
+    return None
+
+
 def main():
     return None
 
