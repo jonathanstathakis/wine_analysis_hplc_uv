@@ -25,13 +25,12 @@ def get_columns_dict() -> dict:
         "sampled_date": pd.StringDtype(),
         "added_to_cellartracker": pd.StringDtype(),
         "notes": pd.StringDtype(),
-        "size": pd.StringDtype(),
     }
 
 
 def get_google_api_dict() -> dict:
     sheet_name = "sample_tracker"
-    cell_range = "!A1:Z200"
+    cell_range = "!A1:Z400"
 
     return dict(
         spreadsheet_id="15S2wm8t6ol2MRwTzgKTjlTcUgaStNlA22wJmFYhcwAY",
@@ -68,7 +67,7 @@ def test_strack_clean_df_not_empty(strack: stracker.SampleTracker = strack()) ->
     assert not strack.clean_df.empty
 
 
-def test_post_new_sheet(strack: stracker.SampleTracker = strack()) -> None:
+def test_post_raw_sheet(strack: stracker.SampleTracker = strack()) -> None:
     google_api_dict = get_google_api_dict()
     assert isinstance(google_api_dict, dict)
     sheet_title = "testpostcleants"
@@ -77,18 +76,91 @@ def test_post_new_sheet(strack: stracker.SampleTracker = strack()) -> None:
 
     google_sheets_api.delete_sheet(spreadsheet_id, sheet_title, creds_parent_path)
 
-    new_range = sheet_title + "!A1:Z200"
+    new_range = sheet_title + "!A1:Z400"
 
     new_google_api_dict = google_api_dict
     new_google_api_dict["range"] = new_range
 
-    strack.to_sheets(new_google_api_dict, sheet_title)
+    strack.to_sheets(new_google_api_dict, sheet_title, clean_df=False)
 
-    stracker.SampleTracker(get_columns_dict(), new_google_api_dict)
+    new_strack = stracker.SampleTracker(get_columns_dict(), new_google_api_dict)
+    new_raw_df = new_strack.df
 
-    # google_sheets_api.delete_sheet(spreadsheet_id, sheet_title, creds_parent_path)
+    original_raw_df = strack.df
+
+    # 2023-06-04 00:33:00 some part of the to_sheet, from sheet process drops leading zeroes
+    # so it needs to be filled back to a width of 2 to match the raw sampletracker sheet contents
+    new_raw_df["id"] = new_raw_df["id"].str.zfill(2)
+
+    assert original_raw_df.shape == new_raw_df.shape
+
+    from pprint import pprint
+
+    pd.options.display.max_rows = 500
+    pd.options.display.max_colwidth = 50
+
+    from wine_analysis_hplc_uv.df_methods import df_cleaning_methods as df_clean
+
+    original_raw_df = df_clean.df_string_cleaner(original_raw_df)
+    new_raw_df = df_clean.df_string_cleaner(new_raw_df)
+
+    print("-- original_raw_df --\n")
+    print("-- original_raw_df --\n")
+    print(original_raw_df.head())
+    print("-- new_raw_df --\n")
+    print(new_raw_df.head())
+
+    diff_df = original_raw_df.compare(new_raw_df)
+
+    print("-- diff_df head--\n")
+    print(diff_df.head())
+    print("-- diff_df head--\n")
+    print(diff_df.shape)
+    print("-- diff_df index--\n")
+    print(diff_df.index)
+
+    # print(diff_df.to_string())
+
+    # assert original_raw_df.equals(new_raw_df)
+    # f"{diff_df.to_string()}"
+
+    google_sheets_api.delete_sheet(spreadsheet_id, sheet_title, creds_parent_path)
 
     return None
+
+
+# def test_post_clean_sheet(strack: stracker.SampleTracker = strack()) -> None:
+#     google_api_dict = get_google_api_dict()
+#     assert isinstance(google_api_dict, dict)
+#     sheet_title = "testpostcleants"
+#     spreadsheet_id = google_api_dict["spreadsheet_id"]
+#     creds_parent_path = google_api_dict["creds_parent_path"]
+
+#     google_sheets_api.delete_sheet(spreadsheet_id, sheet_title, creds_parent_path)
+
+#     new_range = sheet_title + "!A1:Z400"
+
+#     new_google_api_dict = google_api_dict
+#     new_google_api_dict["range"] = new_range
+
+#     strack.to_sheets(new_google_api_dict, sheet_title, clean_df=True)
+
+#     new_strack = stracker.SampleTracker(get_columns_dict(), new_google_api_dict)
+#     new_df = new_strack.clean_df
+
+#     clean_df = strack.clean_df
+
+#     # 2023-06-04 00:33:00 some part of the to_sheet, from sheet process drops leading zeroes
+#     # so it needs to be filled back to a width of 2 to match the raw sampletracker sheet contents
+#     new_df["id"] = new_df["id"].str.zfill(2)
+
+#     from pprint import pprint
+
+#     pprint(clean_df.equals(new_df))
+
+#     google_sheets_api.delete_sheet(spreadsheet_id, sheet_title, creds_parent_path)
+
+#     return None
 
 
 def main():
