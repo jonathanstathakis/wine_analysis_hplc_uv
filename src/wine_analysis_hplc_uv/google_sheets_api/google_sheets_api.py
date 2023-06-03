@@ -123,23 +123,22 @@ def delete_sheet(spreadsheet_id: str, sheet_title: str, creds_parent_path):
     service = get_sheets_service(creds_parent_path)
 
     spreadsheet = service.spreadsheets().get(spreadsheetId=spreadsheet_id).execute()
-    
+
     assert spreadsheet
-    
-    sheet_titles = [sheet['properties']['title'] for sheet in spreadsheet['sheets']]
-    
+
+    sheet_titles = [sheet["properties"]["title"] for sheet in spreadsheet["sheets"]]
+
     try:
-        
         assert sheet_title in sheet_titles
-        
+
         # for sheet in sheet_titlte
 
         for sheet in spreadsheet["sheets"]:
             if sheet["properties"]["title"] == sheet_title:
                 sheet_id = sheet["properties"]["sheetId"]
-                
+
         assert sheet_id
-        
+
         sheet_body = {"requests": [{"deleteSheet": {"sheetId": sheet_id}}]}
         reponse = ""
         response = (
@@ -149,12 +148,11 @@ def delete_sheet(spreadsheet_id: str, sheet_title: str, creds_parent_path):
         )
 
         return response
-    
+
     except Exception as e:
         print(e)
-    
+
     finally:
-            
         return None
 
 
@@ -169,7 +167,7 @@ def post_df_as_sheet_values(
     assert isinstance(range, str)
     assert isinstance(creds_parent_path, str)
     assert not df.empty
-    
+
     service = get_sheets_service(creds_parent_path)
     data = df.astype(str).values.tolist()
     columns = df.columns.tolist()
