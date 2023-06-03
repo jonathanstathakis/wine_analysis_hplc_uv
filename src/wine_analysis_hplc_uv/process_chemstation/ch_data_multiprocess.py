@@ -3,6 +3,7 @@ from typing import List, Tuple
 counter = None
 counter_lock = None
 
+
 def ch_data_multiprocess(dirpath_list: List[str]) -> Tuple[List[dict], List[dict]]:
     """
     1. Create the metadata and data dicts from each .D file.

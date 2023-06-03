@@ -15,16 +15,13 @@ from ..df_methods import df_cleaning_methods
 def clean_sample_tracker_table(
     db_filepath: str,
     tbl_name: str,
-
 ) -> None:
     clean_tbl_name = "cleaned_" + tbl_name
-    
+
     print("generating raw_sample_tracker_table from db..\n")
 
     with db.connect(db_filepath) as con:
-        raw_sample_tracker_df = con.sql(
-            f"SELECT * FROM {tbl_name}"
-        ).df()
+        raw_sample_tracker_df = con.sql(f"SELECT * FROM {tbl_name}").df()
 
     cleaned_sample_tracker_df = sample_tracker_df_cleaner(raw_sample_tracker_df)
 
