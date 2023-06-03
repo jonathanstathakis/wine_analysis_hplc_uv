@@ -15,9 +15,7 @@ def init_raw_sample_tracker_table(db_filepath: str, table_name: str) -> None:
     return None
 
 
-def sampletracker_to_db(
-    df: pd.DataFrame, db_filepath: str, db_table_name: str
-):
+def sampletracker_to_db(df: pd.DataFrame, db_filepath: str, db_table_name: str):
     schema = """
         sampler VARCHAR,
         detection VARCHAR,
