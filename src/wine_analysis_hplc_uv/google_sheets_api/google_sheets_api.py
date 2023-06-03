@@ -113,12 +113,63 @@ def post_new_sheet(spreadsheet_id: str, sheet_title: str, creds_parent_path):
     return response
 
 
+def delete_sheet(spreadsheet_id: str, sheet_title: str, creds_parent_path):
+    """
+    delete a target sheet
+    """
+    assert isinstance(spreadsheet_id, str)
+    assert isinstance(sheet_title, str)
+    assert isinstance(creds_parent_path, str)
+    service = get_sheets_service(creds_parent_path)
+
+    spreadsheet = service.spreadsheets().get(spreadsheetId=spreadsheet_id).execute()
+    
+    assert spreadsheet
+    
+    sheet_titles = [sheet['properties']['title'] for sheet in spreadsheet['sheets']]
+    
+    try:
+        
+        assert sheet_title in sheet_titles
+        
+        # for sheet in sheet_titlte
+
+        for sheet in spreadsheet["sheets"]:
+            if sheet["properties"]["title"] == sheet_title:
+                sheet_id = sheet["properties"]["sheetId"]
+                
+        assert sheet_id
+        
+        sheet_body = {"requests": [{"deleteSheet": {"sheetId": sheet_id}}]}
+        reponse = ""
+        response = (
+            service.spreadsheets()
+            .batchUpdate(spreadsheetId=spreadsheet_id, body=sheet_body)
+            .execute()
+        )
+
+        return response
+    
+    except Exception as e:
+        print(e)
+    
+    finally:
+            
+        return None
+
+
 def post_df_as_sheet_values(
     df: pd.DataFrame, spreadsheet_id: str, range: str, creds_parent_path: str
 ):
     """
     upload a given df to a specified sheet. Returns the response dict. Range should include the sheet title in the format "sheet_title!A1"
     """
+    assert isinstance(df, pd.DataFrame)
+    assert isinstance(spreadsheet_id, str)
+    assert isinstance(range, str)
+    assert isinstance(creds_parent_path, str)
+    assert not df.empty
+    
     service = get_sheets_service(creds_parent_path)
     data = df.astype(str).values.tolist()
     columns = df.columns.tolist()
