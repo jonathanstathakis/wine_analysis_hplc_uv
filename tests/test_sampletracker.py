@@ -64,6 +64,15 @@ def test_strack_clean_df_not_empty(strack: stracker.SampleTracker = strack()) ->
     assert not strack.clean_df.empty
 
 
+    google_api_dict = get_google_api_dict()
+    assert isinstance(google_api_dict, dict)
+    sheet_title = "testpostcleants"
+    spreadsheet_id = google_api_dict["spreadsheet_id"]
+    creds_parent_path = google_api_dict["creds_parent_path"]
+
+    google_sheets_api.delete_sheet(spreadsheet_id, sheet_title, creds_parent_path)
+    
+    new_range = sheet_title + "!A1:Z200"
 def main():
     return None
 
