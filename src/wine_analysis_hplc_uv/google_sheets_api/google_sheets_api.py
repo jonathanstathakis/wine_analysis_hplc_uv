@@ -1,7 +1,7 @@
 """
 A very simple Google Sheets API interface for pulling tabular data values, creating new sheets and uploading values from dataframes.
 
-Note: currently note built with any tests.
+Note: currently not built with any tests.
 
 Example Workflow:
 
@@ -44,7 +44,7 @@ def get_credentials(creds_parent_path: str):
         creds = Credentials.from_authorized_user_file(path_to_token, scopes)
     # If there are no (valid) credentials available, let the user log in.
 
-    if not creds or not creds.valid:
+    while not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
             try:
                 # 2023-04-21-23-09 - for some reason when the token expires, this codeblock (suppled by google on google sheets api webpage) should refresh it, right? however it doesnt. This try-except block will try to refresh, throw RefreshError then delete the token manually, then try again.
