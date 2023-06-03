@@ -4,9 +4,9 @@ import shutil
 
 from wine_analysis_hplc_uv.chemstation import (
     chemstation_methods,
-    chemstation_to_db_methods,
+    chemstation_to_db_methods as ch_db,
     pickle_chemstation_data,
-    ch_metadata_tbl_cleaner,
+    ch_metadata_tbl_cleaner as ch_m_clean,
 )
 from wine_analysis_hplc_uv.chemstation.process_outputs import output_to_csv
 from typing import List, Tuple, Dict
@@ -14,7 +14,9 @@ from typing import List, Tuple, Dict
 
 class ChemstationProcessor:
     """
-    Chemstation data processor. Make sure to run ChemstationProcessor.cleanup_pickle() at the end to clean up the picklejar and pickle at the end of the process.
+    # Chemstation data processor.
+    Make sure to run ChemstationProcessor.cleanup_pickle() at the end
+    to clean up the picklejar and pickle at the end of the process.
     """
 
     def __init__(self, datalibpath: str, usepickle: bool = False):
@@ -22,7 +24,6 @@ class ChemstationProcessor:
         self.datalibpath: str = datalibpath
 
         self.pkfname = "chemstation_process_picklejar/chemstation_data_dicts_tuple.pk"
-
         self.pkfpath: str = os.path.join(datalibpath, self.pkfname)
 
         self.fpathlist: List[str] = chemstation_methods.uv_filepaths_to_list(
@@ -36,7 +37,7 @@ class ChemstationProcessor:
             uv_paths_list=self.fpathlist,
             usepickle=usepickle,
         )
-        self.metadata_df: pd.DataFrame = chemstation_to_db_methods.metadata_list_to_df(
+        self.metadata_df: pd.DataFrame = ch_db.metadata_list_to_df(
             self.data_dict_tuple[0]
         )
 
@@ -51,7 +52,7 @@ class ChemstationProcessor:
         ch_metadata_tblname: str = "ch_metadata",
         ch_sc_tblname: str = "ch_sc_data",
     ) -> None:
-        chemstation_to_db_methods.write_chemstation_to_db(
+        ch_db.write_chemstation_to_db(
             ch_tuple=self.data_dict_tuple,
             db_filepath=db_filepath,
             chemstation_metadata_tblname=ch_metadata_tblname,
@@ -59,13 +60,13 @@ class ChemstationProcessor:
         )
 
     def clean_metadata(self) -> pd.DataFrame:
-        return ch_metadata_tbl_cleaner.ch_metadata_tbl_cleaner(self.metadata_df)
+        return ch_m_clean.ch_metadata_tbl_cleaner(self.metadata_df)
 
     def cleanup_pickle(self) -> None:
         assert os.path.exists(self.pkfpath)
         print(f"removing process pickle at {self.pkfpath}..\n")
         shutil.rmtree(os.path.dirname(self.pkfpath))
-        print(f"file removed..\n")
+        print("file removed..\n")
         return None
 
     def to_csv_helper(
@@ -88,7 +89,11 @@ class ChemstationProcessor:
 
 def data_to_df(data_dict_tuple: Tuple) -> pd.DataFrame:
     """
-    For a given list of dicts of ch data: {'hash_key':str,'data': pd.DataFrame}, add the hash key as a column of the dataframe and concat all the data in the list into 1 dataframe. Ideal for joins, writing to db without loops.
+    For a given list of dicts of ch data: {'hash_key':str,'data': df}:
+    - add the hash key as a column of the dataframe
+    - concat all the data in the list into 1 dataframe.
+
+    This is Ideal for joins and writing to db without loops.
     """
 
     def form_data_df(data_dict: Dict) -> pd.DataFrame:

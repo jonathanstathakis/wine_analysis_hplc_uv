@@ -1,19 +1,16 @@
 """
-Contain all the methods to clean the chemstation metadata table before input into super_table_pipe.
-
-Acts on a local table which is written by prototype_code/chemstation_db_tables_metadata_data.py
+Methods to clean the chemstation metadata table before input into super_table_pipe.
 """
 import duckdb as db
 import pandas as pd
 
 from wine_analysis_hplc_uv.db_methods import db_methods
-from wine_analysis_hplc_uv.mydevtools import function_timer as ft
 from wine_analysis_hplc_uv.df_methods import df_cleaning_methods
 
 
 def ch_metadata_tbl_cleaner(df: pd.DataFrame) -> pd.DataFrame:
     """
-    A pipe function that gets the raw chemstation table, cleans it and writes back to the db
+    Gets the raw chemstation table, cleans it and writes back to the db
     """
 
     df = (
@@ -25,8 +22,6 @@ def ch_metadata_tbl_cleaner(df: pd.DataFrame) -> pd.DataFrame:
     )
 
     return df
-
-    write_cleaned_ch_metadata_tbl_to_db(df, db_filepath, clean_tbl_name)
 
 
 def format_acq_date(df):
@@ -51,11 +46,6 @@ def chemstation_metadata_drop_unwanted_runs(df: pd.DataFrame) -> pd.DataFrame:
         & ~(df["exp_id"].isna())
     ]
     df = library_id_replacer(df)
-
-    print(
-        "\nthe following new_id's are not digits and will cause an error when writing the table:\n"
-    )
-    print(df[~(df["new_id"].str.isdigit())])
 
     return df
 
@@ -94,7 +84,8 @@ def four_digit_id_to_two_digit(df: pd.DataFrame) -> pd.DataFrame:
 
 def string_id_to_digit(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Replaces the id of a number of runs with their 2 digit id's as stated in the sample tracker.
+    Replaces the id of a number of runs with their 2 digit id's
+    as stated in the sample tracker.
     """
     # 1. z3 to 00
     df["new_id"] = df["new_id"].replace({"z3": "00"})
@@ -117,7 +108,8 @@ def rename_wine_deg_wines(new_id_series: pd.Series):
     pattern = r"^[nea](01|02|03)"
     replacement = {"01": "103", "02": "104", "03": "105"}
 
-    # Replace the strings in the 'new_id' column using the regex pattern and replacement mapping
+    # Replace the strings in the 'new_id' column
+    # using the regex pattern and replacement mapping
     new_id_series = new_id_series.replace(
         pattern, lambda x: replacement[x.group(1)], regex=True
     )
@@ -138,7 +130,8 @@ def library_id_replacer(df: pd.DataFrame) -> pd.DataFrame:
 
     try:
         df["new_id"] = df["new_id"].apply(rename_wine_deg_wines)
-    except:
+    except Exception as e:
+        print(e)
         print(df.columns)
     return df
 
@@ -160,9 +153,7 @@ def write_cleaned_ch_metadata_tbl_to_db(
             df, db_filepath, new_table_name, schema, table_column_names, df_column_names
         )
     except Exception as e:
-        print(
-            f"Exception encountered when writing cleaned_chemstation_metadata_table to database: {e}"
-        )
+        print(f"Exception encountered when writing tbl to database: {e}")
     return None
 
 
