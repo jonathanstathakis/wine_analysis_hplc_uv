@@ -5,11 +5,10 @@ import html
 import os
 
 import duckdb as db
-import numpy as np
 import pandas as pd
 
-from ..db_methods import db_methods
-from ..df_methods import df_cleaning_methods
+from wine_analysis_hplc_uv.db_methods import db_methods
+from wine_analysis_hplc_uv.df_methods import df_cleaning_methods
 
 
 def clean_sample_tracker_table(
