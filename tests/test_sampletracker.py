@@ -8,6 +8,11 @@ from wine_analysis_hplc_uv.sampletracker import sampletrackerprocesser as strack
 
 
 def get_columns_dict() -> dict:
+    """_summary_
+
+    Returns:
+        _type_: _description_
+    """
     # column names as keys, dtypes as values
     return {
         "detection": pd.StringDtype(),
@@ -48,6 +53,15 @@ def test_strack_df_is_pd(strack: stracker.SampleTracker = strack()) -> None:
 
 def test_strack_df_not_empty(strack: stracker.SampleTracker = strack()) -> None:
     assert not strack.df.empty
+
+
+def test_strack_clean_df_is_pd(strack: stracker.SampleTracker = strack()) -> None:
+    assert isinstance(strack.clean_df, pd.DataFrame)
+    return None
+
+
+def test_strack_clean_df_not_empty(strack: stracker.SampleTracker = strack()) -> None:
+    assert not strack.clean_df.empty
 
 
 def main():
