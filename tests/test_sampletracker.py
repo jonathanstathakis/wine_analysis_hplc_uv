@@ -6,6 +6,7 @@ import os
 import pandas as pd
 from wine_analysis_hplc_uv.sampletracker import sampletrackerprocesser as stracker
 from wine_analysis_hplc_uv.google_sheets_api import google_sheets_api
+import pytest
 
 
 def get_columns_dict() -> dict:
@@ -39,35 +40,36 @@ def get_google_api_dict() -> dict:
     )
 
 
-def strack():
+@pytest.fixture(scope="module")
+def strack_class():
     return stracker.SampleTracker(get_columns_dict(), get_google_api_dict())
 
 
-def test_sampletracker_init(strack: stracker.SampleTracker = strack()):
-    assert strack
+def test_sampletracker_init(strack_class):
+    assert isinstance(strack_class, stracker.SampleTracker)
 
     return None
 
 
-def test_strack_df_is_pd(strack: stracker.SampleTracker = strack()) -> None:
-    assert isinstance(strack.df, pd.DataFrame)
+def test_strack_df_is_pd(strack_class) -> None:
+    assert isinstance(strack_class.df, pd.DataFrame)
     return None
 
 
-def test_strack_df_not_empty(strack: stracker.SampleTracker = strack()) -> None:
-    assert not strack.df.empty
+def test_strack_df_not_empty(strack_class) -> None:
+    assert not strack_class.df.empty
 
 
-def test_strack_clean_df_is_pd(strack: stracker.SampleTracker = strack()) -> None:
-    assert isinstance(strack.clean_df, pd.DataFrame)
+def test_strack_clean_df_is_pd(strack_class) -> None:
+    assert isinstance(strack_class.clean_df, pd.DataFrame)
     return None
 
 
-def test_strack_clean_df_not_empty(strack: stracker.SampleTracker = strack()) -> None:
-    assert not strack.clean_df.empty
+def test_strack_clean_df_not_empty(strack_class) -> None:
+    assert not strack_class.clean_df.empty
 
 
-def test_post_raw_sheet(strack: stracker.SampleTracker = strack()) -> None:
+def test_post_raw_sheet(strack_class) -> None:
     google_api_dict = get_google_api_dict()
     assert isinstance(google_api_dict, dict)
     sheet_title = "testpostcleants"
@@ -81,12 +83,12 @@ def test_post_raw_sheet(strack: stracker.SampleTracker = strack()) -> None:
     new_google_api_dict = google_api_dict
     new_google_api_dict["range"] = new_range
 
-    strack.to_sheets(new_google_api_dict, sheet_title, clean_df=False)
+    strack_class.to_sheets(new_google_api_dict, sheet_title, clean_df=False)
 
     new_strack = stracker.SampleTracker(get_columns_dict(), new_google_api_dict)
     new_raw_df = new_strack.df
 
-    original_raw_df = strack.df
+    original_raw_df = strack_class.df
 
     # 2023-06-04 00:33:00 some part of the to_sheet, from sheet process drops leading zeroes
     # so it needs to be filled back to a width of 2 to match the raw sampletracker sheet contents
@@ -129,7 +131,7 @@ def test_post_raw_sheet(strack: stracker.SampleTracker = strack()) -> None:
     return None
 
 
-# def test_post_clean_sheet(strack: stracker.SampleTracker = strack()) -> None:
+# def test_post_clean_sheet(strack: stracker.SampleTracker = strack_class()) -> None:
 #     google_api_dict = get_google_api_dict()
 #     assert isinstance(google_api_dict, dict)
 #     sheet_title = "testpostcleants"

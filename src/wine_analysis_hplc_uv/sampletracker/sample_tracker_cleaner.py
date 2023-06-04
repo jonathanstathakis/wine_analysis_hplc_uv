@@ -32,7 +32,6 @@ def clean_sample_tracker_table(
 
 
 def sample_tracker_df_cleaner(df):
-    print("cleaning raw_sample_tracker_df..")
     try:
         df = df_cleaning_methods.df_string_cleaner(df)
         df.columns = df.columns.str.lower()
