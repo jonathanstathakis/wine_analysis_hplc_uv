@@ -85,14 +85,48 @@ def test_strack_clean_df_not_empty(strack_class) -> None:
 def test_data_to_post_matches_source_sheet(strack_class, google_api_dict, sheet_title):
     google_api_dict = google_api_dict
 
-    google_sheets_api.delete_sheet(spreadsheet_id, sheet_title, creds_parent_path)
+    def get_posted_data_df(
+        strack_class: stracker.SampleTracker, google_api_dict: dict, sheet_title: str
+    ) -> pd.DataFrame:
+        response, data = strack_class.to_sheets(
+            new_google_api_dict, sheet_title, clean_df=False
+        )
+
+        posted_data_df = pd.DataFrame(data[1:], columns=data[0])
+        return posted_data_df
 
     new_range = sheet_title + "!A1:Z400"
 
     new_google_api_dict = google_api_dict
     new_google_api_dict["range"] = new_range
 
-    strack_class.to_sheets(new_google_api_dict, sheet_title, clean_df=False)
+    posted_data_df = get_posted_data_df(
+        strack_class=strack_class,
+        google_api_dict=google_api_dict,
+        sheet_title=sheet_title,
+    )
+
+    assert posted_data_df.equals(strack_class.df)
+
+    posted_data_df = posted_data_df.astype(str)
+    strack_class.df = strack_class.df.astype(str)
+
+    return None
+
+
+def test_post_raw_sheet(strack_class, google_api_dict, new_google_api_dict) -> None:
+    sheet_title = "testpostcleants"
+    google_api_dict = google_api_dict
+    assert isinstance(google_api_dict, dict)
+
+    def delete_sheet(google_api_dict: dict, sheet_title: str):
+        spreadsheet_id = google_api_dict["spreadsheet_id"]
+        creds_parent_path = google_api_dict["creds_parent_path"]
+
+        google_sheets_api.delete_sheet(spreadsheet_id, sheet_title, creds_parent_path)
+
+    # clean up previously written sheet, prepare for test
+    delete_sheet(google_api_dict, sheet_title)
 
     new_strack = stracker.SampleTracker(new_google_api_dict)
     new_raw_df = new_strack.df
@@ -105,17 +139,11 @@ def test_data_to_post_matches_source_sheet(strack_class, google_api_dict, sheet_
 
     assert original_raw_df.shape == new_raw_df.shape
 
-    from pprint import pprint
-
-    pd.options.display.max_rows = 500
-    pd.options.display.max_colwidth = 50
-
     from wine_analysis_hplc_uv.df_methods import df_cleaning_methods as df_clean
 
     original_raw_df = df_clean.df_string_cleaner(original_raw_df)
     new_raw_df = df_clean.df_string_cleaner(new_raw_df)
 
-    print("-- original_raw_df --\n")
     print("-- original_raw_df --\n")
     print(original_raw_df.head())
     print("-- new_raw_df --\n")
@@ -123,19 +151,39 @@ def test_data_to_post_matches_source_sheet(strack_class, google_api_dict, sheet_
 
     diff_df = original_raw_df.compare(new_raw_df)
 
-    print("-- diff_df head--\n")
-    print(diff_df.head())
-    print("-- diff_df head--\n")
+    def drop_multiindex_na(df):
+        cols = [(c0, c1) for (c0, c1) in df.columns if c0 in [1, 2]]
+        print(cols)
+        df_multi_dropna = df.dropna(axis=0, how="all", subset=cols)
+        return df_multi_dropna
+
+    drop_multiindex_na(diff_df)
+
+    print("-- diff_df shape--\n")
     print(diff_df.shape)
-    print("-- diff_df index--\n")
-    print(diff_df.index)
 
-    # print(diff_df.to_string())
+    print("-- diff_df isna shape--\n")
+    print(diff_df.isna().shape)
 
-    # assert original_raw_df.equals(new_raw_df)
-    # f"{diff_df.to_string()}"
+    print("-- diff_df_dtypes --\n")
 
-    google_sheets_api.delete_sheet(spreadsheet_id, sheet_title, creds_parent_path)
+    print("zip cols")
+    col_list = original_raw_df.columns.tolist()
+    datatype_list = [pd.StringDtype] * len(col_list)
+    zip_dict = dict(zip(col_list, datatype_list))
+    print(zip_dict)
+
+    print(original_raw_df.dtypes)
+    print(new_raw_df.dtypes)
+    print(original_raw_df.dtypes.compare(new_raw_df.dtypes))
+
+    no_differences = diff_df.isna().all().all()
+
+    assert no_differences
+
+    assert original_raw_df.equals(new_raw_df)
+
+    # google_sheets_api.delete_sheet(spreadsheet_id, sheet_title, creds_parent_path)
 
     return None
 
