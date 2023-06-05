@@ -66,9 +66,13 @@ class SampleTracker:
         assert isinstance(google_api_dict, dict)
 
         if clean_df:
-            st_methods.st_to_sheets(self.clean_df, google_api_dict, sheet_title)
+            response, data = st_methods.st_to_sheets(
+                self.clean_df, google_api_dict, sheet_title
+            )
         else:
-            st_methods.st_to_sheets(self.df, google_api_dict, sheet_title)
-        return None
+            response, data = st_methods.st_to_sheets(
+                self.df, google_api_dict, sheet_title
+            )
+        return response, data
 
     # def to_sheets(self)-> None:
