@@ -5,20 +5,27 @@ from wine_analysis_hplc_uv.google_sheets_api import google_sheets_api
 import googleapiclient
 
 
-def sample_tracker_df_builder(columns_dict: Dict, google_api_dict: Dict):
+def sample_tracker_df_builder(google_api_dict: Dict, dtype: type = pd.StringDtype()):
     df = google_sheets_api.get_sheets_values_as_df(
         spreadsheet_id=google_api_dict["spreadsheet_id"],
         range=google_api_dict["range"],
         creds_parent_path=google_api_dict["creds_parent_path"],
     )
 
+    def make_dtype_dict(df: pd.DataFrame, dtype: type = pd.StringDtype) -> dict:
+        f"converting input df dtypes to {dtype}..\n"
+        col_list = df.columns.tolist()
+        datatype_list = [dtype] * len(col_list)
+        zip_dict = dict(zip(col_list, datatype_list))
+
+        return zip_dict
+
     # from the imported range, only select the specified columns
-    df = df[columns_dict.keys()]
 
-    # set the dtype of those columns
-    df = df.astype(columns_dict)
+    dtype_dict = make_dtype_dict(df, dtype)
+    return_df = df.astype(dtype_dict)
 
-    return df
+    return return_df
 
 
 def st_to_sheets(df: pd.DataFrame, google_api_dict: dict, sheet_title: str) -> None:

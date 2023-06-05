@@ -13,20 +13,22 @@ import pandas as pd
 
 
 class SampleTracker:
-    def __init__(self, columns_dict: dict, google_api_dict: dict) -> None:
-        self.df: pd.DataFrame = self.st_df_helper(columns_dict, google_api_dict)
+    def __init__(
+        self, google_api_dict: dict, dtype: type = pd.StringDtype()
+    ) -> None:
+        self.df: pd.DataFrame = self.st_df_helper(google_api_dict=google_api_dict, dtype=dtype)
         self.clean_df: pd.DataFrame = self.clean_df_helper()
         self.tbl_name = "sampletracker"
 
-    def st_df_helper(self, columns_dict: dict, google_api_dict: dict) -> pd.DataFrame:
+    def st_df_helper(
+        self, google_api_dict: dict, dtype: type = pd.StringDtype()
+    ) -> pd.DataFrame:
         """_summary_
         Build the sampletracker df from the Google Sheets table.
         Returns:
             pd.DataFrame: _description_
         """
-        df: pd.DataFrame = st_methods.sample_tracker_df_builder(
-            columns_dict, google_api_dict
-        )
+        df: pd.DataFrame = st_methods.sample_tracker_df_builder(google_api_dict=google_api_dict, dtype=dtype)
         return df
 
     def clean_df_helper(self) -> pd.DataFrame:
