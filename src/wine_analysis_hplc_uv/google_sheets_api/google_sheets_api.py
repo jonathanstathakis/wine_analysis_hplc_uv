@@ -185,4 +185,4 @@ def post_df_as_sheet_values(
         .execute()
     )
 
-    return response
+    return response, data

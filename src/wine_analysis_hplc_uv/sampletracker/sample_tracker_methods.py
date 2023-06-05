@@ -43,10 +43,10 @@ def st_to_sheets(df: pd.DataFrame, google_api_dict: dict, sheet_title: str) -> N
         creds_parent_path,
     )
 
-    google_sheets_api.post_df_as_sheet_values(
+    response, data = google_sheets_api.post_df_as_sheet_values(
         df, spreadsheet_id, sheet_range, creds_parent_path
     )
-    return None
+    return response, data
 
 
 def main():
