@@ -19,8 +19,6 @@ import os
 import pandas as pd
 import pytest
 
-b
-
 
 def testing_gspread():
     sheet_title = "test_sheet"
