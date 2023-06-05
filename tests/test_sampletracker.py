@@ -29,7 +29,8 @@ def get_columns_dict() -> dict:
     }
 
 
-def get_google_api_dict() -> dict:
+@pytest.fixture(scope="module")
+def google_api_dict() -> dict:
     sheet_name = "sample_tracker"
     cell_range = "!A1:Z400"
 
@@ -41,8 +42,20 @@ def get_google_api_dict() -> dict:
 
 
 @pytest.fixture(scope="module")
-def strack_class():
-    return stracker.SampleTracker(get_columns_dict(), get_google_api_dict())
+def new_google_api_dict(google_api_dict) -> dict:
+    new_google_api_dict = google_api_dict
+
+    new_sheet_title = "testst"
+    new_range = new_sheet_title + "!A1:Z400"
+
+    new_google_api_dict["range"] = new_range
+
+    return new_google_api_dict
+
+
+@pytest.fixture(scope="module")
+def strack_class(google_api_dict):
+    return stracker.SampleTracker(google_api_dict=google_api_dict)
 
 
 def test_sampletracker_init(strack_class):
@@ -69,12 +82,8 @@ def test_strack_clean_df_not_empty(strack_class) -> None:
     assert not strack_class.clean_df.empty
 
 
-def test_post_raw_sheet(strack_class) -> None:
-    google_api_dict = get_google_api_dict()
-    assert isinstance(google_api_dict, dict)
-    sheet_title = "testpostcleants"
-    spreadsheet_id = google_api_dict["spreadsheet_id"]
-    creds_parent_path = google_api_dict["creds_parent_path"]
+def test_data_to_post_matches_source_sheet(strack_class, google_api_dict, sheet_title):
+    google_api_dict = google_api_dict
 
     google_sheets_api.delete_sheet(spreadsheet_id, sheet_title, creds_parent_path)
 
@@ -85,7 +94,7 @@ def test_post_raw_sheet(strack_class) -> None:
 
     strack_class.to_sheets(new_google_api_dict, sheet_title, clean_df=False)
 
-    new_strack = stracker.SampleTracker(get_columns_dict(), new_google_api_dict)
+    new_strack = stracker.SampleTracker(new_google_api_dict)
     new_raw_df = new_strack.df
 
     original_raw_df = strack_class.df
