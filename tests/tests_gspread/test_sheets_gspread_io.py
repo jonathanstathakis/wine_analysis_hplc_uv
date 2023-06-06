@@ -30,9 +30,10 @@ from wine_analysis_hplc_uv.my_sheetsinterface import gspread_methods
 
 def test_gspread_io():
     tests = [
-        (test_connect_to_wksh, mysheet_class()),
-        (test_wksh_to_df, mysheet_class()),
+        (test_connect_to_wksh, orig_sampletracker_wksh()),
+        (test_wksh_to_df, orig_sampletracker_wksh()),
         (test_create_new_sheet,),
+        (test_write_to_new_sheet,),
     ]
 
     test_report(tests)
@@ -42,7 +43,7 @@ def test_connect_to_wksh(mysheet_class):
     assert mysheet_class
 
 
-def mysheet_class():
+def orig_sampletracker_wksh():
     sheet_title = "test_sampletracker"
     key = get_test_key()
     return gspread_methods.WorkSheet(key, sheet_title)
@@ -66,6 +67,17 @@ def new_worksheet_class(key=get_test_key(), sheet_title="test_new_sheet"):
 
 def test_create_new_sheet():
     assert new_worksheet_class()
+
+
+def test_write_to_new_sheet():
+    source_df = orig_sampletracker_wksh().sheet_df
+    new_wksh = new_worksheet_class()
+    new_wksh.sheet_df = source_df.copy()
+
+    response = new_wksh.write_to_sheet()
+
+    print(response)
+    return response
 
 
 def main():

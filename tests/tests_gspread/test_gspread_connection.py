@@ -10,7 +10,8 @@ $TEST_SAMPLETRACKER_KEY https://docs.google.com/spreadsheets/d/1JKtRQbfV9Bp8i-BD
     - [x] creating worksheet object
     - [x] read from sheet
     - [x] add new sheet
-    - [ ] write to new sheet
+    - [x] write to new sheet
+    - [ ] newly written sheet same as old sheet
     - [ ] rename sheet
     - [ ] delete sheet
     

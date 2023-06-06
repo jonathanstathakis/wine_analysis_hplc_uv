@@ -17,6 +17,16 @@ class WorkSheet(GSheet):
         self.wksh, self.wksh_response = open_worksheet(self, sheet_title)
         self.sheet_df = wksh_to_df(self.wksh)
 
+    def write_to_sheet(self):
+        """
+        Update connected sheet with values contained in sheet_df
+        """
+        df = self.sheet_df
+        columns = df.columns.values.tolist()
+        data = df.values.tolist()
+        values = [columns] + data
+        self.wksh.update(values)
+
 
 def get_service_account():
     return gspread.service_account()
