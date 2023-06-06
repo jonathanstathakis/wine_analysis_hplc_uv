@@ -16,6 +16,7 @@ Note: no need to import try_p
 """
 
 import os
+import traceback
 
 
 def get_test_key():
@@ -26,7 +27,9 @@ def test_report(tests: list):
     def try_pass_fail(func, *args, _count=[0], **kwargs):
         _count[0] += 1
 
-        test_dict = dict(func_name=func.__name__, result=0, exception="", value="")
+        test_dict = dict(
+            func_name=func.__name__, result=0, exception="", value="", tb=""
+        )
 
         print(f"test {_count[0]}: {test_dict['func_name']}..", end=" ")
 
@@ -38,6 +41,8 @@ def test_report(tests: list):
                 test_dict["value"] = func()
         except Exception as e:
             test_dict["exception"] = repr(e)
+            test_dict["tb"] = traceback.format_exc()
+
         else:
             test_dict["result"] = 1
 
@@ -65,10 +70,13 @@ def test_report(tests: list):
 
     print("")
     print("tests failed:")
+    print("")
     for test in test_dicts:
         if test["result"] == 0:
             print(
                 f"Test '{test['func_name']}' failed with exception: {test['exception']}"
             )
+            print("")
+            print(test["tb"])
 
     return None
