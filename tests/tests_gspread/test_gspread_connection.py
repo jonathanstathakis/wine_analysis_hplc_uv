@@ -26,7 +26,8 @@ import os
 from wine_analysis_hplc_uv.my_sheetsinterface import gspread_methods as g_methods
 
 
-from gspread_test_methods import test_report
+from gspread_test_methods import test_report, get_test_key
+
 
 from wine_analysis_hplc_uv.my_sheetsinterface.gspread_methods import (
     get_service_account,
@@ -37,7 +38,7 @@ from wine_analysis_hplc_uv.my_sheetsinterface.gspread_methods import (
 def test_gspread_connection():
     tests = [
         (test_service_account, get_service_account()),
-        (test_key, []),
+        (test_key, get_test_key),
         (test_sample_tracker_sh, get_test_st_sh(get_service_account())),
         (test_sheet_list, get_test_st_sh(get_service_account())),
     ]
@@ -45,8 +46,8 @@ def test_gspread_connection():
     test_report(tests)
 
 
-def test_key():
-    assert os.environ.get("TEST_SAMPLETRACKER_KEY")
+def test_key(get_test_key):
+    assert get_test_key
 
 
 def test_sample_tracker_sh(sheet):
