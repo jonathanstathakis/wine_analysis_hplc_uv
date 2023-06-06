@@ -18,20 +18,16 @@ This will mimic the sampletracker workflow.
 
 note: cant use pytest as it is generating authorization issues. can refactor at a later date..
 """
-from re import I
-from venv import create
 from mydevtools import project_settings, function_timer as ft
 import gspread
 import os
 import pandas as pd
+import os
+from wine_analysis_hplc_uv.my_sheetsinterface import gspread_methods as g_methods
+
 
 from gspread_test_methods import test_report
-from gspread_tests import (
-    test_service_account,
-    test_key,
-    test_sample_tracker_sh,
-    test_sheet_list,
-)
+
 from wine_analysis_hplc_uv.my_sheetsinterface.gspread_methods import (
     get_service_account,
     get_test_st_sh,
@@ -48,43 +44,26 @@ def test_gspread_connection():
 
     test_report(tests)
 
-    # # st_df = wksh_to_df("sample_tracker")
 
-    # # gc = gspread.service_account()
-    # # sh = gc.open_by_key("15S2wm8t6ol2MRwTzgKTjlTcUgaStNlA22wJmFYhcwAY")
-    # # sh.worksheet(sheet_title).update(
-    # #     [st_df.columns.values.tolist()] + st_df.values.tolist()
-    # )
+def test_key():
+    assert os.environ.get("TEST_SAMPLETRACKER_KEY")
 
 
-# def get_sample_tracker_sheet():
-#     gc = gspread.service_account()
-#     sh = gc.open_by_key("15S2wm8t6ol2MRwTzgKTjlTcUgaStNlA22wJmFYhcwAY")
-#     sample_tracker_wksh = sh.worksheet("sample_tracker")
+def test_sample_tracker_sh(sheet):
+    assert sheet
 
 
-# def wksh_to_df(sheet_title="sheet1"):
-#     gc = gspread.service_account()
-
-#     sh = gc.open_by_key("15S2wm8t6ol2MRwTzgKTjlTcUgaStNlA22wJmFYhcwAY")
-
-#     sample_tracker_wksh = sh.worksheet(sheet_title)
-
-#     values = sample_tracker_wksh.get_all_values()
-#     columns = values[0]
-#     data = values[1:]
-
-#     df = pd.DataFrame(data=data, columns=columns)
-
-#     return df
+def test_service_account(service_account):
+    assert service_account
 
 
-# def create_sheet(sheet_title: str = "sheet1") -> None:
-#     gc = gspread.service_account()
-#     print(f"creating {sheet_title}")
-#     sh = gc.open_by_key("15S2wm8t6ol2MRwTzgKTjlTcUgaStNlA22wJmFYhcwAY")
-#     sh.add_worksheet(sheet_title, 400, 20)
-#     return None
+def test_sheet_list(sample_tracker_sh):
+    sheet_list = g_methods.get_sheet_list(sample_tracker_sh)
+    assert sheet_list
+
+
+def test_sheet_title_in_sheet_list(sheet_title: str, sheet_list: list):
+    assert sheet_title in sheet_list
 
 
 def main():
