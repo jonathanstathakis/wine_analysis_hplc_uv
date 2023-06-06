@@ -17,7 +17,7 @@ from wine_analysis_hplc_uv.chemstation import (
     chemstationprocessor,
 )
 from wine_analysis_hplc_uv.core import adapt_super_pipe_to_db
-from wine_analysis_hplc_uv.sampletracker import sampletrackerprocesser
+from wine_analysis_hplc_uv.sampletracker import sample_tracker_processor
 from wine_analysis_hplc_uv.ux_methods import ux_methods as ux
 import pandas as pd
 
@@ -99,11 +99,11 @@ def build_db_library(data_lib_path: str) -> None:
 
 def sampletracker_to_db(db_filepath: str, sampletracker_tbl_name: str) -> None:
     def st_interface(db_filepath: str, sampletracker_tbl_name: str) -> None:
-        sampletrackerprocesser.SampleTracker()
+        sample_tracker_processor.SampleTracker()
 
     ux.ask_user_and_execute(
         prompt="Process sampletracker?\n",
-        func=sampletrackerprocesser.SampleTracker,
+        func=sample_tracker_processor.SampleTracker,
         args=db_filepath,
     )
     return None
