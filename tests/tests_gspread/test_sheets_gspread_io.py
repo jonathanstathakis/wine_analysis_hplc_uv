@@ -32,6 +32,7 @@ def test_gspread_io():
     tests = [
         (test_connect_to_wksh, mysheet_class()),
         (test_wksh_to_df, mysheet_class()),
+        (test_create_new_sheet,),
     ]
 
     test_report(tests)
@@ -57,6 +58,14 @@ def test_wksh_to_df(mysheet_class):
     assert (
         len(df.drop_duplicates()) > 1
     ), "DataFrame does not have more than one unique row"
+
+
+def new_worksheet_class(key=get_test_key(), sheet_title="test_new_sheet"):
+    return gspread_methods.WorkSheet(key, sheet_title)
+
+
+def test_create_new_sheet():
+    assert new_worksheet_class()
 
 
 def main():
