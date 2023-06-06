@@ -1,12 +1,16 @@
 import gspread
 import os
+import pandas as pd
 
 
 class MySheet:
     def __init__(self, key, sheet_title):
-        gc = get_service_account()
-        sh = gc.open_by_key(key)
-        wksh = sh.worksheet(sheet_title)
+        self.key = key
+        self.sheet_title = sheet_title
+        self.gc = get_service_account()
+        self.sh = self.gc.open_by_key(key)
+        self.wksh = self.sh.worksheet(sheet_title)
+        self.sheet_df = wksh_to_df(self.wksh)
 
 
 def get_service_account():
@@ -34,19 +38,11 @@ def get_sheet_list(sample_tracker_sh):
     return sheet_list
 
 
-# def wksh_to_df(
-#     gc,
-# ):
-#     gc = gspread_methods.get_service_account()
+def wksh_to_df(wksh):
+    values = wksh.get_all_values()
+    columns = values[0]
+    data = values[1:]
 
-#     sh = gc.open_by_key("15S2wm8t6ol2MRwTzgKTjlTcUgaStNlA22wJmFYhcwAY")
+    df = pd.DataFrame(data=data, columns=columns)
 
-#     sample_tracker_wksh = sh.worksheet(sheet_title)
-
-#     values = sample_tracker_wksh.get_all_values()
-#     columns = values[0]
-#     data = values[1:]
-
-#     df = pd.DataFrame(data=data, columns=columns)
-
-#     return df
+    return df
