@@ -2,15 +2,17 @@ import os
 from typing import Dict
 import pandas as pd
 from wine_analysis_hplc_uv.google_sheets_api import google_sheets_api
-import googleapiclient
+from wine_analysis_hplc_uv.my_sheetsinterface.gspread_methods import WorkSheet
 
 
-def sample_tracker_df_builder(google_api_dict: Dict, dtype: type = pd.StringDtype()):
-    df = google_sheets_api.get_sheets_values_as_df(
-        spreadsheet_id=google_api_dict["spreadsheet_id"],
-        range=google_api_dict["range"],
-        creds_parent_path=google_api_dict["creds_parent_path"],
-    )
+def get_gsheet_key(envar: str = "SAMPLETRACKER_KEY"):
+    return os.environ.get(envar)
+
+
+def sample_tracker_df_builder(
+    key=get_gsheet_key(), sheet_title="sample_tracker", dtype=object
+):
+    df = WorkSheet(key=key, sheet_title=sheet_title)
 
     def make_dtype_dict(df: pd.DataFrame, dtype: type = pd.StringDtype) -> dict:
         f"converting input df dtypes to {dtype}..\n"
