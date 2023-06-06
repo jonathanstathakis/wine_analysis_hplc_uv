@@ -1,3 +1,11 @@
+"""
+2023-06-06 16:12:43 - A set of wrapper classes around gspread for my specific use cases. provides read, and write of sheets in a google sheets workbook through the WorkSheet class (embodies the sheet), and deletion of sheets through the GSheet.delete_sheet() method. Technically WorkSheet has .delete_sheet, but its not the indended usecase atm.
+
+To initialize, call WorkSheet constructor with the Sheet key and intended sheet_title as a string. if the provided title doesnt exist, will open a new one.
+
+To edit sheets, update the sheet_df member object then call write_to_sheet.
+"""
+
 import gspread
 import os
 import pandas as pd
