@@ -23,20 +23,40 @@
 Tests of IO, RW of google sheets using gspread.
 """
 
+import gspread
 from gspread_test_methods import get_test_key, test_report
 from wine_analysis_hplc_uv.my_sheetsinterface import gspread_methods
 
 
 def test_gspread_io():
-    sheet_title = "test_sampletracker"
-    key = get_test_key()
-    tests = [(test_connect_to_wksh, key, sheet_title)]
+    tests = [
+        (test_connect_to_wksh, mysheet_class()),
+        (test_wksh_to_df, mysheet_class()),
+    ]
 
     test_report(tests)
 
 
-def test_connect_to_wksh(test_key, sheet_title):
-    assert gspread_methods.MySheet(test_key, sheet_title)
+def test_connect_to_wksh(mysheet_class):
+    assert mysheet_class
+
+
+def mysheet_class():
+    sheet_title = "test_sampletracker"
+    key = get_test_key()
+    return gspread_methods.MySheet(key, sheet_title)
+
+
+def test_wksh_to_df(mysheet_class):
+    df = mysheet_class.sheet_df
+
+    assert not df.empty, "DataFrame is empty"
+
+    assert not df.isnull().values.any(), "DataFrame contains NaN values"
+
+    assert (
+        len(df.drop_duplicates()) > 1
+    ), "DataFrame does not have more than one unique row"
 
 
 def main():

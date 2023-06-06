@@ -6,9 +6,9 @@ $TEST_SAMPLETRACKER_KEY https://docs.google.com/spreadsheets/d/1JKtRQbfV9Bp8i-BD
 - [ ] test the following:
     - [x] creating service account
     - [x] creating sheet object
-    - [ ] obtaining list of sheets in sheet_object
-    - [ ] creating worksheet object
-    - [ ] read from sheet
+    - [x] obtaining list of sheets in sheet_object
+    - [x] creating worksheet object
+    - [x] read from sheet
     - [ ] add new sheet
     - [ ] write to new sheet
     - [ ] rename sheet
