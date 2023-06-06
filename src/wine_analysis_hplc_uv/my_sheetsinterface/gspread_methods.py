@@ -3,12 +3,17 @@ import os
 import pandas as pd
 
 
-class MySheet:
-    def __init__(self, key, sheet_title):
+class GSheet:
+    def __init__(self, key):
         self.key = key
-        self.sheet_title = sheet_title
         self.gc = get_service_account()
         self.sh = self.gc.open_by_key(key)
+
+
+class WorkSheet(GSheet):
+    def __init__(self, key, sheet_title):
+        super().__init__(key)
+        self.sheet_title = sheet_title
         self.wksh = self.sh.worksheet(sheet_title)
         self.sheet_df = wksh_to_df(self.wksh)
 

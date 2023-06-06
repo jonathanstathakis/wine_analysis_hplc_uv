@@ -44,7 +44,7 @@ def test_connect_to_wksh(mysheet_class):
 def mysheet_class():
     sheet_title = "test_sampletracker"
     key = get_test_key()
-    return gspread_methods.MySheet(key, sheet_title)
+    return gspread_methods.WorkSheet(key, sheet_title)
 
 
 def test_wksh_to_df(mysheet_class):
