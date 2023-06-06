@@ -23,8 +23,6 @@ class SampleTracker:
         self.clean_df = None
         self.tbl_name = "sampletracker"
 
-    clean_df_helper()
-
     def sheets_to_df_helper(self) -> pd.DataFrame:
         """_summary_
         Build the sampletracker df from the Google Sheets table.
