@@ -11,14 +11,15 @@ def test_sample_tracker():
 
     test_report(tests)
 
+
 def test_sample_tracker_df_builder():
     sample_tracker_df = sample_tracker_methods.sample_tracker_df_builder()
     assert not sample_tracker_df.empty
 
+
 def main():
     test_sample_tracker()
 
+
 if __name__ == "__main__":
     main()
-
-
