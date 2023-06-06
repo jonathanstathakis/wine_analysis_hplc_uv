@@ -27,6 +27,7 @@ class GSheet:
 
 class WorkSheet(GSheet):
     def __init__(self, key, sheet_title):
+        assert isinstance(key, str)
         super().__init__(key)
         self.sheet_title = sheet_title
         self.wksh, self.wksh_response = open_worksheet(self, sheet_title)

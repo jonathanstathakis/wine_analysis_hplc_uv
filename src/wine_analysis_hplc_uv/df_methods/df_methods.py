@@ -21,3 +21,12 @@ def describe_df(df: pd.DataFrame):
     print("df index", df.index)
 
     return None
+
+
+def make_dtype_dict(df: pd.DataFrame, dtype: type = pd.StringDtype) -> dict:
+    f"converting input df dtypes to {dtype}..\n"
+    col_list = df.columns.tolist()
+    datatype_list = [dtype] * len(col_list)
+    zip_dict = dict(zip(col_list, datatype_list))
+
+    return zip_dict

@@ -10,33 +10,22 @@ def get_gsheet_key(envar: str = "SAMPLETRACKER_KEY"):
     return os.environ.get(envar)
 
 
-def get_sample_tracker_wrksh(key=get_gsheet_key(), sheet_title="sample_tracker"):
+def get_sample_tracker_wksh(key=get_gsheet_key(), sheet_title="sample_tracker"):
+    assert isinstance(key, str)
     wksh = WorkSheet(key=key, sheet_title=sheet_title)
     return wksh
 
 
 def sample_tracker_df_builder(
-    sample_tracker_wksh=get_sample_tracker_wrksh(
-        get_gsheet_key(), sheet_title="sample_tracker"
-    ),
-    dtype=object,
+    sample_tracker_wksh=get_sample_tracker_wksh(
+        key=get_gsheet_key(), sheet_title="sample_tracker"
+    )
 ):
     df = sample_tracker_wksh.sheet_df
 
-    def make_dtype_dict(df: pd.DataFrame, dtype: type = pd.StringDtype) -> dict:
-        f"converting input df dtypes to {dtype}..\n"
-        col_list = df.columns.tolist()
-        datatype_list = [dtype] * len(col_list)
-        zip_dict = dict(zip(col_list, datatype_list))
-
-        return zip_dict
-
     # from the imported range, only select the specified columns
 
-    dtype_dict = make_dtype_dict(df, dtype)
-    return_df = df.astype(dtype_dict)
-
-    return return_df
+    return df
 
 
 def st_to_sheets(df: pd.DataFrame, google_api_dict: dict, sheet_title: str) -> None:
