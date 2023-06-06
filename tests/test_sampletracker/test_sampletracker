@@ -1,0 +1,24 @@
+import sys
+
+sys.path.append("/Users/jonathan/mres_thesis/wine_analysis_hplc_uv/tests")
+
+from wine_analysis_hplc_uv.sampletracker import sample_tracker_methods
+from tests.mytestmethods.mytestmethods import test_report
+
+
+def test_sample_tracker():
+    tests = [(test_sample_tracker_df_builder,)]
+
+    test_report(tests)
+
+def test_sample_tracker_df_builder():
+    sample_tracker_df = sample_tracker_methods.sample_tracker_df_builder()
+    assert not sample_tracker_df.empty
+
+def main():
+    test_sample_tracker()
+
+if __name__ == "__main__":
+    main()
+
+
