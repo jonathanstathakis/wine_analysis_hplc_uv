@@ -9,17 +9,20 @@ Contains general df methods to improve quality of life when working with pandas 
 import pandas as pd
 
 
-def describe_df(df: pd.DataFrame):
+def describe_df(df: pd.DataFrame) -> None:
+    print("df shape:", df.shape)
+    print("df columns", df.columns)
+    print("df index", df.index)
+
+    return None
+
+
+def test_df(df: pd.DataFrame) -> None:
     assert not df.empty, "DataFrame is empty"
     assert not df.isnull().values.any(), "DataFrame contains NaN values"
     assert (
         len(df.drop_duplicates()) > 1
     ), "DataFrame does not have more than one unique row"
-
-    print("df shape:", df.shape)
-    print("df columns", df.columns)
-    print("df index", df.index)
-
     return None
 
 
