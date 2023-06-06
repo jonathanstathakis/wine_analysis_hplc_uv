@@ -15,6 +15,12 @@ Takes a list of tuples of `(function object, args)` and runs try_pass_fail on ea
 Note: no need to import try_p
 """
 
+import os
+
+
+def get_test_key():
+    return os.environ.get("TEST_SAMPLETRACKER_KEY")
+
 
 def test_report(tests: list):
     def try_pass_fail(func, *args, _count=[0], **kwargs):
@@ -24,7 +30,7 @@ def test_report(tests: list):
 
         print(f"test {_count[0]}: {test_dict['func_name']}..", end=" ")
 
-        bool_args = bool(*args)
+        bool_args = bool(args)
         try:
             if bool_args:
                 test_dict["value"] = func(*args, **kwargs)
@@ -42,7 +48,7 @@ def test_report(tests: list):
 
         return test_dict
 
-    test_dicts = [try_pass_fail(func, args) for func, args in tests]
+    test_dicts = [try_pass_fail(func, *args) for func, *args in tests]
 
     test_pass_count = sum(test_dict["result"] for test_dict in test_dicts)
     test_fail_count = len(tests) - test_pass_count
