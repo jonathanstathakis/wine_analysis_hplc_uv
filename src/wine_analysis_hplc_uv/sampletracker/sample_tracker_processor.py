@@ -20,8 +20,10 @@ class SampleTracker:
             self.key, sheet_title=sheet_title
         )
         self.df: pd.DataFrame = self.sheets_to_df_helper()
-        self.clean_df: pd.DataFrame = self.clean_df_helper()
+        self.clean_df = None
         self.tbl_name = "sampletracker"
+
+    clean_df_helper()
 
     def sheets_to_df_helper(self) -> pd.DataFrame:
         """_summary_
@@ -34,11 +36,11 @@ class SampleTracker:
         )
         return df
 
-    def clean_df_helper(self) -> pd.DataFrame:
-        clean_df: pd.DataFrame = sample_tracker_cleaner.sample_tracker_df_cleaner(
+    def clean_df_helper(self) -> None:
+        self.clean_df: pd.DataFrame = sample_tracker_cleaner.sample_tracker_df_cleaner(
             self.df
         )
-        return clean_df
+        return None
 
     def st_to_db_helper(
         self, df: pd.DataFrame, db_filepath: str, db_tbl_name: str

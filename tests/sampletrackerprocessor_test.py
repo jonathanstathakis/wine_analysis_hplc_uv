@@ -1,4 +1,4 @@
-from wine_analysis_hplc_uv.sampletracker import sampletrackerprocesser as st
+from wine_analysis_hplc_uv.sampletracker import sample_tracker_processor as st
 import pandas as pd
 
 

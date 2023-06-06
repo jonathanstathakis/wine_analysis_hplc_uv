@@ -4,7 +4,7 @@ Test new SampleTracker Class
 
 import os
 import pandas as pd
-from wine_analysis_hplc_uv.sampletracker import sampletrackerprocesser as stracker
+from wine_analysis_hplc_uv.sampletracker import sample_tracker_processor as stracker
 from wine_analysis_hplc_uv.google_sheets_api import google_sheets_api
 import pytest
 
