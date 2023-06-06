@@ -9,7 +9,7 @@ $TEST_SAMPLETRACKER_KEY https://docs.google.com/spreadsheets/d/1JKtRQbfV9Bp8i-BD
     - [x] obtaining list of sheets in sheet_object
     - [x] creating worksheet object
     - [x] read from sheet
-    - [ ] add new sheet
+    - [x] add new sheet
     - [ ] write to new sheet
     - [ ] rename sheet
     - [ ] delete sheet

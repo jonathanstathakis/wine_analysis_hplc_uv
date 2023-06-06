@@ -14,7 +14,7 @@ class WorkSheet(GSheet):
     def __init__(self, key, sheet_title):
         super().__init__(key)
         self.sheet_title = sheet_title
-        self.wksh = self.sh.worksheet(sheet_title)
+        self.wksh, self.wksh_response = open_worksheet(self, sheet_title)
         self.sheet_df = wksh_to_df(self.wksh)
 
 
@@ -23,13 +23,16 @@ def get_service_account():
 
 
 def open_worksheet(self, sheet_title: str):
+    response = ""
     try:
         wksh = self.sh.worksheet(sheet_title)
     except gspread.exceptions.WorksheetNotFound:
         print(f"Worksheet '{sheet_title}' not found. Creating a new one...")
-        wksh = self.sh.add_worksheet(title=sheet_title, rows="100", cols="20")
+        response = self.sh.add_worksheet(title=sheet_title, rows="100", cols="20")
         print(f"Worksheet '{sheet_title}' created.")
-    return wksh
+        print(response)
+        wksh = self.sh.worksheet(sheet_title)
+    return wksh, response
 
 
 def get_test_st_sh(service_account):
@@ -44,10 +47,19 @@ def get_sheet_list(sample_tracker_sh):
 
 
 def wksh_to_df(wksh):
-    values = wksh.get_all_values()
-    columns = values[0]
-    data = values[1:]
+    """
+    get all the values in a provided worksheet as a list of lists.
 
-    df = pd.DataFrame(data=data, columns=columns)
+    if the list of lists is not empty, create a dataframe from values with element 1 as columns, rest as data. If empty, initialize empty dataframe.
+    """
+    values = wksh.get_all_values()
+
+    if any(values):
+        columns = values[0]
+        data = values[1:]
+        df = pd.DataFrame(data=data, columns=columns)
+
+    else:
+        df = pd.DataFrame()
 
     return df
