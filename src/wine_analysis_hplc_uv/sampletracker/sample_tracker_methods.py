@@ -1,4 +1,5 @@
 import os
+from re import I
 from typing import Dict
 import pandas as pd
 from wine_analysis_hplc_uv.google_sheets_api import google_sheets_api
@@ -9,10 +10,18 @@ def get_gsheet_key(envar: str = "SAMPLETRACKER_KEY"):
     return os.environ.get(envar)
 
 
+def get_sample_tracker_wrksh(key=get_gsheet_key(), sheet_title="sample_tracker"):
+    wksh = WorkSheet(key=key, sheet_title=sheet_title)
+    return wksh
+
+
 def sample_tracker_df_builder(
-    key=get_gsheet_key(), sheet_title="sample_tracker", dtype=object
+    sample_tracker_wksh=get_sample_tracker_wrksh(
+        get_gsheet_key(), sheet_title="sample_tracker"
+    ),
+    dtype=object,
 ):
-    df = WorkSheet(key=key, sheet_title=sheet_title)
+    df = sample_tracker_wksh.sheet_df
 
     def make_dtype_dict(df: pd.DataFrame, dtype: type = pd.StringDtype) -> dict:
         f"converting input df dtypes to {dtype}..\n"
