@@ -27,9 +27,12 @@ import pandas as pd
 
 
 def gspread_tests():
+    sh = get_test_st_sh(service_account())
+
     tests = [
         (test_service_account, service_account()),
-        (test_sample_tracker_sh, service_account()),
+        (test_key, []),
+        (test_sample_tracker_sh, sh),
     ]
 
     test_dicts = [try_pass_fail(func, args) for func, args in tests]
@@ -47,6 +50,7 @@ def gspread_tests():
         if test["result"] == 1:
             print(test["func_name"])
 
+    print("")
     print("tests failed:")
     for test in test_dicts:
         if test["result"] == 0:
@@ -62,8 +66,12 @@ def try_pass_fail(func, *args, _count=[0], **kwargs):
 
     print(f"test {_count[0]}: {test_dict['func_name']}..", end=" ")
 
+    bool_args = bool(*args)
     try:
-        test_dict["value"] = func(*args, **kwargs)
+        if bool_args:
+            test_dict["value"] = func(*args, **kwargs)
+        else:
+            test_dict["value"] = func()
     except Exception as e:
         test_dict["exception"] = repr(e)
     else:
@@ -81,12 +89,18 @@ def service_account():
     return gspread.service_account()
 
 
-def test_sample_tracker_sh(service_account):
+def get_test_st_sh(service_account):
     key = os.environ.get("TEST_SAMPLETRACKER_KEY")
-    assert key, "key error"
-    assert service_account.open_by_key(
-        key
-    ), "can't open the service account with the provided key"
+    sh = service_account.open_by_key(key)
+    return sh
+
+
+def test_key():
+    assert os.environ.get("TEST_SAMPLETRACKER_KEY")
+
+
+def test_sample_tracker_sh(sheet):
+    assert sheet
 
 
 def get_sheet_list(sample_tracker_sh):
@@ -99,7 +113,6 @@ def test_service_account(service_account):
 
 
 def test_sheet_list(sample_tracker_sh):
-    sheet_title = "test_sheet"
     sheet_list = get_sheet_list(sample_tracker_sh)
     assert sheet_list
 
