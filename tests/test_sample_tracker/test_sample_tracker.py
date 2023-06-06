@@ -4,8 +4,8 @@ TODO:
 
 - [x] sample_tracker_df_builder
 - [x] SampleTracker initialisation
-- [ ] SampleTracker.df
-- [ ] SampleTracker.clean_df
+- [x] SampleTracker.df
+- [x] SampleTracker.clean_df
 - [ ] SampleTracker.st_to_db
 - [ ] SampleTracker.to_sheets
 """
@@ -26,6 +26,7 @@ def test_sample_tracker():
         (test_sample_tracker_df_builder,),
         (test_sample_tracker_class_init,),
         (test_sample_tracker_df,),
+        (test_sample_tracker_clean_df,),
     ]
 
     test_report(tests)
@@ -56,6 +57,12 @@ def test_sample_tracker_df(key=get_key()) -> None:
     sample_tracker = get_SampleTracker(key=get_key())
     df_methods.test_df(sample_tracker.df)
     return None
+
+
+def test_sample_tracker_clean_df(key=get_key()) -> None:
+    sampletracker = get_SampleTracker(key=get_key())
+    sampletracker.clean_df_helper()
+    df_methods.test_df(sampletracker.clean_df)
 
 
 def main():
