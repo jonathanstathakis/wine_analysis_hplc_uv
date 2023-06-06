@@ -1,8 +1,13 @@
 """
 A test file of interfacing with google sheets, specifically my sampletracker.
 
-- [ ] Set up a seperate workbook that is a linked copy of sampletracker
+- [x] Set up a seperate workbook that is a linked copy of sampletracker.
+$TEST_SAMPLETRACKER_KEY https://docs.google.com/spreadsheets/d/1JKtRQbfV9Bp8i-BDathMJJsy90L2Fj9_yt46qQhYtQU/edit#gid=0
 - [ ] test the following:
+    - [x] creating service account
+    - [x] creating sheet object
+    - [ ] obtaining list of sheets in sheet_object
+    - [ ] creating worksheet object
     - [ ] read from sheet
     - [ ] add new sheet
     - [ ] write to new sheet
@@ -21,59 +26,76 @@ import os
 import pandas as pd
 
 
-def try_pass_fail(func, *args, **kwargs):
-    test_dict = dict(func_name=func.__name__, result=0, exception="", value="")
-
-    try:
-        test_dict["value"] = func(*args, **kwargs)
-    except Exception as e:
-        test_dict["exception"] = str(e)
-    else:
-        test_dict["result"] = 1
-
-    return test_dict
-
-
 def gspread_tests():
-    tests = [(test_service_account, service_account())]
+    tests = [
+        (test_service_account, service_account()),
+        (test_sample_tracker_sh, service_account()),
+    ]
 
     test_dicts = [try_pass_fail(func, args) for func, args in tests]
 
     test_pass_count = sum(test_dict["result"] for test_dict in test_dicts)
     test_fail_count = len(tests) - test_pass_count
+
+    print("")
     print(f"tests passed: {test_pass_count}")
     print(f"tests failed: {test_fail_count}")
-    print("\n")
-
-    for test in test_dicts:
-        if test["result"] == 0:
-            print(
-                f"Test {test['func_name']} failed with exception: {test['exception']}"
-            )
+    print("")
 
     print("tests passed:")
     for test in test_dicts:
         if test["result"] == 1:
-            print(test["func_name"], "\n")
+            print(test["func_name"])
+
+    print("tests failed:")
+    for test in test_dicts:
+        if test["result"] == 0:
+            print(
+                f"Test '{test['func_name']}' failed with exception: {test['exception']}"
+            )
+
+
+def try_pass_fail(func, *args, _count=[0], **kwargs):
+    _count[0] += 1
+
+    test_dict = dict(func_name=func.__name__, result=0, exception="", value="")
+
+    print(f"test {_count[0]}: {test_dict['func_name']}..", end=" ")
+
+    try:
+        test_dict["value"] = func(*args, **kwargs)
+    except Exception as e:
+        test_dict["exception"] = repr(e)
+    else:
+        test_dict["result"] = 1
+
+    if test_dict["result"]:
+        print(f"passed")
+    elif not test_dict["result"]:
+        print("failed")
+
+    return test_dict
 
 
 def service_account():
     return gspread.service_account()
 
 
-def test_service_account(service_account):
-    assert service_account
-
-
-def sample_tracker_sh(service_account):
-    key = os.environ.get("SAMPLETRACKER_KEY")
-    assert key
-    return service_account.open_by_key(key)
+def test_sample_tracker_sh(service_account):
+    key = os.environ.get("TEST_SAMPLETRACKER_KEY")
+    assert key, "key error"
+    assert service_account.open_by_key(
+        key
+    ), "can't open the service account with the provided key"
 
 
 def get_sheet_list(sample_tracker_sh):
     sheet_list = sample_tracker_sh.worksheets()
     return sheet_list
+
+
+def test_service_account(service_account):
+    assert service_account
 
 
 def test_sheet_list(sample_tracker_sh):
