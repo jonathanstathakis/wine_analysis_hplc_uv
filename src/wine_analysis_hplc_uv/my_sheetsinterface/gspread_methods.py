@@ -9,6 +9,13 @@ class GSheet:
         self.gc = get_service_account()
         self.sh = self.gc.open_by_key(key)
 
+    def delete_sheet(self, wksh: gspread.Worksheet):
+        """
+        Delete the target sheet, returns the API response
+        """
+        response = self.sh.del_worksheet(wksh)
+        return response
+
 
 class WorkSheet(GSheet):
     def __init__(self, key, sheet_title):

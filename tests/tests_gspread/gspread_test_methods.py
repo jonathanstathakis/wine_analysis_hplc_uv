@@ -17,6 +17,8 @@ Note: no need to import try_p
 
 import os
 import traceback
+from wine_analysis_hplc_uv.my_sheetsinterface import gspread_methods as g_methods
+import gspread
 
 
 def get_test_key():
@@ -80,3 +82,9 @@ def test_report(tests: list):
             print(test["tb"])
 
     return None
+
+
+def delete_worksheet(key: str, wksh: gspread.Worksheet):
+    gc = g_methods.GSheet(key=key)
+    response = gc.delete_sheet(wksh=wksh)
+    return response
