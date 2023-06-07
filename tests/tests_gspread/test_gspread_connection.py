@@ -19,21 +19,17 @@ This will mimic the sampletracker workflow.
 
 note: cant use pytest as it is generating authorization issues. can refactor at a later date..
 """
-from mydevtools import project_settings, function_timer as ft
-import gspread
-import os
-import pandas as pd
-import os
+from tests.mytestmethods.mytestmethods import test_report
+from gspread_test_methods import get_test_key
 from wine_analysis_hplc_uv.my_sheetsinterface import gspread_methods as g_methods
-
-
-from gspread_test_methods import test_report, get_test_key
-
-
 from wine_analysis_hplc_uv.my_sheetsinterface.gspread_methods import (
     get_service_account,
     get_test_st_sh,
 )
+
+import sys
+
+sys.path.append("/Users/jonathan/mres_thesis/wine_analysis_hplc_uv/tests")
 
 
 def test_gspread_connection():
