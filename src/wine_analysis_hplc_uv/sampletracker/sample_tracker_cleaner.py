@@ -35,10 +35,8 @@ def sample_tracker_df_cleaner(df):
     """
     apply df_string_cleaner, strips and lowers column, index and values of the passed dataframe.
     """
-    try:
-        df = df_cleaning_methods.df_string_cleaner(df)
-    except Exception as e:
-        print(f"while cleaning raw_sample_tracker_df, encountered Exception: {e}")
+
+    df = df_cleaning_methods.df_string_cleaner(df)
 
     return df
 
