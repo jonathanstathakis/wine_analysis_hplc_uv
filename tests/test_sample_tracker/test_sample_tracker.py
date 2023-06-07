@@ -60,9 +60,14 @@ def test_sample_tracker_df(key=get_key()) -> None:
 
 
 def test_sample_tracker_clean_df(key=get_key()) -> None:
-    sampletracker = get_SampleTracker(key=get_key())
-    sampletracker.clean_df_helper()
-    df_methods.test_df(sampletracker.clean_df)
+    sample_tracker = get_SampleTracker(key=get_key())
+    df1 = sample_tracker.df.copy()
+    df_methods.test_df(df1)
+    sample_tracker.clean_df_helper()
+    df2 = sample_tracker.df.copy()
+    df_methods.test_df(df2)
+
+    assert not df1.equals(df2)
 
 
 def main():
