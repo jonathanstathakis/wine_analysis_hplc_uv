@@ -5,6 +5,8 @@ import pandas as pd
 
 
 def df_string_cleaner(df: pd.DataFrame) -> pd.DataFrame:
+    assert isinstance(df, pd.DataFrame)
+
     # stripping and lowering case of all string values in df
     def lowercase_and_strip(value):
         if isinstance(value, str):
@@ -15,7 +17,7 @@ def df_string_cleaner(df: pd.DataFrame) -> pd.DataFrame:
 
     # stripping and lowering case of all column and index values in df
 
-    df = df.columns.astype(str).str.strip().str.lower()
-    df = df.index.astype(str).str.strip().str.lower()
+    df.columns = df.columns.astype(str).str.strip().str.lower()
+    df.index = df.index.astype(str).str.strip().str.lower()
 
     return df
