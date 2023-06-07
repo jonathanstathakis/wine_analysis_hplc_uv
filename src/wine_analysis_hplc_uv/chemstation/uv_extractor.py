@@ -95,7 +95,6 @@ from typing import List
 from . import uv_extractor
 
 
-@ft.timeit
 def uv_extractor_pool(
     dirpaths: List[str],
 ) -> List[Dict[str, Dict[str, str] | Dict[str, str | pd.DataFrame]]]:
