@@ -3,7 +3,8 @@ Driver class for sampletracker processes
 
 2023-06-03 17:29:39
 TODO:
-- [ ] continue organizing and cleaning SampleTracker class
+- [ ] add SampleTracker.to_sheets
+- [ ] update SampleTracker.to_db
 """
 
 from wine_analysis_hplc_uv.sampletracker import sample_tracker_methods as st_methods
@@ -19,8 +20,6 @@ class SampleTracker:
         self.wksh = st_methods.get_sample_tracker_wksh(
             self.key, sheet_title=sheet_title
         )
-        self.df: pd.DataFrame = self.sheets_to_df_helper()
-        self.clean_df = None
         self.tbl_name = "sampletracker"
 
     def sheets_to_df_helper(self) -> pd.DataFrame:
@@ -36,7 +35,7 @@ class SampleTracker:
 
     def clean_df_helper(self) -> None:
         self.clean_df: pd.DataFrame = sample_tracker_cleaner.sample_tracker_df_cleaner(
-            self.df
+            self.wksh.df
         )
         return None
 
@@ -54,28 +53,25 @@ class SampleTracker:
             self.df.pipe(self.st_to_db, db_filepath)
         return None
 
-    def to_sheets(
-        self, google_api_dict: dict, sheet_title: str, clean_df: bool
-    ) -> None:
-        """_summary_
-        Push current clean_df to the google sheets workbook as a new sheet.
+    # def to_sheets(
+    #     self, sheet_title: str = None,
+    # ) -> None:
+    #     """_summary_
+    #     Push current clean_df to the google sheets workbook as a new sheet.
 
-        args:
-        :param clean_df : use clean_df if True, else df
-        :type clean_df : bool
-        """
+    #     args:
+    #     :param clean_df : use clean_df if True, else df
+    #     :type clean_df : bool
+    #     """
 
-        assert isinstance(sheet_title, str)
-        assert isinstance(google_api_dict, dict)
+    #     assert isinstance(sheet_title, str)
 
-        if clean_df:
-            response, data = st_methods.st_to_sheets(
-                self.clean_df, google_api_dict, sheet_title
-            )
-        else:
-            response, data = st_methods.st_to_sheets(
-                self.df, google_api_dict, sheet_title
-            )
-        return response, data
-
-    # def to_sheets(self)-> None:
+    #     if clean_df:
+    #         response, data = st_methods.st_to_sheets(
+    #             self.clean_df, google_api_dict, sheet_title
+    #         )
+    #     else:
+    #         response, data = st_methods.st_to_sheets(
+    #             self.df, google_api_dict, sheet_title
+    #         )
+    #     return response, data

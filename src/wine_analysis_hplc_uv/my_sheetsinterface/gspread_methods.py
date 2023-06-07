@@ -27,17 +27,17 @@ class GSheet:
 
 class WorkSheet(GSheet):
     def __init__(self, key, sheet_title):
-        assert isinstance(key, str)
+        assert isinstance(key, str), f"{key}"
         super().__init__(key)
         self.sheet_title = sheet_title
         self.wksh, self.wksh_response = open_worksheet(self, sheet_title)
-        self.sheet_df = wksh_to_df(self.wksh)
+        self.df = wksh_to_df(self.wksh)
 
     def write_to_sheet(self):
         """
         Update connected sheet with values contained in sheet_df
         """
-        df = self.sheet_df
+        df = self.df
         columns = df.columns.values.tolist()
         data = df.values.tolist()
         values = [columns] + data
@@ -62,7 +62,7 @@ def open_worksheet(self, sheet_title: str):
 
 
 def get_test_st_sh(service_account):
-    key = os.environ.get("TEST_SAMPLETRACKER_KEY")
+    key = os.environ.get("TEST_SAMPLE_TRACKER_KEY")
     sh = service_account.open_by_key(key)
     return sh
 
