@@ -30,7 +30,7 @@ class WorkSheet(GSheet):
         assert isinstance(key, str)
         super().__init__(key)
         self.sheet_title = sheet_title
-        self.wksh, self.wksh_response = open_worksheet(self, sheet_title)
+        self.wksh, self.wksh_response = self.open_worksheet(sheet_title)
         self.sheet_df = wksh_to_df(self.wksh)
 
     def write_to_sheet(self):
@@ -43,22 +43,21 @@ class WorkSheet(GSheet):
         values = [columns] + data
         self.wksh.update(values)
 
+    def open_worksheet(self, sheet_title: str):
+        response = ""
+        try:
+            wksh = self.sh.worksheet(sheet_title)
+        except gspread.exceptions.WorksheetNotFound:
+            print(f"Worksheet '{sheet_title}' not found. Creating a new one...")
+            response = self.sh.add_worksheet(title=sheet_title, rows="100", cols="20")
+            print(f"Worksheet '{sheet_title}' created.")
+            print(response)
+            wksh = self.sh.worksheet(sheet_title)
+        return wksh, response
+
 
 def get_service_account():
     return gspread.service_account()
-
-
-def open_worksheet(self, sheet_title: str):
-    response = ""
-    try:
-        wksh = self.sh.worksheet(sheet_title)
-    except gspread.exceptions.WorksheetNotFound:
-        print(f"Worksheet '{sheet_title}' not found. Creating a new one...")
-        response = self.sh.add_worksheet(title=sheet_title, rows="100", cols="20")
-        print(f"Worksheet '{sheet_title}' created.")
-        print(response)
-        wksh = self.sh.worksheet(sheet_title)
-    return wksh, response
 
 
 def get_test_st_sh(service_account):
