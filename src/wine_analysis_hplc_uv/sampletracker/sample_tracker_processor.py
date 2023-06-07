@@ -1,6 +1,10 @@
 """
 Driver class for sampletracker processes
 
+Initialized with a WorkSheet object that provides a dataframe and sheet_title.
+
+Exporting back to Sheets (if desired) can either use that WorkSheet object or create a new one, if a new `sheet_title` is provided.
+
 2023-06-03 17:29:39
 TODO:
 - [ ] continue organizing and cleaning SampleTracker class
@@ -15,12 +19,12 @@ import pandas as pd
 class SampleTracker:
     def __init__(self, sheet_title: str, key=st_methods.get_gsheet_key()) -> None:
         assert isinstance(key, str)
+        self.sheet_title = sheet_title
         self.key = key
         self.wksh = st_methods.get_sample_tracker_wksh(
             self.key, sheet_title=sheet_title
         )
         self.df: pd.DataFrame = self.sheets_to_df_helper()
-        self.clean_df = None
         self.tbl_name = "sampletracker"
 
     def sheets_to_df_helper(self) -> pd.DataFrame:
@@ -35,7 +39,7 @@ class SampleTracker:
         return df
 
     def clean_df_helper(self) -> None:
-        self.clean_df: pd.DataFrame = sample_tracker_cleaner.sample_tracker_df_cleaner(
+        self.df: pd.DataFrame = sample_tracker_cleaner.sample_tracker_df_cleaner(
             self.df
         )
         return None
@@ -54,9 +58,7 @@ class SampleTracker:
             self.df.pipe(self.st_to_db, db_filepath)
         return None
 
-    def to_sheets(
-        self, google_api_dict: dict, sheet_title: str, clean_df: bool
-    ) -> None:
+    def to_sheets_helper(self, sheet_title: str = None, sudo: bool = False) -> None:
         """_summary_
         Push current clean_df to the google sheets workbook as a new sheet.
 
@@ -64,18 +66,4 @@ class SampleTracker:
         :param clean_df : use clean_df if True, else df
         :type clean_df : bool
         """
-
-        assert isinstance(sheet_title, str)
-        assert isinstance(google_api_dict, dict)
-
-        if clean_df:
-            response, data = st_methods.st_to_sheets(
-                self.clean_df, google_api_dict, sheet_title
-            )
-        else:
-            response, data = st_methods.st_to_sheets(
-                self.df, google_api_dict, sheet_title
-            )
-        return response, data
-
-    # def to_sheets(self)-> None:
+        st_methods.st_to_sheets(sample_tracker=self, sheet_title=sheet_title, sudo=sudo)

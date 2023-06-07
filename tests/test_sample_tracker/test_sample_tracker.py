@@ -7,7 +7,7 @@ TODO:
 - [x] SampleTracker.df
 - [x] SampleTracker.clean_df
 - [ ] SampleTracker.st_to_db
-- [ ] SampleTracker.to_sheets
+- [x] SampleTracker.to_sheets
 """
 
 import os
@@ -19,6 +19,7 @@ from wine_analysis_hplc_uv.sampletracker import sample_tracker_methods as st_met
 from wine_analysis_hplc_uv.sampletracker import sample_tracker_processor
 from tests.mytestmethods.mytestmethods import test_report
 from wine_analysis_hplc_uv.df_methods import df_methods
+from wine_analysis_hplc_uv.my_sheetsinterface.gspread_methods import WorkSheet
 
 
 def test_sample_tracker():
@@ -27,6 +28,7 @@ def test_sample_tracker():
         (test_sample_tracker_class_init,),
         (test_sample_tracker_df,),
         (test_sample_tracker_clean_df,),
+        (test_to_sheets,),
     ]
 
     test_report(tests)
@@ -68,6 +70,18 @@ def test_sample_tracker_clean_df(key=get_key()) -> None:
     df_methods.test_df(df2)
 
     assert not df1.equals(df2)
+    return None
+
+
+def test_to_sheets(key=get_key(), sheet_title_2="test_to_sheets"):
+    # create sampletracker obj and write to new sheet
+    sample_tracker = get_SampleTracker(key=key)
+    sample_tracker.to_sheets_helper(sheet_title=sheet_title_2)
+
+    # test contents of new sheet
+    new_wksh = WorkSheet(key=key, sheet_title=sheet_title_2)
+    assert sample_tracker.df.equals(new_wksh.sheet_df)
+    new_wksh.delete_sheet(new_wksh.wksh)
 
 
 def main():
