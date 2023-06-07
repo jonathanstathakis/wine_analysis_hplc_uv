@@ -1,11 +1,13 @@
 """
 testing the new MyCellarTracker class 
 
-- [ ] initialise MyCellarTracker class
-- [ ] MyCellarTracker.df has expected content.
+- [x] initialise MyCellarTracker class
+- [x] MyCellarTracker.df has expected content.
 - [ ] MyCellarTracker exports (define as an 'exporter' class):
-    - [ ] to sheets
-    - [ ] to db
+    - [x] to sheets
+    - [x] to db
+    - [ ] integration into MyCellarTracke
+    
 """
 import os
 import sys
@@ -26,6 +28,7 @@ def test_mycellartracker():
         (test_mycellartracker_df,),
         (test_exporter_to_sheets,),
         (test_exporter_to_db,),
+        (test_CellarTracker_to_db,),
     ]
 
     test_report(tests)
@@ -54,6 +57,7 @@ def test_mycellartracker_init(username=un(), password=pw()):
 def test_mycellartracker_df(username=un(), password=pw()):
     cellartracker = MyCellarTracker(username=username, password=password)
     test_df(cellartracker.df)
+
     assert not cellartracker.df.empty
     return None
 
@@ -102,6 +106,37 @@ def test_exporter_to_db(
 
     assert exporter.df.shape == db_df.shape
     assert exporter.df.shape > (0, 0)
+    assert db_df.shape > (0, 0)
+
+    print(db_df.head())
+
+    with db.connect(db_filepath) as con:
+        con.sql(f"DROP TABLE {tbl_name}")
+
+
+def test_CellarTracker_to_db(
+    username=un(),
+    password=pw(),
+    db_filepath="test_exporter.db",
+    tbl_name="test_exporter",
+):
+    mycellartracker = MyCellarTracker(username=username, password=password)
+
+    import duckdb as db
+
+    with db.connect(db_filepath) as con:
+        con.sql(f"DROP TABLE IF EXISTS {tbl_name}")
+
+    mycellartracker.to_db(db_filepath, tbl_name)
+
+    import pandas as pd
+
+    db_df = pd.DataFrame()
+    with db.connect(db_filepath) as con:
+        db_df = con.sql(f"SELECT * FROM {tbl_name}").df()
+
+    assert mycellartracker.df.shape == db_df.shape
+    assert mycellartracker.df.shape > (0, 0)
     assert db_df.shape > (0, 0)
 
     print(db_df.head())
