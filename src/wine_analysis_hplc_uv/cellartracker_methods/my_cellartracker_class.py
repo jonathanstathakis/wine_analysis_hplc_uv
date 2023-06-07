@@ -8,12 +8,6 @@ import duckdb as db
 from wine_analysis_hplc_uv.db_methods import db_methods
 
 
-class MyCellarTracker(cellartracker.CellarTracker):
-    def __init__(self, username: str, password: str) -> None:
-        super().__init__(username=username, password=password)
-        self.df: pd.DataFrame = pd.DataFrame(self.get_list())
-
-
 class Exporter:
     """
     A class to contain df -> sheets and db methods.
@@ -24,7 +18,8 @@ class Exporter:
 
     def to_sheets(self, key: str, sheet_title: str):
         """
-        Output the self.df to a given google sheets sheet for a provided key and sheet_title. If the sheet doesnt exist in the Sheet, it will be created.
+        Output the self.df to a given google sheets sheet for a provided key and
+        sheet_title. If the sheet doesnt exist in the Sheet, it will be created.
         """
         assert isinstance(key, str)
         assert isinstance(sheet_title, str)
@@ -41,3 +36,10 @@ class Exporter:
 
         with db.connect(database=db_filepath) as con:
             con.sql(query=f"CREATE TABLE {tbl_name} AS SELECT * FROM df")
+
+
+class MyCellarTracker(cellartracker.CellarTracker, Exporter):
+    def __init__(self, username: str, password: str) -> None:
+        cellartracker.CellarTracker.__init__(self, username=username, password=password)
+        Exporter.__init__(self)
+        self.df: pd.DataFrame = pd.DataFrame(self.get_list())
