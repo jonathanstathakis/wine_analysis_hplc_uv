@@ -9,17 +9,13 @@ def get_gsheet_key(envar: str = "SAMPLETRACKER_KEY"):
     return os.environ.get(envar)
 
 
-def get_sample_tracker_wksh(key=get_gsheet_key(), sheet_title="sample_tracker"):
+def get_sample_tracker_wksh(key: str, sheet_title: str):
     assert isinstance(key, str)
     wksh = WorkSheet(key=key, sheet_title=sheet_title)
     return wksh
 
 
-def sample_tracker_df_builder(
-    sample_tracker_wksh=get_sample_tracker_wksh(
-        key=get_gsheet_key(), sheet_title="sample_tracker"
-    )
-):
+def sample_tracker_df_builder(sample_tracker_wksh, sheet_title: str):
     df = sample_tracker_wksh.sheet_df
 
     # from the imported range, only select the specified columns
