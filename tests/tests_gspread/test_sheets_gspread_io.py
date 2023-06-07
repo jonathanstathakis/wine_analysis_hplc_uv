@@ -22,9 +22,8 @@
 """
 Tests of IO, RW of google sheets using gspread.
 """
-
-import gspread
-from gspread_test_methods import get_test_key, test_report, delete_worksheet
+from tests.mytestmethods.mytestmethods import test_report
+from gspread_test_methods import get_test_key, delete_worksheet
 from wine_analysis_hplc_uv.my_sheetsinterface import gspread_methods
 
 
@@ -45,13 +44,15 @@ def test_connect_to_wksh(mysheet_class):
     assert mysheet_class
 
 
-def orig_sampletracker_wksh(sheet_title: str = "test_sample_tracker"):
-    key = get_test_key()
+def orig_sampletracker_wksh(
+    key=get_test_key(), sheet_title: str = "test_sample_tracker"
+):
+    assert isinstance(key, str)
     return gspread_methods.WorkSheet(key=key, sheet_title=sheet_title)
 
 
-def test_wksh_to_df(mysheet_class):
-    df = mysheet_class.sheet_df
+def test_wksh_to_df(wksh):
+    df = wksh.df
 
     assert not df.empty, "DataFrame is empty"
 
@@ -75,9 +76,9 @@ def test_create_new_sheet(sheet_title="test_new_sheet_create"):
 def test_write_to_new_sheet(
     source_sheet_title="test_sample_tracker", new_sheet_title="test_new_sheet_write"
 ):
-    source_df = orig_sampletracker_wksh(sheet_title=source_sheet_title).sheet_df
+    source_df = orig_sampletracker_wksh(sheet_title=source_sheet_title).df
     new_wksh = new_worksheet_class(sheet_title=new_sheet_title)
-    new_wksh.sheet_df = source_df.copy()
+    new_wksh.df = source_df.copy()
 
     response = new_wksh.write_to_sheet()
 
@@ -118,18 +119,18 @@ def test_new_written_sheet_eq_source():
         "test_rw_df_eq_2",
     )
     # 1.
-    df_1 = orig_sampletracker_wksh(sheet_1_title).sheet_df
+    df_1 = orig_sampletracker_wksh().df
 
     # 2.
     wksh_2 = new_worksheet_class(sheet_title=sheet_2_title)
-    wksh_2.sheet_df = df_1.copy()
-    assert wksh_2.sheet_df.equals(df_1)
+    wksh_2.df = df_1.copy()
+    assert wksh_2.df.equals(df_1)
     response = wksh_2.write_to_sheet()
     #    delete_worksheet(wksh_2.key, wksh_2.wksh)
 
     # 3.
     wksh_3 = new_worksheet_class(sheet_title=sheet_2_title)
-    df_3 = wksh_3.sheet_df  # read again in a new object
+    df_3 = wksh_3.df  # read again in a new object
 
     assert df_3.equals(df_1)
 

@@ -21,7 +21,7 @@ import gspread
 
 
 def get_test_key():
-    return os.environ.get("TEST_SAMPLETRACKER_KEY")
+    return os.environ.get("TEST_SAMPLE_TRACKER_KEY")
 
 
 def delete_worksheet(key: str, wksh: gspread.Worksheet):
