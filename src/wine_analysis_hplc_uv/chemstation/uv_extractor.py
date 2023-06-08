@@ -2,10 +2,11 @@ import json
 import os
 import uuid
 from typing import List, Tuple, Dict, Union
-
+import multiprocessing as mp
 import numpy as np
 import pandas as pd
 import rainbow as rb
+from wine_analysis_hplc_uv.chemstation import logger
 
 counter = None
 counter_lock = None
@@ -37,11 +38,11 @@ def extract_data(
 
         with counter_lock:
             counter.value += 1
-            print(
+            logger.debug(
                 f"Processed {metadata_dict['path']}. Have processed {counter.value} files."
             )
     else:
-        print(f"{path} does not contain a .UV file. Remove from the library?")
+        logger.warning(f"{path} does not contain a .UV file. Remove from the library?")
 
     returndict: Dict[
         str, Union[Dict[str, str], Dict[str, Union[str, pd.DataFrame]]]
@@ -81,18 +82,8 @@ def uv_data_to_df(uv_file: rb.DataFile) -> pd.DataFrame:
         df = pd.DataFrame(data=spectrum, columns=column_names, index=an_index)
         return df
     except Exception as e:
-        print(e)
-        print(uv_file.metadata.get("notebook"), uv_file.metadata.get("date"))
-
-
-"""
-
-"""
-import multiprocessing as mp
-from typing import List
-
-
-from . import uv_extractor
+        logger.error(e)
+        logger.error(uv_file.metadata.get("notebook"), uv_file.metadata.get("date"))
 
 
 def uv_extractor_pool(
@@ -105,19 +96,21 @@ def uv_extractor_pool(
     counter = mp.Value("i", 0)  # 'i' indicates an integer
     counter_lock = mp.Lock()
 
-    print("Initializing multiprocessing pool...\n")
+    logger.debug("Initializing multiprocessing pool...")
     pool = mp.Pool(initializer=init_pool, initargs=(counter, counter_lock))
 
-    print(f"Processing {len(dirpaths)} directories using a multiprocessing pool...\n")
+    logger.info(
+        f"Processing {len(dirpaths)} directories using a multiprocessing pool..."
+    )
     uv_file_dicts: List[
         Dict[str, Dict[str, str] | Dict[str, str | pd.DataFrame]]
-    ] = pool.map(uv_extractor.extract_data, dirpaths)
+    ] = pool.map(extract_data, dirpaths)
 
-    print("Closing and joining the multiprocessing pool...\n")
+    logger.debug("Closing and joining the multiprocessing pool...")
     pool.close()
     pool.join()
 
-    print(f"{__file__}\n\nFinished processing files..\n")
+    logger.info(f"Finished processing files..")
     return uv_file_dicts
 
 
