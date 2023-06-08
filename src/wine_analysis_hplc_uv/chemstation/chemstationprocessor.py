@@ -2,6 +2,8 @@ import os
 import pandas as pd
 import shutil
 
+from wine_analysis_hplc_uv.chemstation import logger
+
 from wine_analysis_hplc_uv.chemstation import (
     chemstation_methods,
     chemstation_to_db_methods as ch_db,
@@ -64,9 +66,9 @@ class ChemstationProcessor:
 
     def cleanup_pickle(self) -> None:
         assert os.path.exists(self.pkfpath)
-        print(f"removing process pickle at {self.pkfpath}..\n")
+        logger.debug(f"removing process pickle at {self.pkfpath}..\n")
         shutil.rmtree(os.path.dirname(self.pkfpath))
-        print("file removed..\n")
+        logger.debug("file removed..\n")
         return None
 
     def to_csv_helper(

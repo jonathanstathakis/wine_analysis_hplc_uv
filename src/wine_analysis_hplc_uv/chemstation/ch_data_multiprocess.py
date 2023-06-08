@@ -3,6 +3,8 @@ import collections
 from . import uv_extractor
 import pandas as pd
 
+from wine_analysis_hplc_uv.chemstation import logger
+
 
 def ch_data_multiprocess(dirpath_list: List[str]) -> Tuple[List[dict], List[dict]]:
     """
@@ -27,13 +29,13 @@ def ch_data_multiprocess(dirpath_list: List[str]) -> Tuple[List[dict], List[dict
 
 def duplicate_hash_keys(uv_metadata_list: List[dict]) -> None:
     # observe how many unique hash_keys were generated. duplicates are probably caused by duplicate files/filenames.
-    print("size of metadata_list", len(uv_metadata_list))
+    logger.debug("size of metadata_list", len(uv_metadata_list))
 
     # print the UUIDs that occur more than once.
     list_of_keys: List[str] = [d["hash_key"] for d in uv_metadata_list]
     uuid_counts = collections.Counter(list_of_keys)
     duplicates: List[str] = [uuid for uuid, count in uuid_counts.items() if count > 1]
-    print("Duplicate UUIDs:", len(duplicates))
+    logger.debug("Duplicate UUIDs:", len(duplicates))
 
     for uuid in duplicates:
         print(uuid)
