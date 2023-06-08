@@ -36,7 +36,7 @@ def test_sample_tracker():
         (test_sample_tracker_df,),
         (test_sample_tracker_clean_df,),
         (test_to_sheets,),
-        # (test_to_db, get_SampleTracker(get_key())),
+        (test_to_db, get_SampleTracker(get_key())),
     ]
 
     test_report(tests)
@@ -102,6 +102,10 @@ def get_db_tbl_name():
 
 def test_to_db(st):
     db_filepath = get_db_filepath()
+
+    if os.path.exists(db_filepath):
+        os.remove(db_filepath)
+
     db_tbl_name = get_db_tbl_name()
     st.to_db_helper(db_filepath=db_filepath, db_tbl_name=db_tbl_name)
 
@@ -110,7 +114,7 @@ def test_to_db(st):
 
     with db.connect(db_filepath) as con:
         db_df = con.sql(f"SELECT * FROM {db_tbl_name}").df()
-    os.rmtree(db_filepath)  # cleanup
+    os.remove(db_filepath)  # cleanup
 
     pd.testing.assert_frame_equal(st.df, db_df)
 
