@@ -15,14 +15,6 @@ def get_sample_tracker_wksh(key: str, sheet_title: str):
     return wksh
 
 
-def sample_tracker_df_builder(sample_tracker_wksh, sheet_title: str):
-    df = sample_tracker_wksh.sheet_df
-
-    # from the imported range, only select the specified columns
-
-    return df
-
-
 def st_to_sheets(sample_tracker, sheet_title: str, sudo: bool = False):
     """
     Output df contained in SampleTracker class to google sheets at provided spreadsheet. If no sheet_title is provided, will output to the source sheet, but provide a warning

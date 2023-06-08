@@ -24,19 +24,8 @@ class SampleTracker:
         self.wksh = st_methods.get_sample_tracker_wksh(
             self.key, sheet_title=sheet_title
         )
-        self.df: pd.DataFrame = self.sheets_to_df_helper()
+        self.df = self.wksh.sheet_df
         self.tbl_name = "sampletracker"
-
-    def sheets_to_df_helper(self) -> pd.DataFrame:
-        """_summary_
-        Build the sampletracker df from the Google Sheets table.
-        Returns:
-            pd.DataFrame: _description_
-        """
-        df: pd.DataFrame = st_methods.sample_tracker_df_builder(
-            sample_tracker_wksh=self.wksh
-        )
-        return df
 
     def clean_df_helper(self) -> None:
         self.df: pd.DataFrame = sample_tracker_cleaner.sample_tracker_df_cleaner(
@@ -44,11 +33,9 @@ class SampleTracker:
         )
         return None
 
-    def st_to_db_helper(
-        self, df: pd.DataFrame, db_filepath: str, db_tbl_name: str
-    ) -> None:
+    def st_to_db_helper(self, db_filepath: str, db_tbl_name: str) -> None:
         init_raw_sample_tracker_table.sampletracker_to_db(
-            df=df, db_filepath=db_filepath, db_table_name=db_tbl_name
+            df=self.df, db_filepath=db_filepath, db_table_name=db_tbl_name
         )
 
     def st_to_db(self, clean: bool, db_filepath: str) -> None:
