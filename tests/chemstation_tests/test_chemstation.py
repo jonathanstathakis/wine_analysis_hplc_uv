@@ -50,8 +50,9 @@ def test_metadata_df(ch):
     df_methods.test_df(ch.metadata_df)
 
 
-def test_data_df(ch):
-    df_methods.describe_df(ch.data_df)
+def test_data_df(ch) -> None:
+    df_methods.describe_df(df=ch.data_df)
+
     # df_methods.test_df(ch.data_df)
 
 
