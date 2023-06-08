@@ -6,9 +6,15 @@ TODO:
 - [x] SampleTracker initialisation
 - [x] SampleTracker.df
 - [x] SampleTracker.clean_df
-- [ ] SampleTracker.st_to_db
 - [x] SampleTracker.to_sheets
+- [ ] SampleTracker.st_to_db
 """
+import logging
+
+logging.basicConfig(level=logging.INFO)
+sample_tracker_logger = logging.getLogger("wine_analysis_hplc_uv.sampletracker")
+sample_tracker_logger.setLevel(logging.DEBUG)
+test_logger = logging.getLogger(__name__)
 
 import os
 import sys
