@@ -11,8 +11,14 @@ import random
 import shutil
 
 from wine_analysis_hplc_uv.chemstation.chemstationprocessor import ChemstationProcessor
+from wine_analysis_hplc_uv.df_methods import df_methods
 
 from make_test_sample_dir import create_test_pool
+
+from chemstation_tests import (
+    chemstation_logger,
+    test_logger,
+)
 
 
 def test_chemstation():
@@ -21,7 +27,13 @@ def test_chemstation():
     create_test_pool(src_dir=src_dir, dst_parent_dir=dst_dir)
 
     datalibpath = get_dst_path()
-    tests = [(test_ChemstationProcessor_init, datalibpath, False)]
+    ch = ChemstationProcessor(datalibpath=datalibpath, usepickle=False)
+
+    tests = [
+        (test_ChemstationProcessor_init, ch),
+        (test_metadata_df, ch),
+        (test_data_df, ch),
+    ]
 
     test_report(tests)
 
@@ -30,8 +42,17 @@ def test_chemstation():
     return None
 
 
-def test_ChemstationProcessor_init(datalibpath: str, usepickle: bool):
-    assert ChemstationProcessor(datalibpath=datalibpath, usepickle=usepickle)
+def test_ChemstationProcessor_init(ch):
+    assert ch
+
+
+def test_metadata_df(ch):
+    df_methods.test_df(ch.metadata_df)
+
+
+def test_data_df(ch):
+    df_methods.describe_df(ch.data_df)
+    # df_methods.test_df(ch.data_df)
 
 
 def get_src_path():
