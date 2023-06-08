@@ -19,6 +19,19 @@ class ChemstationProcessor:
     # Chemstation data processor.
     Make sure to run ChemstationProcessor.cleanup_pickle() at the end
     to clean up the picklejar and pickle at the end of the process.
+
+    Members:
+    datalibpath
+    pkfname
+    pkfpath
+    fpathlist
+    data_dict_tuple
+    metadata_df
+    data_df
+    to_db()
+    clean_metadata()
+    cleanup_pickle()
+    to_csv()
     """
 
     def __init__(self, datalibpath: str, usepickle: bool = False):
