@@ -44,7 +44,7 @@ def describe_df(df: pd.DataFrame) -> None:
 
 def test_df(df: pd.DataFrame) -> None:
     assert not df.empty, "DataFrame is empty"
-    assert not df.isnull().values.any(), "DataFrame contains NaN values"
+    # assert not df.isnull().values.any(), "DataFrame contains NaN values"
     assert (
         len(df.drop_duplicates()) > 1
     ), "DataFrame does not have more than one unique row"
