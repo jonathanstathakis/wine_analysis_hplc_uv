@@ -5,6 +5,8 @@ from wine_analysis_hplc_uv.db_methods import db_methods
 from wine_analysis_hplc_uv.google_sheets_api import google_sheets_api
 from wine_analysis_hplc_uv.sampletracker import sample_tracker_methods
 
+from wine_analysis_hplc_uv.sampletracker import logger
+
 
 def init_raw_sample_tracker_table(db_filepath: str, table_name: str) -> None:
     # download the current sample tracker table
@@ -16,18 +18,8 @@ def init_raw_sample_tracker_table(db_filepath: str, table_name: str) -> None:
 
 
 def sampletracker_to_db(df: pd.DataFrame, db_filepath: str, db_table_name: str):
-    schema = """
-        sampler VARCHAR,
-        detection VARCHAR,
-        id VARCHAR,
-        vintage VARCHAR,
-        name VARCHAR,
-        open_date DATE,
-        sampled_date DATE,
-        added_to_cellartracker VARCHAR,
-        notes VARCHAR,
-        size INTEGER
-    """
+    logger.debug(f"{__name__}")
+    logger.debug(f"creating table {db_table_name} in {db_filepath}")
 
     target_columns = """
         sampler,
