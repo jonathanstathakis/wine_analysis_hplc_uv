@@ -11,8 +11,24 @@ import pandas as pd
 
 def describe_df(df: pd.DataFrame) -> None:
     print("df shape:", df.shape)
-    print("df columns", df.columns)
-    print("df index", df.index)
+    if len(df.columns) < 10:
+        print("df column labels:", df.columns)
+    else:
+        print("first 10 column labels:", df.columns[:10])
+    print("df index labels:", df.index)
+    if len(df.index) < 10:
+        print("df index labels:", df.index)
+    else:
+        print("first 10 indexes:", df.index[:10])
+
+    def sum_na_by_col(df):
+        na_sum_series = df.isna().sum()
+        na_sum_series = na_sum_series[na_sum_series > 0]
+
+        print("df na count", na_sum_series)
+
+    sum_na_by_col(df)
+    print(df.head(3))
 
     return None
 
