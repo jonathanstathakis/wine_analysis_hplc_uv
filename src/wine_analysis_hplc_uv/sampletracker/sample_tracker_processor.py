@@ -4,10 +4,6 @@ Driver class for sampletracker processes
 Initialized with a WorkSheet object that provides a dataframe and sheet_title.
 
 Exporting back to Sheets (if desired) can either use that WorkSheet object or create a new one, if a new `sheet_title` is provided.
-
-2023-06-03 17:29:39
-TODO:
-- [ ] continue organizing and cleaning SampleTracker class
 """
 
 from wine_analysis_hplc_uv.sampletracker import sample_tracker_methods as st_methods
@@ -33,17 +29,10 @@ class SampleTracker:
         )
         return None
 
-    def st_to_db_helper(self, db_filepath: str, db_tbl_name: str) -> None:
+    def to_db_helper(self, db_filepath: str, db_tbl_name: str) -> None:
         init_raw_sample_tracker_table.sampletracker_to_db(
             df=self.df, db_filepath=db_filepath, db_table_name=db_tbl_name
         )
-
-    def st_to_db(self, clean: bool, db_filepath: str) -> None:
-        if clean:
-            self.clean_df.pipe(self.st_to_db)
-        else:
-            self.df.pipe(self.st_to_db, db_filepath)
-        return None
 
     def to_sheets_helper(self, sheet_title: str = None, sudo: bool = False) -> None:
         """_summary_
