@@ -18,30 +18,15 @@ def init_raw_sample_tracker_table(db_filepath: str, table_name: str) -> None:
 
 
 def sampletracker_to_db(df: pd.DataFrame, db_filepath: str, db_table_name: str):
+    assert isinstance(db_filepath, str)
     logger.debug(f"{__name__}")
     logger.debug(f"creating table {db_table_name} in {db_filepath}")
 
-    target_columns = """
-        sampler,
-        detection,
-        id,
-        vintage,
-        name,
-        open_date,
-        sampled_date,
-        added_to_cellartracker,
-        notes,
-        size
-    """
+    with db.connect(db_filepath) as con:
+        con.sql(f"CREATE TABLE '{db_table_name}' AS SELECT * FROM df")
 
-    column_assignment = target_columns
-
-    assert isinstance(db_filepath, str)
-
-    db_methods.write_df_to_table(
-        df, db_filepath, db_table_name, schema, target_columns, column_assignment
-    )
     db_methods.display_table_info(db_filepath, db_table_name)
+    return None
 
 
 def main():
