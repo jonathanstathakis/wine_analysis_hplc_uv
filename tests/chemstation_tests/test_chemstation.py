@@ -3,14 +3,14 @@
 """
 import sys
 
-from scipy.integrate._ivp.radau import P
-
 sys.path.append("/Users/jonathan/mres_thesis/wine_analysis_hplc_uv/tests")
 from mytestmethods.mytestmethods import test_report
 import os
 from glob import glob
 import random
 import shutil
+
+from wine_analysis_hplc_uv.chemstation.chemstationprocessor import ChemstationProcessor
 
 from make_test_sample_dir import create_test_pool
 
@@ -20,13 +20,18 @@ def test_chemstation():
     dst_dir = get_dst_path()
     create_test_pool(src_dir=src_dir, dst_parent_dir=dst_dir)
 
-    tests = []
+    datalibpath = get_dst_path()
+    tests = [(test_ChemstationProcessor_init, datalibpath, False)]
 
-    # test_report(tests)
+    test_report(tests)
 
-    shutil.rmtree(dst_dir)
+    shutil.rmtree(dst_dir)  # clean up sample pool after testing is complete
 
     return None
+
+
+def test_ChemstationProcessor_init(datalibpath: str, usepickle: bool):
+    assert ChemstationProcessor(datalibpath=datalibpath, usepickle=usepickle)
 
 
 def get_src_path():
