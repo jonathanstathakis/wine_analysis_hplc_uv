@@ -25,25 +25,37 @@ def extract_data(
     global counter, counter_lock
 
     if os.path.isfile(path=os.path.join(path, uv_name)):
-        uv_file = rb.read(path=path).get_file(filename=uv_name)
+        metadata_dict = dict(
+            path=path,
+            sequence_name="",
+            hash_key="",
+        )
 
-        metadata_dict: Dict[str, str] = uv_file.metadata
-        metadata_dict["path"] = path
-        metadata_dict["sequence_name"] = get_sequence_name(metadata_dict["path"])
-        metadata_dict["hash_key"] = primary_key_generator(metadata_dict)
+        uv_data_dict = dict(
+            data=pd.DataFrame(),
+            hash_key="",
+        )
 
-        uv_data_dict = {}
-        uv_data_dict["data"] = uv_data_to_df(uv_file=uv_file)
-        uv_data_dict["hash_key"] = metadata_dict["hash_key"]
+        try:
+            uv_file = rb.read(path=path).get_file(filename=uv_name)
 
-        with counter_lock:
-            counter.value += 1
-            logger.debug(
-                f"Processed {metadata_dict['path']}. Have processed {counter.value} files."
-            )
+            # get the metadata_dict contained within the uv_file object and combine it with my predefined terms
+            metadata_dict.update(uv_file.metadata)
+            metadata_dict["sequence_name"] = get_sequence_name(metadata_dict["path"])
+            metadata_dict["hash_key"] = primary_key_generator(metadata_dict)
+            uv_data_dict["data"] = uv_data_to_df(uv_file=uv_file)
+            uv_data_dict["hash_key"] = metadata_dict["hash_key"]
+        except Exception as e:
+            logger.error(f"{path}: {e}")
+
     else:
         logger.warning(f"{path} does not contain a .UV file. Remove from the library?")
 
+    with counter_lock:
+        counter.value += 1
+        logger.debug(
+            f"Processed {metadata_dict['path']}. Have processed {counter.value} files."
+        )
     returndict: Dict[
         str, Union[Dict[str, str], Dict[str, Union[str, pd.DataFrame]]]
     ] = {
