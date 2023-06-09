@@ -21,7 +21,6 @@ class SampleTracker:
             self.key, sheet_title=sheet_title
         )
         self.df = self.wksh.sheet_df
-        self.tbl_name = "sampletracker"
 
     def clean_df_helper(self) -> None:
         self.df: pd.DataFrame = sample_tracker_cleaner.sample_tracker_df_cleaner(
