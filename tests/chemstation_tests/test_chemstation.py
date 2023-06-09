@@ -10,6 +10,7 @@ sys.path.append("/Users/jonathan/mres_thesis/wine_analysis_hplc_uv/tests")
 from mytestmethods.mytestmethods import test_report
 from wine_analysis_hplc_uv.chemstation.chemstationprocessor import ChemstationProcessor
 from wine_analysis_hplc_uv.df_methods import df_methods
+from wine_analysis_hplc_uv.definitions import LIB_DIR
 from make_test_sample_dir import create_test_pool
 from chemstation_tests import (
     chemstation_logger,
@@ -30,10 +31,10 @@ def test_chemstation():
     dst_dir = get_dst_path()
     create_test_pool(src_dir=src_dir, dst_parent_dir=dst_dir)
 
-    datalibpath = get_dst_path()
-
+    # datalibpath = get_dst_path()
+    libpath = LIB_DIR
     try:
-        ch = ChemstationProcessor(datalibpath=datalibpath, usepickle=False)
+        ch = ChemstationProcessor(datalibpath=libpath, usepickle=False)
     except Exception as e:
         print(f"{e}")
         shutil.rmtree(dst_dir)  # clean up sample pool after testing is complete
