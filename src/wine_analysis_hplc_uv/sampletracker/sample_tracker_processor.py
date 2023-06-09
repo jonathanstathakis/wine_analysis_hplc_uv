@@ -29,7 +29,7 @@ class SampleTracker:
         )
         return None
 
-    def to_db_helper(self, db_filepath: str, db_tbl_name: str) -> None:
+    def to_db(self, db_filepath: str, db_tbl_name: str) -> None:
         init_raw_sample_tracker_table.sampletracker_to_db(
             df=self.df, db_filepath=db_filepath, db_table_name=db_tbl_name
         )
