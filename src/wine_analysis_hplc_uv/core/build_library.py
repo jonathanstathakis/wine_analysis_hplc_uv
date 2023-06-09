@@ -1,17 +1,12 @@
 """
 Top level file to initialize a wine auth database from scratch.
 """
-from curses import meta
 import os
 import shutil
 
 import duckdb as db
-from numpy.random import f
 
-from wine_analysis_hplc_uv.cellartracker_methods import (
-    cellartracker_cleaner,
-    init_raw_cellartracker_table,
-)
+
 from wine_analysis_hplc_uv.chemstation import (
     ch_metadata_tbl_cleaner,
     chemstationprocessor,
@@ -19,7 +14,14 @@ from wine_analysis_hplc_uv.chemstation import (
 from wine_analysis_hplc_uv.core import adapt_super_pipe_to_db
 from wine_analysis_hplc_uv.sampletracker import sample_tracker_processor
 from wine_analysis_hplc_uv.ux_methods import ux_methods as ux
+from wine_analysis_hplc_uv.definitions import DB_DIR
+
 import pandas as pd
+
+import logging
+
+chemstation_logger = logging.getLogger("wine_analysis_hplc_uv.chemstation")
+chemstation_logger.setLevel(logging.DEBUG)
 
 
 @ft.timeit
@@ -29,71 +31,48 @@ def build_db_library(data_lib_path: str) -> None:
     """
     assert os.path.isdir(data_lib_path), "need an existing directory"
 
-    def get_db_filepath(data_lib_path: str) -> str:
-        db_filename = f"{os.path.basename(data_lib_path).split()[0]}.db"
-        db_filepath = os.path.join(data_lib_path, db_filename)
-
-        return db_filepath
-
-    db_filepath = get_db_filepath(data_lib_path)
-
     # 1. create db file if none exists.
     # dont use context management here because simply opening and closing a connection, forcing the creation of the .db file
-    if not os.path.isfile(db_filepath):
-        con = db.connect(db_filepath)
+    if not os.path.isfile(DB_DIR):
+        con = db.connect(DB_DIR)
         con.close()
 
     # 2. remove a predefined list of files that exist inthe instrument 0_jono_data folder.
     delete_unwanted_files(data_lib_path)
 
     #  3. write raw tables to db from sources
-    chemstation_metadata_table_name = "chemstation_metadata"
-    sctblname = "chromatogram_spectra"
-    sampletracker_tbl_name = "sampletracker"
-    cellartracker_table_name = "cellartracker"
-
-    # write sampletracker
-    # write cellartracker
-    # write chemstation
+    mtadta_tbl = "chemstation_metadata"
+    sc_tbl = "chromatogram_spectra"
+    st_tbl = "sample_tracker"
+    ct_tbl = "cellar_tracker"
+    super_tbl_name = "super_table"
 
     # chemstation
-    chemstation_to_db(
-        data_lib_path,
-        db_filepath,
-        chemstation_metadata_table_name,
-        chemstation_sc_table_name,
-    )
+    ch = chemstationprocessor.ChemstationProcessor()
+    ch.to_db(db_filepath=DB_DIR, ch_metadata_dbl_name=mtadta_tbl, ch_sc_tblname=sc_tbl)
 
-    # sampletracker
+    # sample_tracker
+    sheet_title = os.environ.get("sample_tracker")
+    gkey = os.environ.get("SAMPLE_TRACKER_KEY")
+    stracker = sample_tracker_processor.SampleTracker(sheet_title=sheet_title, key=gkey)
+    stracker.to_db(db_filepath=DB_DIR, db_tbl_name=st_tbl)
 
-    sampletracker_to_db(
-        db_filepath=db_filepath, sampletracker_tbl_name=sampletracker_tbl_name
-    )
+    # cellar_tracker
+    un = os.environ.get("CELLAR_TRACKER_UN")
+    pw = os.environ.get("CELLAR_TRACKER_PW")
+    ct = MyCellarTracker(username=un, password=pw)
+    ct.to_db()
 
-    # 4. clean the raw tables
-    ux.ask_user_and_execute(
-        "write cleaned tables?\n",
-        load_cleaned_tables,
-        get_db_filepath,
-        chemstation_metadata_table_name,
-        raw_sampletracker_table_name,
-        raw_cellartracker_table_name,
-        cleaned_chemstation_metadata_table_name,
-        cleaned_sampletracker_table_name,
-        cleaned_cellartracker_table_name,
-    )
-
-    super_tbl_name = "super_table"
-    # 5. join the tables together.
-    ux.ask_user_and_execute(
-        "write super table?\n",
-        adapt_super_pipe_to_db.load_super_table,
-        get_db_filepath,
-        table_1=cleaned_chemstation_metadata_table_name,
-        table_2=cleaned_sampletracker_table_name,
-        table_3=cleaned_cellartracker_table_name,
-        tbl_name=super_tbl_name,
-    )
+    # # 5. join the tables together.
+    # ux.ask_user_and_execute(
+    #     "write super table?\n",
+    #     adapt_super_pipe_to_db.load_super_table,
+    #     get_db_filepath,
+    #     table_1=cleaned_chemstation_metadata_table_name,
+    #     table_2=cleaned_sampletracker_table_name,
+    #     table_3=cleaned_cellartracker_table_name,
+    #     tbl_name=super_tbl_name,
+    # )
     return None
 
 
@@ -107,16 +86,6 @@ def sampletracker_to_db(db_filepath: str, sampletracker_tbl_name: str) -> None:
         args=db_filepath,
     )
     return None
-
-
-def chemstation_to_db(
-    data_lib_path: str, db_filepath: str, mdatatblname: str, scdatatblname: str
-) -> None:
-    chprocess = ux.ask_user_and_execute(
-        "Process chemstation files?\n",
-        chemstationprocessor.ChemstationProcessor,
-        data_lib_path,
-    )
 
     def clean_ch_metadata(chprocess) -> pd.DataFrame:
         df = chprocess.clean_metadata()
