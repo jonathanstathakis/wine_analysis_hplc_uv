@@ -174,3 +174,15 @@ data/*
 build/*
 *.egg-info/
 bin/*
+tests/test_data/125.D/acq.macaml
+tests/test_data/125.D/acq.txt
+tests/test_data/125.D/ACQRES.REG
+tests/test_data/125.D/CSlbk.ini
+tests/test_data/125.D/DAD1.UV
+tests/test_data/125.D/DAD1A.ch
+tests/test_data/125.D/DAD1B.ch
+tests/test_data/125.D/LCDIAG.REG
+tests/test_data/125.D/Limsinf.xml
+tests/test_data/125.D/SAMPLE.XML
+tests/test_data/125.D/SAMPLE.XML.bak
+tests/test_data/125.D/sequence.acam_
