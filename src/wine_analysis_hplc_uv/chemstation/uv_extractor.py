@@ -39,7 +39,8 @@ def extract_data(
         try:
             uv_file = rb.read(path=path).get_file(filename=uv_name)
 
-            # get the metadata_dict contained within the uv_file object and combine it with my predefined terms
+            # get the metadata_dict contained within the uv_file object
+            # and combine it with my predefined terms
             metadata_dict.update(uv_file.metadata)
             metadata_dict["sequence_name"] = get_sequence_name(metadata_dict["path"])
             metadata_dict["hash_key"] = primary_key_generator(metadata_dict)
@@ -49,7 +50,9 @@ def extract_data(
             logger.error(f"{path}: {e}")
 
     else:
-        logger.warning(f"{path} does not contain a .UV file. Remove from the library?")
+        logger.warning(
+            f"{path} does not contain a .UV file. Perhaps remove from the library.."
+        )
 
     with counter_lock:
         counter.value += 1
@@ -83,6 +86,9 @@ def primary_key_generator(metadata_dict):
 
 
 def uv_data_to_df(uv_file: rb.DataFile) -> pd.DataFrame:
+    """
+    requires a parsed `rb.DataFile` as input, outputs a df.
+    """
     spectrum = np.concatenate((uv_file.xlabels.reshape(-1, 1), uv_file.data), axis=1)
 
     column_names = ["mins"] + list(uv_file.ylabels)
@@ -92,10 +98,12 @@ def uv_data_to_df(uv_file: rb.DataFile) -> pd.DataFrame:
 
     try:
         df = pd.DataFrame(data=spectrum, columns=column_names, index=an_index)
+
         return df
     except Exception as e:
         logger.error(e)
         logger.error(uv_file.metadata.get("notebook"), uv_file.metadata.get("date"))
+        return None
 
 
 def uv_extractor_pool(
