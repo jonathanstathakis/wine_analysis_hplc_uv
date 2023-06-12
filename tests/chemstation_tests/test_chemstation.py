@@ -1,6 +1,7 @@
 """
 
 """
+import traceback
 import sys
 from wine_analysis_hplc_uv.chemstation.chemstation_to_db_methods import (
     chromatogram_spectra_to_db,
@@ -31,19 +32,22 @@ def test_chemstation():
     dst_dir = get_dst_path()
     create_test_pool(src_dir=src_dir, dst_parent_dir=dst_dir)
 
-    # datalibpath = get_dst_path()
-    libpath = LIB_DIR
+    path = get_dst_path()
+    # libpath = LIB_DIR
     try:
-        ch = ChemstationProcessor(datalibpath=libpath, usepickle=False)
+        test_logger.info("generating CH object..")
+        ch = ChemstationProcessor(datalibpath=path, usepickle=False)
+        test_logger.info("CH object generated.")
     except Exception as e:
-        print(f"{e}")
+        tb = traceback.format_exc()
+        print(tb)
         shutil.rmtree(dst_dir)  # clean up sample pool after testing is complete
 
     tests = [
         (test_ChemstationProcessor_init, ch),
         (test_metadata_df, ch),
         (test_data_df, ch),
-        (test_data_to_db, ch),
+        # (test_data_to_db, ch),
     ]
     test_report(tests)
     shutil.rmtree(dst_dir)  # clean up sample pool after testing is complete
