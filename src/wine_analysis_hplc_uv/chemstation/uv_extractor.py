@@ -24,35 +24,31 @@ def extract_data(
     uv_name = "DAD1.UV"
     global counter, counter_lock
 
-    if os.path.isfile(path=os.path.join(path, uv_name)):
-        metadata_dict = dict(
-            path=path,
-            sequence_name="",
-            hash_key="",
-        )
+    assert os.path.isfile(path=os.path.join(path, uv_name))
 
-        uv_data_dict = dict(
-            data=pd.DataFrame(),
-            hash_key="",
-        )
+    metadata_dict = dict(
+        path=path,
+        sequence_name="",
+        hash_key="",
+    )
 
-        try:
-            uv_file = rb.read(path=path).get_file(filename=uv_name)
+    uv_data_dict = dict(
+        data=pd.DataFrame(),
+        hash_key="",
+    )
 
-            # get the metadata_dict contained within the uv_file object
-            # and combine it with my predefined terms
-            metadata_dict.update(uv_file.metadata)
-            metadata_dict["sequence_name"] = get_sequence_name(metadata_dict["path"])
-            metadata_dict["hash_key"] = primary_key_generator(metadata_dict)
-            uv_data_dict["data"] = uv_data_to_df(uv_file=uv_file)
-            uv_data_dict["hash_key"] = metadata_dict["hash_key"]
-        except Exception as e:
-            logger.error(f"{path}: {e}")
+    try:
+        uv_file = rb.read(path=path).get_file(filename=uv_name)
 
-    else:
-        logger.warning(
-            f"{path} does not contain a .UV file. Perhaps remove from the library.."
-        )
+        # get the metadata_dict contained within the uv_file object
+        # and combine it with my predefined terms
+        metadata_dict.update(uv_file.metadata)
+        metadata_dict["sequence_name"] = get_sequence_name(metadata_dict["path"])
+        metadata_dict["hash_key"] = primary_key_generator(metadata_dict)
+        uv_data_dict["data"] = uv_data_to_df(uv_file=uv_file)
+        uv_data_dict["hash_key"] = metadata_dict["hash_key"]
+    except Exception as e:
+        logger.error(f"{path}: {e}")
 
     with counter_lock:
         counter.value += 1
