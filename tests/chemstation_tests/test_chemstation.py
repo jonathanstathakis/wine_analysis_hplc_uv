@@ -47,7 +47,7 @@ def test_chemstation():
         (test_ChemstationProcessor_init, ch),
         (test_metadata_df, ch),
         (test_data_df, ch),
-        # (test_data_to_db, ch),
+        (test_data_to_db, ch),
     ]
     test_report(tests)
     shutil.rmtree(dst_dir)  # clean up sample pool after testing is complete
