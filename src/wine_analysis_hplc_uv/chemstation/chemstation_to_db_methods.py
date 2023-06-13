@@ -10,43 +10,33 @@ from wine_analysis_hplc_uv.db_methods import db_methods
 
 
 def write_chemstation_to_db(
-    ch_tuple: Tuple[List[Dict[str, str]], List[Dict[str, str | pd.DataFrame]]],
+    self,
     chemstation_metadata_tblname: str,
     chromatogram_spectrum_tblname: str,
     db_filepath: str,
 ) -> None:
     # write metadata table, chromatogram_spectra table.
 
-    # extract the lists from the tuple
-    metadata: List[Dict[str, str]] = ch_tuple[0]
-    data: List[Dict[str, str | pd.DataFrame]] = ch_tuple[1]
-
-    chemstation_metadata_to_db(
-        chemstation_metadata_list=metadata,
+    metadata_df_to_db(
+        metadata_df=self.metadata_df,
         tblname=chemstation_metadata_tblname,
         db_filepath=db_filepath,
     )
-    chromatogram_spectra_to_db(
-        chromatogram_spectrum_list=data,
+    data_df_to_db(
+        data_df=self.data_df,
         tblname=chromatogram_spectrum_tblname,
         db_filepath=db_filepath,
     )
     return None
 
 
-def chemstation_metadata_to_db(
-    chemstation_metadata_list: list, tblname: str, db_filepath: str
-):
-    df = metadata_list_to_df(chemstation_metadata_list)
-    df.pipe(check_if_table_exists_write_df_to_db, tblname, db_filepath)
+def metadata_df_to_db(metadata_df: pd.DataFrame, tblname: str, db_filepath: str):
+    metadata_df.pipe(check_if_table_exists_write_df_to_db, tblname, db_filepath)
     return None
 
 
-def chromatogram_spectra_to_db(
-    chromatogram_spectrum_list: list, tblname: str, db_filepath: str
-) -> None:
-    df = uv_data_list_to_df(chromatogram_spectrum_list, db_filepath)
-    df.pipe(check_if_table_exists_write_df_to_db, tblname, db_filepath)
+def data_df_to_db(data_df: pd.DataFrame, tblname: str, db_filepath: str) -> None:
+    data_df.pipe(check_if_table_exists_write_df_to_db, tblname, db_filepath)
     return None
 
 
@@ -86,23 +76,6 @@ def table_in_db_query(tblname, db_filepath):
     with db.connect(db_filepath) as con:
         result = con.sql(query).fetchone()
     return result[0] > 0
-
-
-def metadata_list_to_df(uv_metadata_list: list) -> pd.DataFrame:
-    metadata_df = pd.json_normalize(data=uv_metadata_list)
-    return metadata_df
-
-
-def uv_data_list_to_df(uv_data_list: list, db_filepath: str) -> None:
-    """ """
-    spectrum_dfs = []
-    for uv_data in uv_data_list:
-        data = uv_data["data"]
-        data["hash_key"] = uv_data["hash_key"]
-        spectrum_dfs.append(data)
-
-    combined_df = pd.concat(spectrum_dfs)
-    return combined_df
 
 
 def write_df_to_db(df: pd.DataFrame, tblname: str, db_filepath: str):
