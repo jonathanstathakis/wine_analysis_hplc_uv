@@ -1,3 +1,4 @@
+from importlib import metadata
 import json
 import os
 import uuid
@@ -46,6 +47,7 @@ def read_single_file(
             return None
 
     uv_name = "DAD1.UV"
+
     assert os.path.isfile(path=os.path.join(path, uv_name))
 
     metadata_dict = dict(
@@ -58,14 +60,18 @@ def read_single_file(
         hash_key="",
     )
 
-    uv_file = rb.read(path=path).get_file(filename=uv_name)
+    try:
+        uv_file = rb.read(path=path).get_file(filename=uv_name)
 
-    # get the metadata_dict contained within the uv_file object
-    # and combine it with my predefined terms
-    metadata_dict.update(uv_file.metadata)
-    metadata_dict["hash_key"] = primary_key_generator(metadata_dict)
-    uv_data_dict["data"] = uv_data_to_df(uv_file=uv_file)
-    uv_data_dict["hash_key"] = metadata_dict["hash_key"]
+        # get the metadata_dict contained within the uv_file object
+        # and combine it with my predefined terms
+        metadata_dict.update(uv_file.metadata)
+        metadata_dict["hash_key"] = primary_key_generator(metadata_dict)
+        uv_data_dict["data"] = uv_data_to_df(uv_file=uv_file)
+        uv_data_dict["hash_key"] = metadata_dict["hash_key"]
+
+    except Exception as e:
+        logger.error(f"{metadata_dict['path']} encountered an error: {e}")
 
     returndict: Dict[
         str, Union[Dict[str, str], Dict[str, Union[str, pd.DataFrame]]]
