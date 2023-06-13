@@ -15,6 +15,8 @@ def uv_extractor_pool(
     """
     Form a multiprocess pool to apply uv_extractor, returning a tuple of dicts for each .D file in the dirpath list.
     """
+    logger.info("Processing files..")
+    logger.debug(f"{__file__}")
 
     logger.debug("Initializing multiprocessing pool...")
     pool = mp.Pool()
