@@ -19,18 +19,13 @@ def uv_extractor_pool(
     logger.debug(f"{__file__}")
 
     logger.debug("Initializing multiprocessing pool...")
-    pool = mp.Pool()
 
     logger.info(
         f"Using the multiprocessing pool to process {len(dirpaths)} directories.."
     )
-    uv_files_dicts_list: List[
-        Dict[str, Dict[str, str] | Dict[str, str | pd.DataFrame]]
-    ] = pool.map(read_single_file.read_single_file, dirpaths)
-
-    logger.debug("Closing and joining the multiprocessing pool..")
-    pool.close()
-    pool.join()
+    with mp.Pool() as pool:
+        uv_files_dicts_list = pool.map(read_single_file.read_single_file, dirpaths)
+        logger.debug("Closing and joining the multiprocessing pool..")
 
     uv_metadata_list: List = [file["metadata"] for file in uv_files_dicts_list]
     uv_data_list: List = [file["data"] for file in uv_files_dicts_list]
