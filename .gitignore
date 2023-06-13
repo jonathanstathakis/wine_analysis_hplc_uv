@@ -186,3 +186,4 @@ tests/test_data/125.D/Limsinf.xml
 tests/test_data/125.D/SAMPLE.XML
 tests/test_data/125.D/SAMPLE.XML.bak
 tests/test_data/125.D/sequence.acam_
+src/wine_analysis_hplc_uv/chemstation/1. chemstationprocessor
