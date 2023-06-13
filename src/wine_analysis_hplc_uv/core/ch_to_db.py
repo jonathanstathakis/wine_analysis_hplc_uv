@@ -10,7 +10,7 @@ from wine_analysis_hplc_uv.chemstation import (
 
 def ch_to_db(lib_path: str, mtadata_tbl: str, sc_tbl: str, db_path: str):
     ch = chemstationprocessor.ChemstationProcessor(lib_path=lib_path)
-    ch.to_db(db_filepath=DB_DIR, ch_metadata_dbl_name=mtadata_tbl, ch_sc_tblname=sc_tbl)
+    ch.to_db(db_filepath=db_path, ch_metadata_tblname=mtadata_tbl, ch_sc_tblname=sc_tbl)
     return None
 
 
