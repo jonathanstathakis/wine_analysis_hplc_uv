@@ -36,8 +36,8 @@ def test_chemstation():
     dst_dir = get_dst_path()
     create_test_pool(src_dir=src_dir, dst_parent_dir=dst_dir)
 
-    path = get_dst_path()
-    # libpath = LIB_DIR
+    # path = get_dst_path()
+    path = LIB_DIR
     try:
         test_logger.info("generating CH object..")
         ch = chemstationprocessor.ChemstationProcessor(lib_path=path, usepickle=False)
