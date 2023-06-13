@@ -6,7 +6,6 @@ from . import (
 from ...ux_methods import ux_methods as ux
 
 
-@ft.timeit
 def super_table_pipe(
     chemstation_df,
     sample_tracker_df,
