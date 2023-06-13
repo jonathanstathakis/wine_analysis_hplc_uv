@@ -35,7 +35,7 @@ class ChemstationProcessor:
     to_csv()
     """
 
-    def __init__(self, lib_path: str, usepickle: bool = False):
+    def __init__(self, lib_path: str):
         assert os.path.isdir(s=lib_path)
         self.lib_path: str = lib_path
 
@@ -56,7 +56,7 @@ class ChemstationProcessor:
         ch_sc_tblname: str = "ch_sc_data",
     ) -> None:
         ch_db.write_chemstation_to_db(
-            ch_tuple=self.data_dict_tuple,
+            self=self,
             db_filepath=db_filepath,
             chemstation_metadata_tblname=ch_metadata_tblname,
             chromatogram_spectrum_tblname=ch_sc_tblname,
@@ -64,13 +64,6 @@ class ChemstationProcessor:
 
     def clean_metadata(self) -> pd.DataFrame:
         return ch_m_clean.ch_metadata_tbl_cleaner(self.metadata_df)
-
-    def cleanup_pickle(self) -> None:
-        assert os.path.exists(self.pkfpath)
-        logger.debug(f"removing process pickle at {self.pkfpath}..\n")
-        shutil.rmtree(os.path.dirname(self.pkfpath))
-        logger.debug("file removed..\n")
-        return None
 
     def to_csv_helper(
         self,
