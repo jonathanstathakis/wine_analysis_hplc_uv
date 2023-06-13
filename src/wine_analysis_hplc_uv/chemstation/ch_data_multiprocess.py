@@ -12,19 +12,18 @@ def ch_data_multiprocess(dirpath_list: List[str]) -> Tuple[List[dict], List[dict
     2. check that the hash keys are unique.
     3. return uv_metadata_list and uv_data_list
     """
-    assert isinstance(
-        dirpath_list, list
-    ), f"dirpath_list must be list, is {type(dirpath_list)}."
+    logger.info("Processing files..")
+    logger.debug(f"{__file__}")
 
     uv_files: List[
         Dict[str, Dict[str, str] | Dict[str, str | pd.DataFrame]]
     ] = uv_extractor.uv_extractor_pool(dirpaths=dirpath_list)
 
-    uv_metadata: List = [file["metadata"] for file in uv_files]
-    uv_data: List = [file["data"] for file in uv_files]
-    duplicate_hash_keys(uv_metadata_list=uv_metadata)
+    uv_metadata_list: List = [file["metadata"] for file in uv_files]
+    uv_data_list: List = [file["data"] for file in uv_files]
+    duplicate_hash_keys(uv_metadata_list=uv_metadata_list)
 
-    return uv_metadata, uv_data
+    return uv_metadata_list, uv_data_list
 
 
 def duplicate_hash_keys(uv_metadata_list: List[dict]) -> None:

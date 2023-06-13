@@ -8,7 +8,7 @@ from wine_analysis_hplc_uv.chemstation import logger
 from wine_analysis_hplc_uv.chemstation import (
     chemstation_methods,
     chemstation_to_db_methods as ch_db,
-    process_chemstation,
+    ch_data_multiprocess,
     ch_metadata_tbl_cleaner as ch_m_clean,
 )
 from wine_analysis_hplc_uv.chemstation.process_outputs import output_to_csv
@@ -46,9 +46,7 @@ class ChemstationProcessor:
             root_dir_path=datalibpath
         )
 
-        self.data_dict_tuple = process_chemstation.process_chemstation_uv_files(
-            self.fpathlist
-        )
+        self.data_dict_tuple = ch_data_multiprocess.ch_data_multiprocess(self.fpathlist)
 
         self.metadata_df: pd.DataFrame = ch_db.metadata_list_to_df(
             self.data_dict_tuple[0]
