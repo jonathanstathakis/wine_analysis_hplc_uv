@@ -7,7 +7,6 @@ from typing import List, Tuple, Any
 from wine_analysis_hplc_uv.chemstation import (
     chemstation_methods,
     chemstation_to_db_methods,
-    pickle_chemstation_data,
 )
 from wine_analysis_hplc_uv.chemstation import ch_data_multiprocess
 from wine_analysis_hplc_uv.chemstation import logger
