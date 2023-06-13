@@ -1,3 +1,4 @@
+from multiprocessing import process
 import os
 import pandas as pd
 import shutil
@@ -7,7 +8,7 @@ from wine_analysis_hplc_uv.chemstation import logger
 from wine_analysis_hplc_uv.chemstation import (
     chemstation_methods,
     chemstation_to_db_methods as ch_db,
-    pickle_chemstation_data,
+    process_chemstation,
     ch_metadata_tbl_cleaner as ch_m_clean,
 )
 from wine_analysis_hplc_uv.chemstation.process_outputs import output_to_csv
@@ -45,13 +46,10 @@ class ChemstationProcessor:
             root_dir_path=datalibpath
         )
 
-        self.data_dict_tuple: Tuple[
-            list[dict], list[dict]
-        ] = pickle_chemstation_data.pickle_interface(
-            pickle_filepath=self.pkfpath,
-            uv_paths_list=self.fpathlist,
-            usepickle=usepickle,
+        self.data_dict_tuple = process_chemstation.process_chemstation_uv_files(
+            self.fpathlist
         )
+
         self.metadata_df: pd.DataFrame = ch_db.metadata_list_to_df(
             self.data_dict_tuple[0]
         )
