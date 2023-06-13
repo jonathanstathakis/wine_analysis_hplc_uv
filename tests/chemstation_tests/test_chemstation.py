@@ -36,7 +36,7 @@ def test_chemstation():
     # libpath = LIB_DIR
     try:
         test_logger.info("generating CH object..")
-        ch = ChemstationProcessor(datalibpath=path, usepickle=False)
+        ch = ChemstationProcessor(lib_path=path, usepickle=False)
         test_logger.info("CH object generated.")
     except Exception as e:
         tb = traceback.format_exc()
@@ -64,6 +64,15 @@ def test_metadata_df(ch):
 
 def test_data_df(ch) -> None:
     # df_methods.describe_df(df=ch.data_df)
+    groups = ch.data_df.groupby("hash_key")
+    group_shapes = [(name, group.shape) for name, group in groups]
+    print("")
+
+    data_shape_df = pd.DataFrame(group_shapes, columns=["hash_key", "shape"])
+    data_shape_df = pd.merge(
+        ch.metadata_df[["notebook", "hash_key"]], data_shape_df, on="hash_key"
+    ).drop("hash_key", axis=1)
+    print(data_shape_df)
 
     df_methods.test_df(ch.data_df)
 
