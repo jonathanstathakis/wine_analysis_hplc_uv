@@ -22,7 +22,7 @@ def uv_extractor_pool(
     logger.info(
         f"Processing {len(dirpaths)} directories using a multiprocessing pool..."
     )
-    uv_file_dicts: List[
+    uv_files_dicts_list: List[
         Dict[str, Dict[str, str] | Dict[str, str | pd.DataFrame]]
     ] = pool.map(read_single_file.read_single_file, dirpaths)
 
@@ -30,5 +30,8 @@ def uv_extractor_pool(
     pool.close()
     pool.join()
 
+    uv_metadata_list: List = [file["metadata"] for file in uv_files_dicts_list]
+    uv_data_list: List = [file["data"] for file in uv_files_dicts_list]
+
     logger.info(f"Finished processing files..")
-    return uv_file_dicts
+    return uv_metadata_list, uv_data_list
