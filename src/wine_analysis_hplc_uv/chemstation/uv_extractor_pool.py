@@ -22,26 +22,34 @@ def uv_extractor_pool(
     pool = mp.Pool()
 
     logger.info(
-        f"Processing {len(dirpaths)} directories using a multiprocessing pool..."
+        f"Using the multiprocessing pool to process {len(dirpaths)} directories.."
     )
     uv_files_dicts_list: List[
         Dict[str, Dict[str, str] | Dict[str, str | pd.DataFrame]]
     ] = pool.map(read_single_file.read_single_file, dirpaths)
 
-    logger.debug("Closing and joining the multiprocessing pool...")
+    logger.debug("Closing and joining the multiprocessing pool..")
     pool.close()
     pool.join()
 
     uv_metadata_list: List = [file["metadata"] for file in uv_files_dicts_list]
     uv_data_list: List = [file["data"] for file in uv_files_dicts_list]
 
-    def data_to_df(data_list: List) -> pd.DataFrame:
+    def dict_list_to_long_df(data_list: List) -> pd.DataFrame:
         def form_data_df(data_dict: Dict) -> pd.DataFrame:
             """
             Form a data df of format: [hash_column, [data_columns]] from the dict.
             """
             data_df: pd.DataFrame = data_dict["data"]
             data_df["hash_key"] = data_dict["hash_key"]
+
+            data_df = data_df.melt(
+                id_vars=["hash_key", "mins"],
+                var_name="wavelength (nm)",
+                value_name="value",
+            )
+
+            data_df["wavelength (nm)"] = pd.to_numeric(data_df["wavelength (nm)"])
 
             return data_df
 
@@ -52,7 +60,7 @@ def uv_extractor_pool(
         return data_df
 
     metadata_df = pd.DataFrame(uv_metadata_list)
-    data_df = data_to_df(uv_data_list)
+    data_df = dict_list_to_long_df(uv_data_list)
 
     logger.info(f"Finished processing files..")
     return metadata_df, data_df
