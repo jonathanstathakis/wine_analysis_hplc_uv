@@ -1,6 +1,6 @@
 from typing import List, Tuple, Dict
 import collections
-from . import uv_extractor
+from wine_analysis_hplc_uv.chemstation import uv_extractor_pool
 import pandas as pd
 
 from wine_analysis_hplc_uv.chemstation import logger
@@ -15,9 +15,7 @@ def ch_data_multiprocess(dirpath_list: List[str]) -> Tuple[List[dict], List[dict
     logger.info("Processing files..")
     logger.debug(f"{__file__}")
 
-    uv_files: List[
-        Dict[str, Dict[str, str] | Dict[str, str | pd.DataFrame]]
-    ] = uv_extractor.uv_extractor_pool(dirpaths=dirpath_list)
+    uv_files = uv_extractor_pool.uv_extractor_pool(dirpaths=dirpath_list)
 
     uv_metadata_list: List = [file["metadata"] for file in uv_files]
     uv_data_list: List = [file["data"] for file in uv_files]
