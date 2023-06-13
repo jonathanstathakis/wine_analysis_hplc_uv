@@ -1,15 +1,19 @@
 """
 
 """
+from importlib import metadata
 import traceback
 import sys
 from wine_analysis_hplc_uv.chemstation.chemstation_to_db_methods import (
     chromatogram_spectra_to_db,
 )
+from wine_analysis_hplc_uv.chemstation.process_outputs.output_to_csv import (
+    metadata_to_csv,
+)
 
 sys.path.append("/Users/jonathan/mres_thesis/wine_analysis_hplc_uv/tests")
 from mytestmethods.mytestmethods import test_report
-from wine_analysis_hplc_uv.chemstation.chemstationprocessor import ChemstationProcessor
+from wine_analysis_hplc_uv.chemstation import chemstationprocessor
 from wine_analysis_hplc_uv.df_methods import df_methods
 from wine_analysis_hplc_uv.definitions import LIB_DIR
 from make_test_sample_dir import create_test_pool
@@ -36,7 +40,7 @@ def test_chemstation():
     # libpath = LIB_DIR
     try:
         test_logger.info("generating CH object..")
-        ch = ChemstationProcessor(lib_path=path, usepickle=False)
+        ch = chemstationprocessor.ChemstationProcessor(lib_path=path, usepickle=False)
         test_logger.info("CH object generated.")
     except Exception as e:
         tb = traceback.format_exc()
@@ -47,7 +51,8 @@ def test_chemstation():
         (test_ChemstationProcessor_init, ch),
         (test_metadata_df, ch),
         (test_data_df, ch),
-        (test_data_to_db, ch),
+        (test_dup_key_test, ch),
+        # (test_data_to_db, ch),
     ]
     test_report(tests)
     shutil.rmtree(dst_dir)  # clean up sample pool after testing is complete
@@ -108,6 +113,30 @@ def test_data_to_db(ch):
     pd.testing.assert_frame_equal(ch.data_df, db_data_df)
 
     os.remove(db_filepath)  # cleanup
+
+
+def test_dup_key_test(ch):
+    metadata_df = ch.metadata_df
+    raw_dups = chemstationprocessor.test_dup_hash_keys(metadata_df)
+    assert not raw_dups  # no duplicates before modification
+
+    def dup_random_hash_key(df):
+        import random
+
+        i1, i2 = random.sample(df.index.tolist(), 2)
+
+        df.loc[i1, "hash_key"] = df.loc[i2, "hash_key"]
+
+        test_logger.debug(
+            f"swap hash keys: {df.loc[i1, 'notebook']} with {df.loc[i2, 'notebook']}"
+        )
+        return df
+
+    dup_hash_df = dup_random_hash_key(metadata_df)
+
+    mod_dups = chemstationprocessor.test_dup_hash_keys(dup_hash_df)
+
+    assert mod_dups  # assert that duplicates have now been added in
 
 
 def get_src_path():
