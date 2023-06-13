@@ -46,16 +46,9 @@ class ChemstationProcessor:
             root_dir_path=datalibpath
         )
 
-        self.data_dict_tuple = ch_data_multiprocess.ch_data_multiprocess(self.fpathlist)
-
-        self.metadata_df: pd.DataFrame = ch_db.metadata_list_to_df(
-            self.data_dict_tuple[0]
+        self.metadata_df, self.data_df = ch_data_multiprocess.ch_data_multiprocess(
+            self.fpathlist
         )
-
-        self.data_df: pd.DataFrame = data_to_df(self.data_dict_tuple)
-
-        if usepickle:
-            self.cleanup_pickle()
 
     def to_db(
         self,
@@ -96,33 +89,6 @@ class ChemstationProcessor:
         )
 
         return None
-
-
-def data_to_df(data_dict_tuple: Tuple) -> pd.DataFrame:
-    """
-    For a given list of dicts of ch data: {'hash_key':str,'data': df}:
-    - add the hash key as a column of the dataframe
-    - concat all the data in the list into 1 dataframe.
-
-    This is Ideal for joins and writing to db without loops.
-    """
-
-    def form_data_df(data_dict: Dict) -> pd.DataFrame:
-        """
-        Form a data df of format: [hash_column, [data_columns]] from the dict.
-        """
-        data_df: pd.DataFrame = data_dict["data"]
-        data_df["hash_key"] = data_dict["hash_key"]
-
-        return data_df
-
-    data_list = data_dict_tuple[1]
-
-    data_hash_df_list = [form_data_df(data_dict) for data_dict in data_list]
-
-    data_df: pd.DataFrame = pd.concat(data_hash_df_list, axis=0, ignore_index=True)
-
-    return data_df
 
 
 if __name__ == "__main__":
