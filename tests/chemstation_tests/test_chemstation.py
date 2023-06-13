@@ -5,7 +5,7 @@ from importlib import metadata
 import traceback
 import sys
 from wine_analysis_hplc_uv.chemstation.chemstation_to_db_methods import (
-    chromatogram_spectra_to_db,
+    data_df_to_db,
 )
 from wine_analysis_hplc_uv.chemstation.process_outputs.output_to_csv import (
     metadata_to_csv,
@@ -43,6 +43,7 @@ def test_chemstation():
         ch = chemstationprocessor.ChemstationProcessor(lib_path=path, usepickle=False)
         test_logger.info("CH object generated.")
     except Exception as e:
+        print("printing traceback..")
         tb = traceback.format_exc()
         print(tb)
         shutil.rmtree(dst_dir)  # clean up sample pool after testing is complete
@@ -50,9 +51,9 @@ def test_chemstation():
     tests = [
         (test_ChemstationProcessor_init, ch),
         (test_metadata_df, ch),
-        (test_data_df, ch),
+        # (test_data_df, ch),
         (test_dup_key_test, ch),
-        # (test_data_to_db, ch),
+        (test_data_to_db, ch),
     ]
     test_report(tests)
     shutil.rmtree(dst_dir)  # clean up sample pool after testing is complete
@@ -80,6 +81,7 @@ def test_data_df(ch) -> None:
     print(data_shape_df)
 
     df_methods.test_df(ch.data_df)
+    return None
 
 
 def get_db_filepath():
