@@ -5,7 +5,6 @@ from typing import List
 import multiprocessing as mp
 
 
-@ft.timeit
 def uv_extractor_pool(dirpaths: List[str]) -> tuple:
     """
     Form a multiprocess pool to apply uv_extractor, returning a tuple of dicts for each .D file in the dirpath list.
