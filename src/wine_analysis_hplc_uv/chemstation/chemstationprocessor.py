@@ -35,19 +35,16 @@ class ChemstationProcessor:
     to_csv()
     """
 
-    def __init__(self, datalibpath: str, usepickle: bool = False):
-        assert os.path.isdir(s=datalibpath)
-        self.datalibpath: str = datalibpath
+    def __init__(self, lib_path: str, usepickle: bool = False):
+        assert os.path.isdir(s=lib_path)
+        self.lib_path: str = lib_path
 
-        self.pkfname = "chemstation_process_picklejar/chemstation_data_dicts_tuple.pk"
-        self.pkfpath: str = os.path.join(datalibpath, self.pkfname)
-
-        self.fpathlist: List[str] = chemstation_methods.uv_filepaths_to_list(
-            root_dir_path=datalibpath
+        self.path_list: List[str] = chemstation_methods.uv_filepaths_to_list(
+            root_dir_path=lib_path
         )
 
         self.metadata_df, self.data_df = uv_extractor_pool.uv_extractor_pool(
-            dirpaths=self.fpathlist
+            dirpaths=self.path_list
         )
 
     def to_db(
@@ -82,7 +79,7 @@ class ChemstationProcessor:
         output_to_csv.chprocess_to_csv(
             metadata_df=self.metadata_df,
             data_df=self.data_df,
-            data_lib_path=self.datalibpath,
+            data_lib_path=self.lib_path,
             wavelengths=wavelengths,
             cleanup=cleanup,
             forceoverwrite=forceoverwrite,
