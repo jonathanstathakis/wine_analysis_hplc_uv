@@ -6,15 +6,11 @@ import shutil
 
 import duckdb as db
 
-
-from wine_analysis_hplc_uv.chemstation import (
-    ch_metadata_tbl_cleaner,
-    chemstationprocessor,
-)
 from wine_analysis_hplc_uv.core import adapt_super_pipe_to_db
 from wine_analysis_hplc_uv.sampletracker import sample_tracker_processor
 from wine_analysis_hplc_uv.ux_methods import ux_methods as ux
 from wine_analysis_hplc_uv.definitions import DB_DIR
+import ch_to_db
 
 import pandas as pd
 
@@ -24,7 +20,6 @@ chemstation_logger = logging.getLogger("wine_analysis_hplc_uv.chemstation")
 chemstation_logger.setLevel(logging.DEBUG)
 
 
-@ft.timeit
 def build_db_library(data_lib_path: str) -> None:
     """
     Pipeline function to construct the super_table, a cleaned algamation of chemstation, sample_tracker and cellartracker tables.
@@ -48,8 +43,7 @@ def build_db_library(data_lib_path: str) -> None:
     super_tbl_name = "super_table"
 
     # chemstation
-    ch = chemstationprocessor.ChemstationProcessor()
-    ch.to_db(db_filepath=DB_DIR, ch_metadata_dbl_name=mtadta_tbl, ch_sc_tblname=sc_tbl)
+    ch_to_db.ch_to_db()
 
     # sample_tracker
     sheet_title = os.environ.get("sample_tracker")
