@@ -7,7 +7,6 @@ from ..db_methods import db_methods
 from ..ux_methods import ux_methods as ux
 
 
-@ft.timeit
 def load_super_table(db_filepath: str, table_1, table_2, table_3, tbl_name):
     print("###\n\nLoad Super Table\n\n###\n\n")
 
