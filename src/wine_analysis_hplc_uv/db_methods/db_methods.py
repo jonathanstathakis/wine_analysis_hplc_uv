@@ -13,9 +13,7 @@ from wine_analysis_hplc_uv.chemstation import chemstation_to_db_methods
 from typing import List
 
 
-def table_as_df(
-    db_filepath: str, tblname: str, cols: List[str] = ["*"]
-) -> pd.DataFrame:
+def tbl_to_df(db_filepath: str, tblname: str, cols: List[str] = ["*"]) -> pd.DataFrame:
     """
     Get a duckdb table as a dataframe
     """
