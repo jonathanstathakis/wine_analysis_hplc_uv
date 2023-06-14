@@ -62,14 +62,12 @@ def test_cleaner(df: pd.DataFrame):
     index_1001 = df[df["Vintage"] == "1001"].index
     index_nan = c_df[c_df["vintage"].isna()].index
 
-    print(index_1001, index_nan)
-    assert index_1001.equals(index_nan)
+    assert index_1001.astype(str).equals(index_nan.astype(str))
 
 
 def main():
     tbl_name = "cellar_tracker"
     db_path = DB_DIR
-    print(db_path)
     df = get_db_tbl_as_df(db_path=db_path, tbl_name=tbl_name)
     clean_cellartracker_tests(df)
 
