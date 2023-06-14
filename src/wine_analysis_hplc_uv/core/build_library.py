@@ -10,7 +10,7 @@ from wine_analysis_hplc_uv.core import adapt_super_pipe_to_db
 from wine_analysis_hplc_uv.sampletracker import sample_tracker_processor
 
 from wine_analysis_hplc_uv.ux_methods import ux_methods as ux
-from wine_analysis_hplc_uv.definitions import DB_DIR, LIB_DIR
+from wine_analysis_hplc_uv.definitions import DB_PATH, LIB_DIR
 import ch_to_db, st_to_db, ct_to_db
 
 import pandas as pd
@@ -29,8 +29,8 @@ def build_db_library(data_lib_path: str, db_path: str) -> None:
 
     # 1. create db file if none exists.
     # dont use context management here because simply opening and closing a connection, forcing the creation of the .db file
-    if not os.path.isfile(DB_DIR):
-        con = db.connect(DB_DIR)
+    if not os.path.isfile(DB_PATH):
+        con = db.connect(DB_PATH)
         con.close()
 
     #  3. write raw tables to db from sources
@@ -78,7 +78,7 @@ def remove_existing_db(db_path: str) -> None:
 
 def main():
     data_lib_path = LIB_DIR
-    db_filepath = DB_DIR
+    db_filepath = DB_PATH
     build_db_library(data_lib_path=data_lib_path, db_path=db_filepath)
 
 

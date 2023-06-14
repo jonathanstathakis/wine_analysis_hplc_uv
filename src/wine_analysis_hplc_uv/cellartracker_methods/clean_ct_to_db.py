@@ -13,7 +13,7 @@ from wine_analysis_hplc_uv.df_methods import df_cleaning_methods
 
 from wine_analysis_hplc_uv.definitions import (
     TEST_DB_PATH,
-    DB_DIR,
+    DB_PATH,
     CT_TBL_NAME,
     CLEAN_CT_TBL_NAME,
 )
@@ -95,7 +95,7 @@ def write_clean_cellartracker_to_db(
 def main():
     print(TEST_DB_PATH)
     clean_ct_to_db(
-        in_db_path=DB_DIR,
+        in_db_path=DB_PATH,
         in_tbl_name=CT_TBL_NAME,
         out_tbl_name=CLEAN_CT_TBL_NAME,
         out_db_path=TEST_DB_PATH,

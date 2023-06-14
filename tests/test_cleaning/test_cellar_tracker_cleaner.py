@@ -16,7 +16,7 @@ from tests.mytestmethods.test_methods_df import (
 )
 
 from wine_analysis_hplc_uv.cellartracker_methods import clean_ct_to_db as cleaner
-from wine_analysis_hplc_uv.definitions import DB_DIR
+from wine_analysis_hplc_uv.definitions import DB_PATH
 import duckdb as db
 import os
 import pandas as pd
@@ -80,7 +80,7 @@ def test_has_whitespace(df: pd.DataFrame):
 
 def main():
     tbl_name = "cellar_tracker"
-    db_path = DB_DIR
+    db_path = DB_PATH
     df = get_db_tbl_as_df(db_path=db_path, tbl_name=tbl_name)
     clean_cellartracker_tests(df)
 
