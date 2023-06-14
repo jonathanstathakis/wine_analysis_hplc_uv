@@ -10,7 +10,7 @@ sys.path.append("/Users/jonathan/mres_thesis/wine_analysis_hplc_uv/tests")
 from tests import test_logger
 from tests.mytestmethods.mytestmethods import test_report
 
-from wine_analysis_hplc_uv.cellartracker_methods import cellartracker_cleaner as cleaner
+from wine_analysis_hplc_uv.cellartracker_methods import clean_ct_to_db as cleaner
 from wine_analysis_hplc_uv.definitions import DB_DIR
 import duckdb as db
 import os
