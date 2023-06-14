@@ -12,7 +12,7 @@ A file to contain all of the necessary cellartracker cleaning functions, to be r
 """
 
 
-def init_cleaned_cellartracker_table(
+def clean_ct_to_db(
     db_filepath: str, raw_table_name: str, cleaned_tbl_name: str
 ) -> None:
     raw_df = pd.DataFrame()
