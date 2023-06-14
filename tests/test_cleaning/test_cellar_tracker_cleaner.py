@@ -9,6 +9,11 @@ import sys
 sys.path.append("/Users/jonathan/mres_thesis/wine_analysis_hplc_uv/tests")
 from tests import test_logger
 from tests.mytestmethods.mytestmethods import test_report
+from tests.mytestmethods.test_methods_df import (
+    has_whitespace,
+    check_uppercase,
+    test_df_init,
+)
 
 from wine_analysis_hplc_uv.cellartracker_methods import clean_ct_to_db as cleaner
 from wine_analysis_hplc_uv.definitions import DB_DIR
@@ -32,14 +37,12 @@ def clean_cellartracker_tests(df: pd.DataFrame):
     tests = [
         (test_df_init, df),
         (test_cleaner, df),
+        (test_uppercase, df),
+        (test_has_whitespace, df),
     ]
 
     test_report(tests)
     return None
-
-
-def test_df_init(df: pd.DataFrame):
-    assert isinstance(df, pd.DataFrame)
 
 
 def test_cleaner(df: pd.DataFrame):
@@ -61,8 +64,18 @@ def test_cleaner(df: pd.DataFrame):
 
     index_1001 = df[df["Vintage"] == "1001"].index
     index_nan = c_df[c_df["vintage"].isna()].index
+    assert index_1001.equals(index_nan)
 
-    assert index_1001.astype(str).equals(index_nan.astype(str))
+
+def test_uppercase(df: pd.DataFrame):
+    clean_df = cleaner.cellartracker_df_cleaner(df)
+    has_uppercase = clean_df.apply(check_uppercase)
+    assert not has_uppercase.any()
+
+
+# Apply the function to each column in the DataFrame
+def test_has_whitespace(df: pd.DataFrame):
+    assert not df.apply(has_whitespace).any()
 
 
 def main():
