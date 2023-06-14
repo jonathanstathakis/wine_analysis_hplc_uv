@@ -74,25 +74,23 @@ def write_df_to_table_variables():
     return schema, column_names, column_names
 
 
-def four_digit_id_to_two_digit(df: pd.DataFrame) -> pd.DataFrame:
-    df = df.rename({"id": "exp_id"}, axis=1)
-    df["new_id"] = (
-        df["exp_id"].astype(str).apply(lambda x: x[1:3] if len(x) == 4 else x)
-    )
-    return df
-
-
-def string_id_to_digit(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Replaces the id of a number of runs with their 2 digit id's
-    as stated in the sample tracker.
-    """
-    # 1. z3 to 00
-    df["new_id"] = df["new_id"].replace({"z3": "00"})
-    return df
-
-
 def chemstation_id_cleaner(df: pd.DataFrame) -> pd.DataFrame:
+    def four_digit_id_to_two_digit(df: pd.DataFrame) -> pd.DataFrame:
+        df = df.rename({"id": "exp_id"}, axis=1)
+        df["new_id"] = (
+            df["exp_id"].astype(str).apply(lambda x: x[1:3] if len(x) == 4 else x)
+        )
+        return df
+
+    def string_id_to_digit(df: pd.DataFrame) -> pd.DataFrame:
+        """
+        Replaces the id of a number of runs with their 2 digit id's
+        as stated in the sample tracker.
+        """
+        # 1. z3 to 00
+        df["new_id"] = df["new_id"].replace({"z3": "00"})
+        return df
+
     print("cleaning chemstation run id's")
     df = four_digit_id_to_two_digit(df)
     df = string_id_to_digit(df)
