@@ -13,9 +13,9 @@ from wine_analysis_hplc_uv.chemstation import chemstation_to_db_methods
 from typing import List
 
 
-def tbl_to_df(db_filepath: str, tblname: str, cols: List[str] = ["*"]) -> pd.DataFrame:
+def tbl_to_df(db_filepath: str, tblname: str, cols: str = "*") -> pd.DataFrame:
     """
-    Get a duckdb table as a dataframe
+    Get a duckdb table as a dataframe. Provide an optinal string of column names seperated by commas, i.e. : "col1, col2, col3", defaults to * for all columns.
     """
 
     df = pd.DataFrame()
