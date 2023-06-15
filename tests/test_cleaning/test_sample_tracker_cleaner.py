@@ -1,7 +1,7 @@
 """
 test the following:
-- [ ] write to db
-- [ ] string cleaner
+- [x] write to db
+- [x] string cleaner
 """
 
 import os
