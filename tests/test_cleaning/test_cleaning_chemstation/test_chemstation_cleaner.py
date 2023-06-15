@@ -38,10 +38,10 @@ def get_test_db_path():
     return os.path.join(os.getcwd(), "test_clean_ch.db")
 
 
-def test_string_cleaner(df: pd.DataFrame):
-    dirty_df = df
+def test_string_cleaner(dirty_df: pd.DataFrame):
+    cp_dirty_df = dirty_df.copy()
     clean_df = df_cleaning_methods.df_string_cleaner(dirty_df)
-    assert not dirty_df.equals(clean_df)
+    assert not cp_dirty_df.equals(clean_df)
     assert not clean_df.apply(test_methods_df.has_whitespace).any()
     assert not clean_df.apply(test_methods_df.check_uppercase).any()
 
@@ -50,8 +50,9 @@ def test_column_renames(dirty_df: pd.DataFrame):
     """
     Function renames the following: "notebook": "id", "date": "acq_date", "method": "acq_method"
     """
+    cp_dirty_df = dirty_df.copy()
     clean_df = ch_metadata_tbl_cleaner.rename_chemstation_metadata_cols(dirty_df)
-    assert not dirty_df.equals(clean_df)
+    assert not cp_dirty_df.equals(clean_df)
     assert not clean_df.columns.isin(["notebook", "date", "method"]).any()
     assert clean_df.columns.isin(["id", "acq_date", "acq_method"]).any()
 
