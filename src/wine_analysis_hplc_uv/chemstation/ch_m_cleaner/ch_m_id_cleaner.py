@@ -1,4 +1,5 @@
 import pandas as pd
+import re
 
 
 def ch_m_id_cleaner(df: pd.DataFrame) -> pd.DataFrame:
@@ -16,9 +17,26 @@ def ch_m_id_cleaner(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
+def get_four_digit_code_regex():
+    return re.compile(
+        "^0(\d{2})1$"
+    )  # The pattern matches 4-digit strings starting with '0' and ending with '1'
+
+
 def four_digit_id_to_two_digit(series: pd.Series) -> pd.DataFrame:
-    series = series.astype(str).apply(lambda x: x[1:3] if len(x) == 4 else x)
+    pattern = get_four_digit_code_regex()
+
+    def extract_middle_digits(x):
+        match = pattern.match(x)
+        return match.group(1) if match else x
+
+    series = series.astype(str).apply(extract_middle_digits)
     return series
+
+
+# def four_digit_id_to_two_digit(series: pd.Series) -> pd.DataFrame:
+#     series = series.astype(str).apply(lambda x: x[1:3] if len(x) == 4 else x)
+#     return series
 
 
 def string_id_to_digit(series: pd.Series) -> pd.DataFrame:

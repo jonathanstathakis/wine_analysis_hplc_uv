@@ -1,6 +1,6 @@
 import pandas as pd
-import ch_m_id_cleaner
-import ch_m_date_cleaner
+from wine_analysis_hplc_uv.chemstation.ch_m_cleaner import ch_m_id_cleaner
+from wine_analysis_hplc_uv.chemstation.ch_m_cleaner import ch_m_date_cleaner
 from wine_analysis_hplc_uv.df_methods import df_cleaning_methods
 
 
