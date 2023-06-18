@@ -1236,17 +1236,15 @@ description = ""
 optional = false
 python-versions = "^3.11"
 files = []
-develop = false
+develop = true
 
 [package.dependencies]
 colored-traceback = "^0.3.0"
 Pygments = "^2.15.1"
 
 [package.source]
-type = "git"
-url = "https://github.com/jonathanstathakis/mydevtools.git"
-reference = "HEAD"
-resolved_reference = "c6cb07f2355a5afd47943586f4cf2a5339e5eacd"
+type = "directory"
+url = "../../mycode/python_code/mydevtools"
 
 [[package]]
 name = "nodeenv"
@@ -2411,4 +2409,4 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.11,<3.12"
-content-hash = "d82bfc49d3df1cc77b47896069d44c803a6138c25ef9d37ccb03f3ff4d25f042"
+content-hash = "15e3c52828687c8b5c665f2f4c79579711817b2b9d64c30c78e5ee2f44cd3786"
