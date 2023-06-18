@@ -12,7 +12,7 @@ from wine_analysis_hplc_uv.chemstation.process_outputs.output_to_csv import (
 )
 
 sys.path.append("/Users/jonathan/mres_thesis/wine_analysis_hplc_uv/tests")
-from mytestmethods.mytestmethods import test_report
+from mydevtools.testing.mytestmethods import test_report
 from wine_analysis_hplc_uv.chemstation import chemstationprocessor
 from wine_analysis_hplc_uv.df_methods import df_methods
 from wine_analysis_hplc_uv.definitions import LIB_DIR
