@@ -61,12 +61,15 @@ def read_single_file(
     )
 
     try:
-        uv_file = rb.read(path=path).get_file(filename=uv_name)
+        datadir = rb.read(path=path)
+        uv_file = datadir.get_file(filename=uv_name)
 
         # get the metadata_dict contained within the uv_file object
         # and combine it with my predefined terms
         metadata_dict.update(uv_file.metadata)
+        metadata_dict.update(datadir.metadata)
         metadata_dict["hash_key"] = primary_key_generator(metadata_dict)
+
         uv_data_dict["data"] = uv_data_to_df(uv_file=uv_file)
         uv_data_dict["hash_key"] = metadata_dict["hash_key"]
 

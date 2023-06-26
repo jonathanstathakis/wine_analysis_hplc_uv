@@ -5,7 +5,7 @@ import sys
 
 sys.path.append("/Users/jonathan/mres_thesis/wine_analysis_hplc_uv/tests")
 from mydevtools.testing.mytestmethods import test_report
-from wine_analysis_hplc_uv.process_chemstation import uv_extractor
+from wine_analysis_hplc_uv.chemstation import read_single_file
 from wine_analysis_hplc_uv.df_methods import df_methods
 import os
 import shutil
@@ -14,8 +14,8 @@ import duckdb as db
 import rainbow as rb
 
 
-def test_uv_extractor():
-    tests = [(test_uv_extractor,)]
+def test_read_single_file():
+    tests = [(test_read_single_file,)]
     test_report(tests)
 
 
@@ -23,16 +23,16 @@ def get_file_path():
     return "/Users/jonathan/0_jono_data/mres_data_library/cuprac/138.D"
 
 
-def test_uv_extractor():
+def test_read_single_file():
     """ """
     filepath = get_file_path()
 
-    metadata_dict, data_dict = uv_extractor.uv_extractor(filepath)
-    print(metadata_dict)
+    returndict = read_single_file.read_single_file(filepath)
+    print(returndict["metadata"])
 
 
 def main():
-    test_uv_extractor()
+    test_read_single_file()
     return None
 
 
