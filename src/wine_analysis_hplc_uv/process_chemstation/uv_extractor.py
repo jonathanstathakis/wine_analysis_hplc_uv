@@ -40,7 +40,7 @@ def uv_extractor(path: str) -> Tuple[dict, dict]:
     return metadata_dict, uv_data_dict
 
 
-def get_sequence_name(path: str) -> s0tr:
+def get_sequence_name(path: str) -> str:
     parent = os.path.dirname(path)
     if "sequence.acaml" in os.listdir(parent):
         sequence_name = os.path.basename(parent)
