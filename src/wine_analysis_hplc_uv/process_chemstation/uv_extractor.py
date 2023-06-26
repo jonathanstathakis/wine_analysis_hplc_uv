@@ -40,7 +40,7 @@ def uv_extractor(path: str) -> Tuple[dict, dict]:
     return metadata_dict, uv_data_dict
 
 
-def get_sequence_name(path: str) -> str:
+def get_sequence_name(path: str) -> s0tr:
     parent = os.path.dirname(path)
     if "sequence.acaml" in os.listdir(parent):
         sequence_name = os.path.basename(parent)
@@ -52,7 +52,7 @@ def get_sequence_name(path: str) -> str:
 
 def primary_key_generator(metadata_dict):
     data_json = json.dumps(metadata_dict["date"], sort_keys=True)
-    unique_id = uuid.uuid(uuid.NAMESPACE_URL, data_json)
+    unique_id = uuid.uuid5(uuid.NAMESPACE_URL, data_json)
     return str(unique_id).replace("-", "_")
 
 
