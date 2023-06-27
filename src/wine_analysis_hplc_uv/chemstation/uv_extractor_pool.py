@@ -36,10 +36,10 @@ def uv_extractor_pool(
             Form a data df of format: [hash_column, [data_columns]] from the dict.
             """
             data_df: pd.DataFrame = data_dict["data"]
-            data_df["hash_key"] = data_dict["hash_key"]
+            data_df["id"] = data_dict["id"]
 
             data_df = data_df.melt(
-                id_vars=["hash_key", "mins"],
+                id_vars=["id", "mins"],
                 var_name="wavelength (nm)",
                 value_name="value",
             )  # TODO: 2023-06-13 15:34:45 - need to build in a method of handling files that fail to parse so that they are still present in the resulting db table. To do this, will need to id the empty dfs, add the missing colnames with empty values so they will melt too.

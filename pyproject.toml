@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "wine-analysis-hplc-uv"
-version = "0.1.0"
+version = "0.2.0"
 description = ""
 authors = ["OctaneOolong <62565951+OctaneOolong@users.noreply.github.com>"]
 readme = "README.md"
@@ -96,8 +96,9 @@ zipp = "3.15.0"
 gspread = "^5.9.0"
 plotly = "^5.15.0"
 mydevtools = {path = "/Users/jonathan/mycode/python_code/mydevtools", develop = true}
-rainbow-api-fork = {git = "https://github.com/jonathanstathakis/rainbow.git"}
 pre-commit = "^3.3.3"
+rainbow-api-fork = {path = "/Users/jonathan/mycode/python_code/rainbow", develop = true}
+directory-tree = "^0.0.3.1"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
