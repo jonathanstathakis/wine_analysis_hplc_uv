@@ -2,7 +2,7 @@ import pandas as pd
 import re
 
 
-def ch_m_id_cleaner(df: pd.DataFrame) -> pd.DataFrame:
+def ch_m_samplecode_cleaner(df: pd.DataFrame) -> pd.DataFrame:
     """
     1. create 'new_id' col based on 'id'
     2. rename 'id' col 'exp_id' to preserve that connection
@@ -12,8 +12,8 @@ def ch_m_id_cleaner(df: pd.DataFrame) -> pd.DataFrame:
     df = df.rename({"id": "exp_id"}, axis=1)
 
     print("cleaning chemstation run id's")
-    df = four_digit_id_to_two_digit(series=df["new_id"])
-    df = string_id_to_digit(df)
+    df = four_to_two_digit(series=df["new_id"])
+    df = string_samplecode_to_digit(df)
     return df
 
 
@@ -23,7 +23,7 @@ def get_four_digit_code_regex():
     )  # The pattern matches 4-digit strings starting with '0' and ending with '1'
 
 
-def four_digit_id_to_two_digit(series: pd.Series) -> pd.DataFrame:
+def four_to_two_digit(series: pd.Series) -> pd.DataFrame:
     pattern = get_four_digit_code_regex()
 
     def extract_middle_digits(x):
@@ -39,7 +39,7 @@ def four_digit_id_to_two_digit(series: pd.Series) -> pd.DataFrame:
 #     return series
 
 
-def string_id_to_digit(series: pd.Series) -> pd.DataFrame:
+def string_samplecode_to_digit(series: pd.Series) -> pd.DataFrame:
     """
     Replaces the id of a number of runs with their 2 digit id's
     as stated in the sample tracker.
