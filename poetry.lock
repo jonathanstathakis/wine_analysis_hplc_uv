@@ -358,6 +358,20 @@ files = [
 ]
 
 [[package]]
+name = "directory-tree"
+version = "0.0.3.1"
+description = "Utility Package that Displays out the Tree Structure of a Particular Directory."
+optional = false
+python-versions = "*"
+files = [
+    {file = "directory_tree-0.0.3.1-py3-none-any.whl", hash = "sha256:72411e4f1534afaaccadb21fc082c727a680b6a74e8d21a1406ffbe51389cd85"},
+    {file = "directory_tree-0.0.3.1.tar.gz", hash = "sha256:e4f40d60a45c4cdc0bc8e9ee29311f554dee6c969241c0eef8bcd92b4d4bcd4a"},
+]
+
+[package.extras]
+dev = ["pytest (>=3.7)"]
+
+[[package]]
 name = "distlib"
 version = "0.3.6"
 description = "Distribution utilities"
@@ -1863,12 +1877,12 @@ files = [
 
 [[package]]
 name = "rainbow-api-fork"
-version = "2.0.0"
+version = "2.1.0"
 description = "Read chromatography and mass spectrometry binary files"
 optional = false
 python-versions = "*"
 files = []
-develop = false
+develop = true
 
 [package.dependencies]
 lxml = "*"
@@ -1877,10 +1891,8 @@ numpy = "*"
 python-lzf = "*"
 
 [package.source]
-type = "git"
-url = "https://github.com/jonathanstathakis/rainbow.git"
-reference = "HEAD"
-resolved_reference = "a28719c8dd78731e92d0ff6429f4121617edaf70"
+type = "directory"
+url = "../../mycode/python_code/rainbow"
 
 [[package]]
 name = "rapidfuzz"
@@ -2413,8 +2425,4 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.11,<3.12"
-<<<<<<< Updated upstream
-content-hash = "15e3c52828687c8b5c665f2f4c79579711817b2b9d64c30c78e5ee2f44cd3786"
-=======
-content-hash = "04d8e039bffee87c7b7cdb818385cc023a18e9125dded99b53036ba2d0843dbe"
->>>>>>> Stashed changes
+content-hash = "c05d0777a8579a2c89d7ace1895770fcb463bd6d6071c97b1c997cd8a7dfabb7"

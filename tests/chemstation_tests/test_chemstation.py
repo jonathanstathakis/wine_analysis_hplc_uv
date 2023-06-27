@@ -16,7 +16,8 @@ from mydevtools.testing.mytestmethods import test_report
 from wine_analysis_hplc_uv.chemstation import chemstationprocessor
 from wine_analysis_hplc_uv.df_methods import df_methods
 from wine_analysis_hplc_uv.definitions import LIB_DIR
-from make_test_sample_dir import create_test_pool
+
+# from make_test_sample_dir import create_test_pool
 from chemstation_tests import (
     chemstation_logger,
     test_logger,
@@ -34,29 +35,29 @@ import duckdb as db
 def test_chemstation():
     src_dir = get_src_path()
     dst_dir = get_dst_path()
-    create_test_pool(src_dir=src_dir, dst_parent_dir=dst_dir)
+    # create_test_pool(src_dir=src_dir, dst_parent_dir=dst_dir)
 
     # path = get_dst_path()
     path = LIB_DIR
     try:
         test_logger.info("generating CH object..")
-        ch = chemstationprocessor.ChemstationProcessor(lib_path=path, usepickle=False)
+        ch = chemstationprocessor.ChemstationProcessor(lib_path=path)
         test_logger.info("CH object generated.")
     except Exception as e:
         print("printing traceback..")
         tb = traceback.format_exc()
         print(tb)
-        shutil.rmtree(dst_dir)  # clean up sample pool after testing is complete
+    #        shutil.rmtree(dst_dir)  # clean up sample pool after testing is complete
 
     tests = [
         (test_ChemstationProcessor_init, ch),
         (test_metadata_df, ch),
-        # (test_data_df, ch),
+        (test_data_df, ch),
         (test_dup_key_test, ch),
         (test_data_to_db, ch),
     ]
     test_report(tests)
-    shutil.rmtree(dst_dir)  # clean up sample pool after testing is complete
+    # shutil.rmtree(dst_dir)  # clean up sample pool after testing is complete
     return None
 
 
@@ -66,18 +67,19 @@ def test_ChemstationProcessor_init(ch):
 
 def test_metadata_df(ch):
     df_methods.test_df(ch.metadata_df)
+    ch.metadata_df.to_csv(os.path.join(os.getcwd(), "metadata_df.csv"))
 
 
 def test_data_df(ch) -> None:
     # df_methods.describe_df(df=ch.data_df)
-    groups = ch.data_df.groupby("hash_key")
+    groups = ch.data_df.groupby("id")
     group_shapes = [(name, group.shape) for name, group in groups]
     print("")
 
-    data_shape_df = pd.DataFrame(group_shapes, columns=["hash_key", "shape"])
+    data_shape_df = pd.DataFrame(group_shapes, columns=["id", "shape"])
     data_shape_df = pd.merge(
-        ch.metadata_df[["notebook", "hash_key"]], data_shape_df, on="hash_key"
-    ).drop("hash_key", axis=1)
+        ch.metadata_df[["notebook", "id"]], data_shape_df, on="id"
+    ).drop("id", axis=1)
     print(data_shape_df)
 
     df_methods.test_df(ch.data_df)
@@ -119,24 +121,24 @@ def test_data_to_db(ch):
 
 def test_dup_key_test(ch):
     metadata_df = ch.metadata_df
-    raw_dups = chemstationprocessor.test_dup_hash_keys(metadata_df)
+    raw_dups = chemstationprocessor.test_dup_ids(metadata_df)
     assert not raw_dups  # no duplicates before modification
 
-    def dup_random_hash_key(df):
+    def dup_random_id(df):
         import random
 
         i1, i2 = random.sample(df.index.tolist(), 2)
 
-        df.loc[i1, "hash_key"] = df.loc[i2, "hash_key"]
+        df.loc[i1, "id"] = df.loc[i2, "id"]
 
         test_logger.debug(
             f"swap hash keys: {df.loc[i1, 'notebook']} with {df.loc[i2, 'notebook']}"
         )
         return df
 
-    dup_hash_df = dup_random_hash_key(metadata_df)
+    dup_hash_df = dup_random_id(metadata_df)
 
-    mod_dups = chemstationprocessor.test_dup_hash_keys(dup_hash_df)
+    mod_dups = chemstationprocessor.test_dup_ids(dup_hash_df)
 
     assert mod_dups  # assert that duplicates have now been added in
 

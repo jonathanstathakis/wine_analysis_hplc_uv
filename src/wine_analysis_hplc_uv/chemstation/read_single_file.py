@@ -7,6 +7,7 @@ import rainbow as rb
 import pandas as pd
 from wine_analysis_hplc_uv.chemstation import logger
 import numpy as np
+import traceback
 
 
 def read_single_file(
@@ -18,11 +19,6 @@ def read_single_file(
 
     metadata_dict contains 'path', 'sequence_name', 'hash_key' items. uv_data_dict contains 'data' and 'hash_key' items.
     """
-
-    def primary_key_generator(metadata_dict):
-        data_json = json.dumps(metadata_dict["date"], sort_keys=True)
-        unique_id = uuid.uuid5(uuid.NAMESPACE_URL, data_json)
-        return str(unique_id).replace("-", "_")
 
     def uv_data_to_df(uv_file: rb.DataFile) -> pd.DataFrame:
         """
@@ -52,12 +48,11 @@ def read_single_file(
 
     metadata_dict = dict(
         path=path,
-        hash_key="",
     )
 
     uv_data_dict = dict(
         data=pd.DataFrame(),
-        hash_key="",
+        id="",
     )
 
     try:
@@ -68,13 +63,13 @@ def read_single_file(
         # and combine it with my predefined terms
         metadata_dict.update(uv_file.metadata)
         metadata_dict.update(datadir.metadata)
-        metadata_dict["hash_key"] = primary_key_generator(metadata_dict)
 
         uv_data_dict["data"] = uv_data_to_df(uv_file=uv_file)
-        uv_data_dict["hash_key"] = metadata_dict["hash_key"]
+        uv_data_dict["id"] = metadata_dict["id"]
 
     except Exception as e:
         logger.error(f"{metadata_dict['path']} encountered an error: {e}")
+        print(traceback.print_exc())
 
     returndict: Dict[
         str, Union[Dict[str, str], Dict[str, Union[str, pd.DataFrame]]]
