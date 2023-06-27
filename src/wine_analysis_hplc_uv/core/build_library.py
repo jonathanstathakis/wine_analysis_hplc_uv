@@ -9,9 +9,8 @@ import duckdb as db
 from wine_analysis_hplc_uv.core import adapt_super_pipe_to_db
 from wine_analysis_hplc_uv.sampletracker import sample_tracker_processor
 
-from wine_analysis_hplc_uv.ux_methods import ux_methods as ux
 from wine_analysis_hplc_uv.definitions import DB_DIR, LIB_DIR
-import ch_to_db, st_to_db, ct_to_db
+from wine_analysis_hplc_uv.core import ch_to_db, st_to_db, ct_to_db
 
 import pandas as pd
 
