@@ -99,6 +99,7 @@ mydevtools = {path = "/Users/jonathan/mycode/python_code/mydevtools", develop = 
 pre-commit = "^3.3.3"
 rainbow-api-fork = {path = "/Users/jonathan/mycode/python_code/rainbow", develop = true}
 directory-tree = "^0.0.3.1"
+pytest = "^7.4.0"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
