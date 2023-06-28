@@ -21,7 +21,11 @@ def ch_metadata_tbl_cleaner(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def rename_chemstation_metadata_cols(df):
-    df = df.rename(
-        {"notebook": "samplecode", "date": "acq_date", "method": "acq_method"}, axis=1
-    )
+    original_names = ["notebook", "date", "method"]
+    new_names = ["samplecode", "acq_date", "acq_method"]
+
+    rename_dict = dict(zip(original_names, new_names))
+    df = df.rename(rename_dict, axis=1)
+    assert not df.columns.isin(original_names).all()
+    assert df.columns.isin(new_names).any()
     return df
