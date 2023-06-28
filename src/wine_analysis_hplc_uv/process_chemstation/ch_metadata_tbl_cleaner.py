@@ -56,19 +56,19 @@ def rename_chemstation_metadata_cols(df):
 
 def chemstation_metadata_drop_unwanted_runs(df: pd.DataFrame) -> pd.DataFrame:
     df = df[
-        ~(df["new_id"] == "coffee")
-        & ~(df["new_id"] == "lor-ristretto")
-        & ~(df["new_id"] == "espresso")
-        & ~(df["new_id"] == "lor-ristretto_column-check")
-        & ~(df["new_id"] == "nc1")
+        ~(df["join_samplecode"] == "coffee")
+        & ~(df["join_samplecode"] == "lor-ristretto")
+        & ~(df["join_samplecode"] == "espresso")
+        & ~(df["join_samplecode"] == "lor-ristretto_column-check")
+        & ~(df["join_samplecode"] == "nc1")
         & ~(df["exp_id"].isna())
     ]
     df = library_id_replacer(df)
 
     print(
-        "\nthe following new_id's are not digits and will cause an error when writing the table:\n"
+        "\nthe following join_samplecode's are not digits and will cause an error when writing the table:\n"
     )
-    print(df[~(df["new_id"].str.isdigit())])
+    print(df[~(df["join_samplecode"].str.isdigit())])
 
     return df
 
@@ -81,7 +81,7 @@ def write_df_to_table_variables():
     path VARCHAR,
     sequence_name VARCHAR,
     hash_key VARCHAR,
-    new_id VARCHAR
+    join_samplecode VARCHAR
     """
 
     column_names = """
@@ -91,7 +91,7 @@ def write_df_to_table_variables():
     path,
     sequence_name,
     hash_key,
-    new_id
+    join_samplecode
     """
 
     return schema, column_names, column_names
@@ -99,7 +99,7 @@ def write_df_to_table_variables():
 
 def four_digit_id_to_two_digit(df: pd.DataFrame) -> pd.DataFrame:
     df = df.rename({"id": "exp_id"}, axis=1)
-    df["new_id"] = (
+    df["join_samplecode"] = (
         df["exp_id"].astype(str).apply(lambda x: x[1:3] if len(x) == 4 else x)
     )
     return df
@@ -110,7 +110,7 @@ def string_id_to_digit(df: pd.DataFrame) -> pd.DataFrame:
     Replaces the id of a number of runs with their 2 digit id's as stated in the sample tracker.
     """
     # 1. z3 to 00
-    df["new_id"] = df["new_id"].replace({"z3": "00"})
+    df["join_samplecode"] = df["join_samplecode"].replace({"z3": "00"})
     return df
 
 
@@ -121,7 +121,7 @@ def chemstation_id_cleaner(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def rename_wine_deg_wines(new_id_series: pd.Series):
+def rename_wine_deg_wines(join_samplecode_series: pd.Series):
     """
     Use regex to find the wines exp_id then replace with the sample_tracker id.add()
     pattern = .[01]..
@@ -130,12 +130,12 @@ def rename_wine_deg_wines(new_id_series: pd.Series):
     pattern = r"^[nea](01|02|03)"
     replacement = {"01": "103", "02": "104", "03": "105"}
 
-    # Replace the strings in the 'new_id' column using the regex pattern and replacement mapping
-    new_id_series = new_id_series.replace(
+    # Replace the strings in the 'join_samplecode' column using the regex pattern and replacement mapping
+    join_samplecode_series = join_samplecode_series.replace(
         pattern, lambda x: replacement[x.group(1)], regex=True
     )
 
-    return new_id_series
+    return join_samplecode_series
 
 
 def library_id_replacer(df: pd.DataFrame) -> pd.DataFrame:
@@ -147,10 +147,10 @@ def library_id_replacer(df: pd.DataFrame) -> pd.DataFrame:
         "koerner-nellucio-02-21": "76",
     }
 
-    df["new_id"] = df["new_id"].replace(replace_dict, regex=True)
+    df["join_samplecode"] = df["join_samplecode"].replace(replace_dict, regex=True)
 
     try:
-        df["new_id"] = df["new_id"].apply(rename_wine_deg_wines)
+        df["join_samplecode"] = df["join_samplecode"].apply(rename_wine_deg_wines)
     except:
         print(df.columns)
     return df

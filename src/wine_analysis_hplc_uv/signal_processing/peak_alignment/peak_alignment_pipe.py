@@ -146,7 +146,7 @@ def fetch_sample_dataframes_with_spectra(con: db.DuckDBPyConnection) -> None:
         query = """
         SELECT
             acq_date,
-            new_id,
+            join_samplecode,
             vintage_ct,
             name_ct,
             varietal,

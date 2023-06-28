@@ -80,7 +80,7 @@ def cellar_tracker_fuzzy_join(
 ) -> pd.DataFrame:
     def fuzzy_join(in_df: pd.DataFrame, cellartracker_df: pd.DataFrame) -> pd.DataFrame:
         """
-        change all id edits to 'new id'. merge sample_tracker on new_id. Spectrum table will be joined on exp_id.
+        change all id edits to 'new id'. merge sample_tracker on join_samplecode. Spectrum table will be joined on exp_id.
         in df can be anything, but for the main pipe at 2023-05-16 15:01:54 it is the joined chemstation, sampletracker table.
         """
 
