@@ -12,19 +12,26 @@ def chemstation_sample_tracker_join(in_df: pd.DataFrame, st_df: pd.DataFrame, ho
         assert not in_df.empty, "in_df is empty"
         assert not st_df.empty, "in_df is empty"
 
-        # drop "new_id" entries with characters..
+        # drop "join_samplecode" entries with characters..
 
-        assert "new_id" in in_df.columns, "Column 'new_id' does not exist in in_df"
+        assert (
+            "join_samplecode" in in_df.columns
+        ), "Column 'join_samplecode' does not exist in in_df"
         assert "id" in st_df.columns, "Column 'id' does not exist in sample_tracker_df"
 
         print(f"joining chemstation_metadata, sample_tracker with a {how} join..\n")
 
         merge_df = pd.merge(
-            in_df, st_df, left_on="new_id", right_on="id", how=how, validate="m:1"
+            in_df,
+            st_df,
+            left_on="join_samplecode",
+            right_on="samplecode",
+            how=how,
+            validate="m:1",
         )
 
-        print(st_df["id"])
-        print(in_df["new_id"])
+        print(st_df["samplecode"])
+        print(in_df["join_samplecode"])
 
         print(
             "\ndf of dims",

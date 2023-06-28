@@ -12,7 +12,7 @@ def observe_sample_size_mismatch(df: pd.DataFrame) -> pd.DataFrame:
     """
     2023-05-06 13:23:35
 
-    1. form a dataframe `df` of samples with wine, new_id, spectra.
+    1. form a dataframe `df` of samples with wine, join_samplecode, spectra.
     2. set the index of the dataframe to 'wine' to preserve those names during Series.apply operations on the spectra column.
     3. Construct `size_df`, a dataframe of 'ms', 'ns' for each sample row, with index = 'wine'
     4. calculate the 'm' and 'n' mode for the library from `size_df`.
@@ -144,7 +144,7 @@ def get_matrix_shapes(series: pd.Series) -> pd.DataFrame:
 
 def get_all_sample_matrices():
     """
-    2023-05-06 14:35:05 returns a df of Index(['new_id', 'wine', 'spectra'], dtype='object')
+    2023-05-06 14:35:05 returns a df of Index(['join_samplecode', 'wine', 'spectra'], dtype='object')
     """
     df = peak_alignment_spectrum_chromatograms.load_spectrum_chromatograms()
     return df
@@ -170,7 +170,7 @@ def calc_dim_length_mode(series: pd.Series):
 
 
 def main():
-    # form dataframe of samples with columns 'wine', 'new_id', 'spectra', set index to 'wine' to preserve during columnar operations.
+    # form dataframe of samples with columns 'wine', 'join_samplecode', 'spectra', set index to 'wine' to preserve during columnar operations.
     df = get_all_sample_matrices()
     print(df.columns)
     df = df.set_index("wine")

@@ -16,6 +16,8 @@ from typing import List
 def tbl_to_df(db_filepath: str, tblname: str, cols: str = "*") -> pd.DataFrame:
     """
     Get a duckdb table as a dataframe. Provide an optinal string of column names seperated by commas, i.e. : "col1, col2, col3", defaults to * for all columns.
+
+    if only 1 column is provided, returns a Series rather than a df.
     """
 
     df = pd.DataFrame()
@@ -29,6 +31,9 @@ def tbl_to_df(db_filepath: str, tblname: str, cols: str = "*") -> pd.DataFrame:
                 {tblname}
             """
         ).df()
+    # check if df only has 1 column. If so, return just that column as a Series
+    if len(df.columns) == 1:
+        return df[df.columns[0]]
     return df
 
 
@@ -137,8 +142,10 @@ def append_df_to_db_table_handler(
         df: pd.DataFrame, db_filepath: str, db_table_name: str
     ) -> bool:
         with db.connect(db_filepath) as con:
-            db_new_id_df = con.execute(f"SELECT hash_key from {db_table_name}").df()
-            assert not df["hash_key"].isin(db_new_id_df["hash_key"]).empty
+            db_join_samplecode_df = con.execute(
+                f"SELECT hash_key from {db_table_name}"
+            ).df()
+            assert not df["hash_key"].isin(db_join_samplecode_df["hash_key"]).empty
 
     assert os.path.isfile(db_filepath), f"database not found at {db_filepath}."
 

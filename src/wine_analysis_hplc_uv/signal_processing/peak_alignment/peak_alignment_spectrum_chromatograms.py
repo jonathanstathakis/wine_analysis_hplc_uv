@@ -31,7 +31,7 @@ pd.set_option("display.width", None)
 def peak_alignment_spectrum_chromatogram():
     # get a dataframe consisting of sample metadata and a column of sc matrices as nested dataframes.
     df = load_spectrum_chromatograms()
-    df = df.drop("new_id", axis=1)
+    df = df.drop("join_samplecode", axis=1)
     df = df.set_index("wine")
 
     df = observing_spectra_shape_variation.observe_sample_size_mismatch(df)
@@ -59,7 +59,7 @@ def query_unique_wines_spectra_to_df(con: db.DuckDBPyConnection):
 
     with con:
         query = """
-            SELECT ANY_VALUE(new_id) AS new_id, CONCAT(vintage_ct, ' ', name_ct) AS wine, ANY_VALUE(hash_key) AS hash_key, ANY_VALUE(path) AS path
+            SELECT ANY_VALUE(join_samplecode) AS join_samplecode, CONCAT(vintage_ct, ' ', name_ct) AS wine, ANY_VALUE(hash_key) AS hash_key, ANY_VALUE(path) AS path
             FROM super_table
             GROUP BY wine;
         """
@@ -90,7 +90,7 @@ def read_unique_id_spectra_pickle(filepath: str):
 
 @ft.timeit
 def load_spectrum_chromatograms():
-    table_name = "unique_new_id_spectra"
+    table_name = "unique_join_samplecode_spectra"
     filepath = table_name + ".pk1"
 
     # Check if the pickle file exists
