@@ -7,7 +7,6 @@ Exporting back to Sheets (if desired) can either use that WorkSheet object or cr
 """
 
 from wine_analysis_hplc_uv.sampletracker import sample_tracker_methods as st_methods
-from wine_analysis_hplc_uv.sampletracker import sample_tracker_cleaner
 from wine_analysis_hplc_uv.sampletracker import init_raw_sample_tracker_table
 import pandas as pd
 
@@ -21,12 +20,6 @@ class SampleTracker:
             self.key, sheet_title=sheet_title
         )
         self.df = self.wksh.sheet_df
-
-    def clean_df_helper(self) -> None:
-        self.df: pd.DataFrame = sample_tracker_cleaner.sample_tracker_df_cleaner(
-            self.df
-        )
-        return None
 
     def to_db(self, db_filepath: str, db_tbl_name: str) -> None:
         init_raw_sample_tracker_table.sampletracker_to_db(
