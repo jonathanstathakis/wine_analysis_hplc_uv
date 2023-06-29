@@ -17,3 +17,5 @@ CLEAN_ST_TBL_NAME = "c_" + ST_TBL_NAME
 CLEAN_CT_TBL_NAME = "c_" + CT_TBL_NAME
 
 TEST_DB_PATH = os.path.join(os.getcwd(), "tests", "test.db")
+
+TEST_SHEETS_KEY = os.environ.get("TEST_SAMPLE_TRACKER_KEY")

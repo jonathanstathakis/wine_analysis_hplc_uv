@@ -9,6 +9,7 @@ To edit sheets, update the sheet_df member object then call write_to_sheet.
 import gspread
 import os
 import pandas as pd
+import numpy as np
 
 
 class GSheet:
@@ -38,6 +39,9 @@ class WorkSheet(GSheet):
         Update connected sheet with values contained in sheet_df
         """
         df = self.sheet_df
+        # cant send NAN to gspread as it tries to JSON serialize
+        # and will throw error
+        df = df.fillna(value="")
         columns = df.columns.values.tolist()
         data = df.values.tolist()
         values = [columns] + data

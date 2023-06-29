@@ -8,6 +8,7 @@ from wine_analysis_hplc_uv.definitions import (
     DB_PATH,
     CH_META_TBL_NAME,
     CLEAN_CH_META_TBL_NAME,
+    TEST_SHEETS_KEY,
 )
 
 
@@ -49,7 +50,8 @@ def rename_chemstation_metadata_cols(df):
 
 def main():
     ch_cleaner = ChemstationCleaner(DB_PATH, CH_META_TBL_NAME)
-    ch_cleaner.to_db(db_filepath=DB_PATH, tbl_name=CLEAN_CH_META_TBL_NAME)
+    # ch_cleaner.to_db(db_filepath=DB_PATH, tbl_name=CLEAN_CH_META_TBL_NAME)
+    ch_cleaner.to_sheets(key=TEST_SHEETS_KEY, sheet_title="test_clean_ch_m")
 
     return None
 
