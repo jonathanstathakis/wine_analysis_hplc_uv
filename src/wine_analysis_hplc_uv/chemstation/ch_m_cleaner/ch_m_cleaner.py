@@ -54,7 +54,3 @@ def main():
     ch_cleaner.to_sheets(key=TEST_SHEETS_KEY, sheet_title="test_clean_ch_m")
 
     return None
-
-
-if __name__ == "__main__":
-    main()
