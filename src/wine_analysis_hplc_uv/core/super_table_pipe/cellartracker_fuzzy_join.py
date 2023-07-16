@@ -1,11 +1,41 @@
 """
 
 """
-from traceback import print_tb
 import pandas as pd
 from fuzzywuzzy import fuzz, process
-from . import form_join_col
-from ...ux_methods import ux_methods as ux
+from wine_analysis_hplc_uv.core.super_table_pipe import form_join_col
+
+
+def cellar_tracker_fuzzy_join(
+    in_df: pd.DataFrame, cellartracker_df: pd.DataFrame
+) -> pd.DataFrame:
+    def fuzzy_join(in_df: pd.DataFrame, cellartracker_df: pd.DataFrame) -> pd.DataFrame:
+        """
+        change all id edits to 'new id'. merge sample_tracker on join_samplecode. Spectrum table will be joined on exp_id.
+        in df can be anything, but for the main pipe at 2023-05-16 15:01:54 it is the joined chemstation, sampletracker table.
+        """
+
+        assert not in_df.empty, "in_df is empty\n"
+
+        assert not cellartracker_df.empty, "cellartracker_df is empty\n"
+        print("joining metadata_table+sample_tracker with cellar_tracker\n")
+        cellartracker_df.attrs["name"] = "cellar tracker table"
+
+        in_df = form_join_col.form_join_col(in_df)
+        cellartracker_df = form_join_col.form_join_col(cellartracker_df)
+
+        merge_df = join_dfs_with_fuzzy(in_df, cellartracker_df)
+
+        return merge_df
+
+    merge_df = fuzzy_join(in_df=in_df, cellartracker_df=cellartracker_df)
+
+    assert not merge_df.empty, "merge_df formed after fuzzy join is empty"
+
+    print("df of dims", merge_df.shape, "formed after merge")
+    print(merge_df.head(1))
+
+    return merge_df
 
 
 def join_dfs_with_fuzzy(df1: pd.DataFrame, df2: pd.DataFrame) -> pd.DataFrame:
@@ -63,7 +93,7 @@ def join_dfs_with_fuzzy(df1: pd.DataFrame, df2: pd.DataFrame) -> pd.DataFrame:
         left_on="join_key_matched",
         right_on="join_key",
         how="left",
-        suffixes=["_ms", "_ct"],
+        suffixes=["_st", "_ct"],
     )
     assert_msg = f"""
     merge_df empty\n\ndf1
@@ -73,46 +103,3 @@ def join_dfs_with_fuzzy(df1: pd.DataFrame, df2: pd.DataFrame) -> pd.DataFrame:
     assert merge_df.shape[0] > 0, assert_msg
 
     return merge_df
-
-
-def cellar_tracker_fuzzy_join(
-    in_df: pd.DataFrame, cellartracker_df: pd.DataFrame
-) -> pd.DataFrame:
-    def fuzzy_join(in_df: pd.DataFrame, cellartracker_df: pd.DataFrame) -> pd.DataFrame:
-        """
-        change all id edits to 'new id'. merge sample_tracker on join_samplecode. Spectrum table will be joined on exp_id.
-        in df can be anything, but for the main pipe at 2023-05-16 15:01:54 it is the joined chemstation, sampletracker table.
-        """
-
-        assert not in_df.empty, "in_df is empty\n"
-
-        assert not cellartracker_df.empty, "cellartracker_df is empty\n"
-        print("joining metadata_table+sample_tracker with cellar_tracker\n")
-        cellartracker_df.attrs["name"] = "cellar tracker table"
-
-        in_df = form_join_col.form_join_col(in_df)
-        cellartracker_df = form_join_col.form_join_col(cellartracker_df)
-
-        merge_df = join_dfs_with_fuzzy(in_df, cellartracker_df)
-
-        return merge_df
-
-    prompt_string = "I will now attempt to join the in_df and ct_df by fuzzy matching on the join column. Proceed?"
-    merge_df = ux.ask_user_and_execute(
-        prompt_string, fuzzy_join, in_df, cellartracker_df
-    )
-
-    assert not merge_df.empty, "merge_df formed after fuzzy join is empty"
-
-    print("df of dims", merge_df.shape, "formed after merge")
-    print(merge_df.head(1))
-
-    return merge_df
-
-
-def main():
-    return None
-
-
-if __name__ == "__main__":
-    main()
