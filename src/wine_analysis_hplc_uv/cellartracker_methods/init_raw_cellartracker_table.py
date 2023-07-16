@@ -1,3 +1,9 @@
+"""
+2023-07-03 11:20:52
+
+Defunct module, old implementation of downloading a local copy of my Cellar Tracker Cellar.
+"""
+
 import os
 import sys
 
