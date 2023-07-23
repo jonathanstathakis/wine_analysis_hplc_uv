@@ -113,6 +113,7 @@ pyppeteer = "^1.0.2"
 nbconvert = {extras = ["qtpdf"], version = "^7.6.0"}
 pyqt6 = "^6.5.1"
 tabulate = "^0.9.0"
+jupyterlab = "^4.0.3"
 
 [tool.poetry.group.dev.dependencies]
 jupyter = "^1.0.0"
