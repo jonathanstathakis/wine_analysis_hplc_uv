@@ -4,6 +4,7 @@
 import pandas as pd
 from fuzzywuzzy import fuzz, process
 from wine_analysis_hplc_uv.core.super_table_pipe import form_join_col
+import logging
 
 
 def cellar_tracker_fuzzy_join(
@@ -18,7 +19,7 @@ def cellar_tracker_fuzzy_join(
         assert not in_df.empty, "in_df is empty\n"
 
         assert not cellartracker_df.empty, "cellartracker_df is empty\n"
-        print("joining metadata_table+sample_tracker with cellar_tracker\n")
+        # print("joining metadata_table+sample_tracker with cellar_tracker\n")
         cellartracker_df.attrs["name"] = "cellar tracker table"
 
         in_df = form_join_col.form_join_col(in_df)
@@ -32,16 +33,16 @@ def cellar_tracker_fuzzy_join(
 
     assert not merge_df.empty, "merge_df formed after fuzzy join is empty"
 
-    print("df of dims", merge_df.shape, "formed after merge")
-    print(merge_df.head(1))
+    # print("df of dims", merge_df.shape, "formed after merge")
+    # print(merge_df.head(1))
 
     return merge_df
 
 
 def join_dfs_with_fuzzy(df1: pd.DataFrame, df2: pd.DataFrame) -> pd.DataFrame:
-    print("####\n\nDF FUZZY JOIN\n\n####\n")
+    # print("####\n\nDF FUZZY JOIN\n\n####\n")
 
-    print("joining supplied dfs on 'join_key'..\n")
+    # print("joining supplied dfs on 'join_key'..\n")
 
     def fuzzy_match(s1, s2):
         return fuzz.token_set_ratio(s1, s2)
