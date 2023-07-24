@@ -25,6 +25,7 @@ def build_db_library(data_lib_path: str, db_path: str) -> None:
     """
     Pipeline function to construct the super_table, a cleaned algamation of chemstation, sample_tracker and cellartracker tables.
     """
+    # check that data lib path exists
     assert os.path.isdir(data_lib_path), "need an existing directory"
 
     # 1. create db file if none exists.
@@ -66,16 +67,6 @@ def build_db_library(data_lib_path: str, db_path: str) -> None:
     ct_cleaner = CTCleaner(db_path=db_path, raw_tbl_name=ct_tbl)
     ct_cleaner.to_db(db_filepath=db_path, tbl_name=definitions.CLEAN_CT_TBL_NAME)
 
-    # # 5. join the tables together.
-    # ux.ask_user_and_execute(
-    #     "write super table?\n",
-    #     adapt_super_pipe_to_db.load_super_table,
-    #     get_db_filepath,
-    #     table_1=cleaned_chemstation_metadata_table_name,
-    #     table_2=cleaned_sampletracker_table_name,
-    #     table_3=cleaned_cellartracker_table_name,
-    #     tbl_name=super_tbl_name,
-    # )
     return None
 
 
