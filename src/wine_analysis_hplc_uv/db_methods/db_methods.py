@@ -6,9 +6,11 @@ import sys
 
 import duckdb as db
 import pandas as pd
-
+import polars as pl
 from wine_analysis_hplc_uv.chemstation import chemstation_to_db_methods
-
+import duckdb as db
+import wine_analysis_hplc_uv
+from mydevtools.function_timer import timeit
 
 from typing import List
 
@@ -130,3 +132,136 @@ def test_db_table_exists(db_filepath: str, db_table_name: str) -> bool:
     else:
         f"No tables with name {db_table_name} found"
         return False
+
+
+import pandas as pd
+import duckdb as db
+from wine_analysis_hplc_uv import definitions
+
+
+def get_sc_df(con, wines: list = None, wavelength: list = None, mins: tuple = None):
+    """
+    Form a longform spectrum chromatogram rel object for a given list of wines, wavlengths, and minutes.
+
+    Note: mins is a tuple of 2 elements, element zero the start of the mins interval, element one is the end of the interval
+    """
+
+    # get the super tbl
+    super_rel = con.sql(
+        "SELECT CONCAT(vintage_ct,  ' ', name_ct) AS wine, id FROM"
+        f" {definitions.SUPER_TBL_NAME}"
+    ).set_alias("super_rel")
+
+    # get sc_tbl
+    sc_rel = con.sql(f"SELECT * FROM {definitions.CH_DATA_TBL_NAME}").set_alias(
+        "sc_rel"
+    )
+
+    # form the desired columns from the join dropping super_rel id
+    # this is an arbitrary choice, they are duplicate columns
+    sc_rel_cols = [f"sc_rel.{col}" for col in sc_rel.columns]
+    super_rel_cols = [f"super_rel.{col}" for col in super_rel.columns if col != "id"]
+    super_sc_rel_cols = sc_rel_cols + super_rel_cols
+
+    # join them
+    join_query = f"""
+             SELECT {",".join(super_sc_rel_cols)}
+             FROM
+             sc_rel
+             JOIN
+             super_rel
+             ON (sc_rel.id=super_rel.id)
+             """
+    assert not None in wines, f"{wines}"
+    if wines:
+        wine_clause = f"WHERE super_rel.wine IN {tuple(wines)}"
+        join_query += wine_clause
+
+    if wavelength:
+        wavelength_clause = f"AND sc_rel.wavelength IN {wavelength}"
+        join_query += wavelength_clause
+
+    if mins:
+        mins_clause = f"AND sc_rel.mins >= {mins[0]} AND sc_rel.mins <= {mins[1]}"
+        join_query += mins_clause
+
+    super_sc_rel = con.sql(join_query)
+
+    # remove the table/rel prefixes from the column names in the prior list then check if the resulting tbl/df has the same columns
+    assert [s.split(".")[1] for s in super_sc_rel_cols] == super_sc_rel.columns
+
+    # check that expected wavelengths in join
+    if wavelength:
+        assert set(wavelength) == set(
+            super_sc_rel.wavelength.df().iloc[:, 0].drop_duplicates().tolist()
+        )
+
+    # apparently rel objects expire when they pass out of scope..?
+    # import polars as pl
+    r = super_sc_rel
+    return r.pl()
+
+
+@timeit
+def testing(con, wine_subset):
+    def get_a(con_, wines_):
+        return a
+
+    a = get_a(con, wine_subset)
+
+    return a
+
+
+@timeit
+def main():
+    con = db.connect(wine_analysis_hplc_uv.definitions.DB_PATH)
+    wines = con.sql(
+        f"""
+            SELECT wine from super_tbl WHERE wine NOT NULL LIMIT 167
+            """
+    ).fetchall()
+    print(wines)
+
+    subset_wines = tuple([wine[0] for wine in wines])
+    pl_data = get_sc_df(con=con, wines=subset_wines)
+    print(pl_data)
+
+    @timeit
+    def pl_to_df(pl_df):
+        b = pl_df.to_pandas(use_pyarrow_extension_array=True)
+        print(b)
+
+    pl_to_df(pl_data)
+
+
+if __name__ == "__main__":
+    main()
+
+
+def to_be_added_pipe():
+    """
+    A list of queries which I have directly applied to the existing super_tbl but will need to be added to a pipeline further down the track.
+    """
+    # clean the wine column
+    con.sql(
+        """UPDATE
+            super_tbl
+            SET
+            name_ct = REPLACE(name_ct,'''','')
+            """
+    )
+    # Add the new column
+    con.sql(
+        """
+        ALTER TABLE super_tbl 
+        ADD COLUMN wine VARCHAR;
+    """
+    )
+
+    # Populate the new column
+    con.sql(
+        """
+        UPDATE super_tbl
+        SET wine = vintage_ct || ' ' || name_ct;
+    """
+    )
