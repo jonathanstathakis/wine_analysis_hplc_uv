@@ -11,7 +11,11 @@ from wine_analysis_hplc_uv.chemstation import chemstation_to_db_methods
 import duckdb as db
 import wine_analysis_hplc_uv
 from mydevtools.function_timer import timeit
+import seaborn as sns
+import logging
 
+logger = logging.Logger("db")
+logger.setLevel("DEBUG")
 from typing import List
 
 
@@ -139,67 +143,56 @@ import duckdb as db
 from wine_analysis_hplc_uv import definitions
 
 
-def get_sc_df(con, wines: list = None, wavelength: list = None, mins: tuple = None):
+def get_sc_df(
+    con,
+    sampleids: list = None,
+    wavelength: list = None,
+    mins: tuple = None,
+    detection=list,
+    type=list,
+):
     """
     Form a longform spectrum chromatogram rel object for a given list of wines, wavlengths, and minutes.
 
     Note: mins is a tuple of 2 elements, element zero the start of the mins interval, element one is the end of the interval
     """
 
-    # get the super tbl
-    super_rel = con.sql(
-        "SELECT CONCAT(vintage_ct,  ' ', name_ct) AS wine, id FROM"
-        f" {definitions.SUPER_TBL_NAME}"
-    ).set_alias("super_rel")
-
-    # get sc_tbl
-    sc_rel = con.sql(f"SELECT * FROM {definitions.CH_DATA_TBL_NAME}").set_alias(
-        "sc_rel"
-    )
-
-    # form the desired columns from the join dropping super_rel id
-    # this is an arbitrary choice, they are duplicate columns
-    sc_rel_cols = [f"sc_rel.{col}" for col in sc_rel.columns]
-    super_rel_cols = [f"super_rel.{col}" for col in super_rel.columns if col != "id"]
-    super_sc_rel_cols = sc_rel_cols + super_rel_cols
-
-    # join them
+    # form a view from the join of sc and super and select specified columns
     join_query = f"""
-             SELECT {",".join(super_sc_rel_cols)}
+             SELECT * FROM
+             (
+             SELECT
+              sc.mins, sc.wavelength, sc.value, super.wine, super.detection, super.id
              FROM
-             sc_rel
+             {definitions.CH_DATA_TBL_NAME} sc
              JOIN
-             super_rel
-             ON (sc_rel.id=super_rel.id)
+             {definitions.SUPER_TBL_NAME} super
+             USING (id)
              """
-    assert not None in wines, f"{wines}"
-    if wines:
-        wine_clause = f"WHERE super_rel.wine IN {tuple(wines)}"
-        join_query += wine_clause
 
+    # add a sample_id subset clause if sample_ids are provided
+    if sampleids:
+        sample_clause = f"WHERE super.id IN {tuple(sampleids)}"
+        join_query += sample_clause
+
+    # # add a wavelength subset clause if wavelengths are provided
     if wavelength:
-        wavelength_clause = f"AND sc_rel.wavelength IN {wavelength}"
+        wavelength_clause = f"AND sc.wavelength IN {tuple(wavelength)}"
         join_query += wavelength_clause
 
+    # # add a mins subset clause if mins are provided
     if mins:
-        mins_clause = f"AND sc_rel.mins >= {mins[0]} AND sc_rel.mins <= {mins[1]}"
+        mins_clause = f"AND sc.mins >= {mins[0]} AND sc.mins <= {mins[1]}"
         join_query += mins_clause
 
-    super_sc_rel = con.sql(join_query)
+    if detection:
+        detection_clause = f"AND super.detection IN {tuple(detection)}"
+        join_query += detection_clause
 
-    # remove the table/rel prefixes from the column names in the prior list then check if the resulting tbl/df has the same columns
-    assert [s.split(".")[1] for s in super_sc_rel_cols] == super_sc_rel.columns
-
-    # check that expected wavelengths in join
-    if wavelength:
-        assert set(wavelength) == set(
-            super_sc_rel.wavelength.df().iloc[:, 0].drop_duplicates().tolist()
-        )
-
-    # apparently rel objects expire when they pass out of scope..?
-    # import polars as pl
-    r = super_sc_rel
-    return r.pl()
+    join_query += ")"
+    logger.debug(join_query)
+    a = con.sql(join_query)
+    return a.pl()
 
 
 @timeit
@@ -223,7 +216,7 @@ def main():
     print(wines)
 
     subset_wines = tuple([wine[0] for wine in wines])
-    pl_data = get_sc_df(con=con, wines=subset_wines)
+    pl_data = get_sc_df(con=con, sampleids=subset_wines)
     print(pl_data)
 
     @timeit
@@ -240,6 +233,9 @@ if __name__ == "__main__":
 
 def to_be_added_pipe():
     """
+    TODO:
+    - [ ] add these to a processing pipe, i.e. CT cleaner.
+
     A list of queries which I have directly applied to the existing super_tbl but will need to be added to a pipeline further down the track.
     """
     # clean the wine column
