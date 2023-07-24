@@ -35,18 +35,6 @@ def get_sc_df(con):
         mins=(0, 30),
         detection=["cuprac"],
     )
-    # out_df = pl_data.select(
-    #     pl_data
-    #     .with_columns(pl.int_range( 0, pl_data.shape[0]).alias('index'))
-    #     .drop(['id','wavelength'])
-    #     .pivot(columns='wine',values='value', index='index', aggregate_function=None)
-
-    # )
-    # print(out_df)
-    # sns.lineplot(data=out_df.drop('index'))
-    # plt.show()
-    # print(out_df)
-    # print(out_df.null_count())
 
     pd_df = pl_data.to_pandas()
     out_df = (
