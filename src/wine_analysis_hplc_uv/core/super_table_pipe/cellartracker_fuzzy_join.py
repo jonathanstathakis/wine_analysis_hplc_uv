@@ -40,10 +40,6 @@ def cellar_tracker_fuzzy_join(
 
 
 def join_dfs_with_fuzzy(df1: pd.DataFrame, df2: pd.DataFrame) -> pd.DataFrame:
-    # print("####\n\nDF FUZZY JOIN\n\n####\n")
-
-    # print("joining supplied dfs on 'join_key'..\n")
-
     def fuzzy_match(s1, s2):
         return fuzz.token_set_ratio(s1, s2)
 

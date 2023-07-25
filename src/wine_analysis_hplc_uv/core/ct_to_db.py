@@ -5,15 +5,17 @@ from wine_analysis_hplc_uv.cellartracker_methods.my_cellartracker_class import (
 from wine_analysis_hplc_uv.definitions import DB_PATH
 import os
 import duckdb as db
+import logging
+
+logging.basicConfig()
+ct_logger = logging.Logger(__name__)
 
 
 def ct_to_db(db_filepath: str, ct_tbl: str, un: str, pw: str):
-    if not os.path.isfile(DB_PATH):
-        con = db.connect(DB_PATH)
-        con.close()
+    con = db.connect(DB_PATH)
 
     ct = MyCellarTracker(username=un, password=pw)
-    ct.to_db(db_filepath=db_filepath, tbl_name=ct_tbl)
+    ct.to_db(con=con, tbl_name=ct_tbl)
 
 
 def main():

@@ -12,7 +12,7 @@ def query_db(db_path: str, tbl_name: str):
     from
         chemstation_metadata
     where
-        "desc" like '%sigurd%';
+        "notebook" like '%116%';
     """
     with db.connect(db_path) as con:
         con.sql(query).show()
