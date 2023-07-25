@@ -22,6 +22,7 @@ class ChemstationCleaner(Exporter):
             self.df.pipe(df_cleaning_methods.df_string_cleaner)
             .pipe(rename_chemstation_metadata_cols)
             .pipe(ch_m_date_cleaner.format_acq_date)
+            .pipe(replace_116_sigurd(df))
             .pipe(ch_m_samplecode_cleaner.ch_m_samplecode_cleaner)
             # .pipe(chemstation_metadata_drop_unwanted_runs)
         )
@@ -46,11 +47,3 @@ def rename_chemstation_metadata_cols(df):
     assert not df.columns.isin(original_names).all()
     assert df.columns.isin(new_names).any()
     return df
-
-
-def main():
-    ch_cleaner = ChemstationCleaner(DB_PATH, CH_META_TBL_NAME)
-    # ch_cleaner.to_db(db_filepath=DB_PATH, tbl_name=CLEAN_CH_META_TBL_NAME)
-    ch_cleaner.to_sheets(key=TEST_SHEETS_KEY, sheet_title="test_clean_ch_m")
-
-    return None

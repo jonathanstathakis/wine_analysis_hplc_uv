@@ -17,18 +17,18 @@ def ch_m_samplecode_cleaner(df: pd.DataFrame) -> pd.DataFrame:
     logger.debug(msg="cleaning chemstation run id's")
     df["join_samplecode"] = four_to_two_digit(series=df["join_samplecode"])
     df = replace_samplecodes(df)
-    df = replace_116_sigurd(df)
     assert "2021-debortoli-cabernet-merlot_avantor" not in df["join_samplecode"]
     assert isinstance(df, pd.DataFrame)
     return df
 
 
-def four_to_two_digit(series: pd.Series) -> pd.DataFrame:
-    def get_four_digit_code_regex():
-        return re.compile(
-            "^0(\d{2})[12]$"
-        )  # The pattern matches 4-digit strings starting with '0' and ending with '1'
+def get_four_digit_code_regex():
+    return re.compile(
+        "^0(\d{2})[12]$"
+    )  # The pattern matches 4-digit strings starting with '0' and ending with '1'
 
+
+def four_to_two_digit(series: pd.Series) -> pd.DataFrame:
     pattern = get_four_digit_code_regex()
 
     def extract_middle_digits(x):
@@ -47,7 +47,11 @@ def replace_116_sigurd(df: pd.DataFrame):
     assert not df.empty
     # check that there are two 116s in the column
     # if not, might not need this function
-    assert df["join_samplecode"].value_counts()["116"] == 2
+    assert "samplecode" in df.columns, df.columns
+    assert "sigurdcb" not in df["samplecode"].tolist()
+    assert df["samplecode"].value_counts()["116"] == 2, df["samplecode"].value_counts()[
+        "116"
+    ]
 
     replacement_str = "sigurdcb"
 
@@ -56,15 +60,15 @@ def replace_116_sigurd(df: pd.DataFrame):
     # make sure there is at least 1 True value
     assert sigurd_mask.isin([True]).any()
     # make the value replacement
-    df.loc[sigurd_mask, "join_samplecode"] = replacement_str
+    df.loc[sigurd_mask, "samplecode"] = replacement_str
     # make sure there is now only 1 '116'
     assert (
-        df[df["join_samplecode"] == "116"].shape[0] == 1
-    ), f"{df[df['join_samplecode'] == '116']}"
+        df[df["samplecode"] == "116"].shape[0] == 1
+    ), f"{df[df['samplecode'] == '116']}"
     # make sure there is 1 'sigurdcb'
     assert (
-        df[df["join_samplecode"] == replacement_str].shape[0] == 1
-    ), f"{df[df['join_samplecode'] == replacement_str]}"
+        df[df["samplecode"] == replacement_str].shape[0] == 1
+    ), f"{df[df['samplecode'] == replacement_str]}"
 
     return df
 

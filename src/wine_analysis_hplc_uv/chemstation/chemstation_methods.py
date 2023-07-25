@@ -3,6 +3,7 @@ All the methods used to preprocess the chemstation files into the db
 """
 import os
 import fnmatch
+from wine_analysis_hplc_uv.chemstation import logger
 
 
 def uv_filepaths_to_list(root_dir_path: str) -> list:
@@ -13,7 +14,7 @@ def uv_filepaths_to_list(root_dir_path: str) -> list:
     dirpaths = []
     filepath_suffix = ".UV"
 
-    print(f"Walking through {root_dir_path} to find {filepath_suffix} files", end=" ")
+    logger.info(f"Walking through {root_dir_path} to find {filepath_suffix} files")
     # Walk through the directory tree using os.walk()
     for dirpath, dirnames, filenames in os.walk(root_dir_path):
         # Check if the directory name ends with '.D'
@@ -24,7 +25,7 @@ def uv_filepaths_to_list(root_dir_path: str) -> list:
                 # If both conditions are met, append the directory path to the list
                 dirpaths.append(dirpath)
 
-    print(f"Found {len(dirpaths)} .UV files")
+    logger.info(f"Found {len(dirpaths)} .UV files")
 
     return dirpaths
 

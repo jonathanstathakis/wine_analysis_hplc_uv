@@ -1,5 +1,15 @@
 """
 Top level file to initialize a wine auth database from scratch.
+
+2023-07-25 10:28:44
+Current operations:
+1. ch_to_db
+2. st_to_db
+3. ct_to_db
+4. ch_m_cleaner
+5. st_cleaner
+6. ct_cleaner
+
 """
 import os
 import shutil
@@ -21,7 +31,7 @@ chemstation_logger = logging.getLogger("wine_analysis_hplc_uv.chemstation")
 chemstation_logger.setLevel(logging.DEBUG)
 
 
-def build_db_library(data_lib_path: str, db_path: str) -> None:
+def build_db_library(data_lib_path: str, con: db.DuckDBPyConnection) -> None:
     """
     Pipeline function to construct the super_table, a cleaned algamation of chemstation, sample_tracker and cellartracker tables.
     """
@@ -29,10 +39,6 @@ def build_db_library(data_lib_path: str, db_path: str) -> None:
     assert os.path.isdir(data_lib_path), "need an existing directory"
 
     # 1. create db file if none exists.
-    # dont use context management here because simply opening and closing a connection, forcing the creation of the .db file
-    if not os.path.isfile(db_path):
-        con = db.connect(db_path)
-        con.close()
 
     #  3. write raw tables to db from sources
     mtadta_tbl = definitions.CH_META_TBL_NAME
@@ -43,38 +49,31 @@ def build_db_library(data_lib_path: str, db_path: str) -> None:
 
     # chemstation
     ch_to_db.ch_to_db(
-        lib_path=data_lib_path, mtadata_tbl=mtadta_tbl, sc_tbl=ch_d_tbl, db_path=db_path
+        lib_path=data_lib_path, mtadata_tbl=mtadta_tbl, sc_tbl=ch_d_tbl, con=con
     )
 
     # sample_tracker
     sheet_title = os.environ.get("SAMPLE_TRACKER_SHEET_TITLE")
     gkey = os.environ.get("SAMPLE_TRACKER_KEY")
-    st_to_db.st_to_db(db_filepath=db_path, tbl=st_tbl, key=gkey, sheet=sheet_title)
+    st_to_db.st_to_db(con=con, tbl=st_tbl, key=gkey, sheet=sheet_title)
 
     # cellar_tracker
     un = os.environ.get("CELLAR_TRACKER_UN")
     pw = os.environ.get("CELLAR_TRACKER_PW")
-    ct_to_db.ct_to_db(db_filepath=db_path, ct_tbl=ct_tbl, un=un, pw=pw)
+    ct_to_db.ct_to_db(con=con, ct_tbl=ct_tbl, un=un, pw=pw)
 
     # cleaners
     ## ch_m
-    ch_m_cleaner = ChemstationCleaner(db_path=db_path, raw_tbl_name=mtadta_tbl)
-    ch_m_cleaner.to_db(db_filepath=db_path, tbl_name=definitions.CLEAN_CH_META_TBL_NAME)
+    ch_m_cleaner = ChemstationCleaner(db_path=con, raw_tbl_name=mtadta_tbl)
+    ch_m_cleaner.to_db(con=con, tbl_name=definitions.CLEAN_CH_META_TBL_NAME)
     ## st
-    st_cleaner = STCleaner(db_path=db_path, raw_tbl_name=st_tbl)
-    st_cleaner.to_db(db_filepath=db_path, tbl_name=definitions.CLEAN_ST_TBL_NAME)
+    st_cleaner = STCleaner(con=con, raw_tbl_name=st_tbl)
+    st_cleaner.to_db(conth=con, tbl_name=definitions.CLEAN_ST_TBL_NAME)
     ## ct
-    ct_cleaner = CTCleaner(db_path=db_path, raw_tbl_name=ct_tbl)
-    ct_cleaner.to_db(db_filepath=db_path, tbl_name=definitions.CLEAN_CT_TBL_NAME)
+    raw_ct_df = con.sql(f"SELECT * FROM {ct_tbl}").df()
+    ct_cleaner = CTCleaner().clean_df(raw_ct_df)
+    ct_cleaner.to_db(con=con, tbl_name=definitions.CLEAN_CT_TBL_NAME)
 
-    return None
-
-
-def remove_existing_db(db_path: str) -> None:
-    # remove old db if it exists.
-    if os.path.exists(db_path):
-        os.remove(db_path)
-        print(f"deleted {db_path}")
     return None
 
 

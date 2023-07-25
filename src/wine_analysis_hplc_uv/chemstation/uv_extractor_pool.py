@@ -27,8 +27,11 @@ def uv_extractor_pool(
         uv_files_dicts_list = pool.map(read_single_file.read_single_file, dirpaths)
         logger.debug("Closing and joining the multiprocessing pool..")
 
+    assert len(uv_files_dicts_list) > 0
     uv_metadata_list: List = [file["metadata"] for file in uv_files_dicts_list]
     uv_data_list: List = [file["data"] for file in uv_files_dicts_list]
+    assert len(uv_metadata_list) > 0
+    assert len(uv_data_list) > 0
 
     def dict_list_to_long_df(data_list: List) -> pd.DataFrame:
         def form_data_df(data_dict: Dict) -> pd.DataFrame:
@@ -51,6 +54,8 @@ def uv_extractor_pool(
         data_hash_df_list = [form_data_df(data_dict) for data_dict in data_list]
 
         data_df: pd.DataFrame = pd.concat(data_hash_df_list, axis=0, ignore_index=True)
+
+        assert isinstance(data_df, pd.DataFrame)
 
         return data_df
 
