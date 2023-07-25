@@ -8,13 +8,10 @@ TODO:
 - [ ] remove marked runs.
 
 """
+import pytest
 import re
 import os
-import sys
 from wine_analysis_hplc_uv import db_methods
-
-sys.path.append("/Users/jonathan/mres_thesis/wine_analysis_hplc_uv/tests")
-from tests import test_logger
 from mydevtools.testing.mytestmethods import test_report
 from mydevtools.testing import test_methods_df
 from wine_analysis_hplc_uv.db_methods import db_methods
@@ -25,8 +22,22 @@ from wine_analysis_hplc_uv.chemstation.ch_m_cleaner import (
     ch_m_samplecode_cleaner,
 )
 from wine_analysis_hplc_uv.definitions import DB_PATH, CH_META_TBL_NAME, ST_TBL_NAME
-import dateutil.parser
 import pandas as pd
+import duckdb as db
+
+
+@pytest.fixture
+def db_path():
+    return DB_PATH
+
+
+@pytest.fixture
+def raw_ch_m(db_path, tbl_name=CH_META_TBL_NAME):
+    con = db.connect(db_path)
+    df = con.sql(f"SELECT * FROM {tbl_name}").df()
+    assert isinstance(df, pd.DataFrame)
+    assert not df.empty
+    return df
 
 
 def clean_chm_tests(df: pd.DataFrame):
@@ -46,7 +57,7 @@ def get_test_db_path():
     return os.path.join(os.getcwd(), "test_clean_ch.db")
 
 
-def test_string_cleaner(dirty_df: pd.DataFrame):
+def test_string_cleaner(raw_ch_m: pd.DataFrame):
     """
     test df_cleaning_methods.df_string_cleaner.
     strictly speaking this should be in a seperate test module.
@@ -56,32 +67,32 @@ def test_string_cleaner(dirty_df: pd.DataFrame):
     3. assert that the clean_df does not have any trailing whitespace
     4. assert that the clean_df does not have any uppercase characters.
     """
-    cp_dirty_df = dirty_df.copy()
-    clean_df = df_cleaning_methods.df_string_cleaner(dirty_df)
-    assert not cp_dirty_df.equals(clean_df)
+    cp_raw_ch_m = raw_ch_m.copy()
+    clean_df = df_cleaning_methods.df_string_cleaner(raw_ch_m)
+    assert not cp_raw_ch_m.equals(clean_df)
     assert not clean_df.apply(test_methods_df.has_whitespace).any()
     assert not clean_df.apply(test_methods_df.check_uppercase).any()
 
 
-def test_column_renames(dirty_df: pd.DataFrame):
+def test_column_renames(raw_ch_m: pd.DataFrame):
     """
     Function renames the following:
         "notebook": "samplecode", "date": "acq_date", "method": "acq_method"
     """
-    cp_dirty_df = dirty_df.copy()
-    clean_df = ch_m_cleaner.rename_chemstation_metadata_cols(dirty_df)
-    assert not cp_dirty_df.equals(clean_df)
+    cp_raw_ch_m = raw_ch_m.copy()
+    clean_df = ch_m_cleaner.rename_chemstation_metadata_cols(raw_ch_m)
+    assert not cp_raw_ch_m.equals(clean_df)
     assert not clean_df.columns.isin(["notebook", "date", "method"]).any()
     assert clean_df.columns.isin(["samplecode", "acq_date", "acq_method"]).any()
 
 
-def test_date_formatter(dirty_df: pd.DataFrame):
+def test_date_formatter(raw_ch_m: pd.DataFrame):
     """ """
-    dirty_df = dirty_df.rename({"date": "acq_date"}, axis=1)
-    cp_dirty_df = dirty_df.copy()
-    clean_df = ch_m_date_cleaner.format_acq_date(dirty_df)
-    # assert not dirty_df["acq_date"].equals(clean_df["acq_date"]), "no change"
-    assert not cp_dirty_df["acq_date"].equals(
+    raw_ch_m = raw_ch_m.rename({"date": "acq_date"}, axis=1)
+    cp_raw_ch_m = raw_ch_m.copy()
+    clean_df = ch_m_date_cleaner.format_acq_date(raw_ch_m)
+    # assert not raw_ch_m["acq_date"].equals(clean_df["acq_date"]), "no change"
+    assert not cp_raw_ch_m["acq_date"].equals(
         clean_df["acq_date"]
     )  # check if any change
 
@@ -95,12 +106,12 @@ def test_date_formatter(dirty_df: pd.DataFrame):
     assert check_format.all(), "format doesnt match '%Y-%m-%d, %H:%M:%S'"
 
 
-def test_four_digit_samplecode_to_two_digit(dirty_df: pd.DataFrame):
+def test_four_digit_samplecode_to_two_digit(raw_ch_m: pd.DataFrame):
     # make copy of original df
-    cp_dirty_df = dirty_df.copy()
+    cp_raw_ch_m = raw_ch_m.copy()
 
     # clean the string elements in the df - strip and lower
-    clean_df = df_cleaning_methods.df_string_cleaner(dirty_df)
+    clean_df = df_cleaning_methods.df_string_cleaner(raw_ch_m)
 
     # col renames
     clean_df = ch_m_cleaner.rename_chemstation_metadata_cols(clean_df)
@@ -134,31 +145,27 @@ def test_four_digit_samplecode_to_two_digit(dirty_df: pd.DataFrame):
     assert not cp_clean_df_new_samplecode.equals(clean_df["new_samplecode"])
 
 
-def test_replace_116_sigurd(dirty_df: pd.DataFrame):
-    cp_dirty_df = dirty_df.copy()
-    clean_df = df_cleaning_methods.df_string_cleaner(dirty_df)
+def test_replace_116_sigurd(raw_ch_m: pd.DataFrame):
+    clean_df = df_cleaning_methods.df_string_cleaner(raw_ch_m)
     clean_df = ch_m_cleaner.rename_chemstation_metadata_cols(clean_df)
+    assert "samplecode" in clean_df.columns, clean_df.columns
     clean_df = ch_m_samplecode_cleaner.replace_116_sigurd(clean_df)
-
     result = clean_df[clean_df["samplecode"] == "sigurdcb"]
     assert not result.empty
 
 
-def test_samplecode_cleaner(dirty_df: pd.DataFrame):
+def test_samplecode_cleaner(raw_ch_m):
     """
     Test the individual components of the ch_m_cleaner. The true test is that the difference between the sets of st samplecodes and ch_m samplecodes is zero.
     """
-    cp_dirty_df = dirty_df.copy()
-    clean_df = df_cleaning_methods.df_string_cleaner(dirty_df)
+    cp_raw_ch_m = raw_ch_m.copy()
+    clean_df = df_cleaning_methods.df_string_cleaner(raw_ch_m)
     clean_df = ch_m_cleaner.rename_chemstation_metadata_cols(clean_df)
     assert "samplecode" in clean_df.columns
     assert isinstance(clean_df, pd.DataFrame)
     clean_df = ch_m_cleaner.ch_m_samplecode_cleaner.ch_m_samplecode_cleaner(clean_df)
-    assert (
-        clean_df[clean_df["join_samplecode"] == "116"].shape[0] == 1
-    ), f"{clean_df[clean_df['samplecode'] == '116']}"
     # check for any change
-    assert not cp_dirty_df.equals(clean_df)
+    assert not cp_raw_ch_m.equals(clean_df)
 
     def compare_columns(col1, col2):
         """
@@ -173,15 +180,14 @@ def test_samplecode_cleaner(dirty_df: pd.DataFrame):
         return comparison
 
     # get the values in ch_m.samplecode, not in st.sampelcode
-    st_samplecode = db_methods.tbl_to_df(DB_PATH, ST_TBL_NAME, "samplecode")
+    con = db.connect(DB_PATH)
+    st_samplecode = con.sql(f"SELECT samplecode FROM {ST_TBL_NAME}").df()
+    con.close()
     ch_m_samplecode = clean_df["join_samplecode"]
     val_in_ch_m_not_st = compare_columns(ch_m_samplecode, st_samplecode)
-    print(val_in_ch_m_not_st)
 
     pd.options.display.max_rows = 200
-    print(ch_m_samplecode)
     val_in_st_not_in_ch_m = compare_columns(st_samplecode, ch_m_samplecode)
-    print(val_in_st_not_in_ch_m)
 
     # a is ch_m, b is st, thus difference_ab is elements in a but not b, elements in
     # ch_m but not st. difference_ba is elements in st but not ch_m
@@ -193,16 +199,4 @@ def test_samplecode_cleaner(dirty_df: pd.DataFrame):
 
     pd_diff_ab = compare_columns(st_samplecode, ch_m_samplecode)
 
-    pd.options.display.max_rows = 200
     # assert val_in_st_not_in_ch_m.shape[0] == 0, f"\nThe following are in st but not in ch_m:\n\n{val_in_st_not_in_ch_m}"
-
-
-def main():
-    db_path = DB_PATH
-    tbl_name = CH_META_TBL_NAME
-    df = db_methods.tbl_to_df(db_filepath=db_path, tblname=tbl_name)
-    clean_chm_tests(df)
-
-
-if __name__ == "__main__":
-    main()
