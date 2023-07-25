@@ -49,50 +49,61 @@ def get_sc_df(
     sampleids: list = None,
     wavelength: list = None,
     mins: tuple = None,
-    # detection: list = None,
+    detection: list = None,
     # type: list = None,
 ):
     """
-    Form a longform spectrum chromatogram rel object for a given list of wines, wavlengths, and minutes.
+    Form a longform spectrum chromatogram rel object for a given list of wines, wavelengths, and minutes.
 
     Note: mins is a tuple of 2 elements, element zero the start of the mins interval, element one is the end of the interval
     """
 
     # form a view from the join of sc and super and select specified columns
     join_query = f"""
-             SELECT * FROM
-             (
-             SELECT
-              sc.mins, sc.wavelength, sc.value, super.wine, super.detection, super.id
-             FROM
-             {definitions.CH_DATA_TBL_NAME} sc
-             JOIN
-             {definitions.SUPER_TBL_NAME} super
-             USING (id)
-             """
+            SELECT * FROM
+            (
+            SELECT
+            sc.mins, sc.wavelength, sc.value, super.wine, super.detection, super.id
+            FROM
+            {definitions.CH_DATA_TBL_NAME} sc
+            JOIN
+            {definitions.CLEAN_CT_TBL_NAME} super
+            USING (id)
+            """
 
-    # add a sample_id subset clause if sample_ids are provided
+    conditions = []
+
     if sampleids:
-        sample_clause = f"WHERE super.id IN {tuple(sampleids)}"
-        join_query += sample_clause
+        conditions.append(f"super.id IN {tuple(sampleids)}")
 
-    # # add a wavelength subset clause if wavelengths are provided
     if wavelength:
-        wavelength_clause = f"AND sc.wavelength IN {tuple(wavelength)}"
-        join_query += wavelength_clause
+        conditions.append(f"sc.wavelength IN {tuple(wavelength)}")
 
-    # # add a mins subset clause if mins are provided
     if mins:
-        mins_clause = f"AND sc.mins >= {mins[0]} AND sc.mins <= {mins[1]}"
-        join_query += mins_clause
+        conditions.append(f"sc.mins >= {mins[0]} AND sc.mins <= {mins[1]}")
 
-    # if detection:
-    #     detection_clause = f"AND super.detection IN {tuple(detection)}"
-    #     join_query += detection_clause
+    if detection:
+        conditions.append(f"super.detection IN {tuple(detection)}")
 
-    join_query += ")"
-    logger.debug(join_query)
-    a = con.sql(join_query)
+    conditions_clause = " AND ".join(conditions)
+
+    join_query = f"""
+                 SELECT * FROM
+                 (
+                 SELECT
+                  sc.mins, sc.wavelength, sc.value, super.wine, super.detection, super.id
+                 FROM
+                 {definitions.CH_DATA_TBL_NAME} sc
+                 JOIN
+                 {definitions.SUPER_TBL_NAME} super
+                 USING (id)
+                 """
+
+    if conditions_clause:
+        join_query += f" WHERE {conditions_clause}"
+        join_query += ")"
+        logger.debug(join_query)
+        a = con.sql(join_query)
     return a.pl()
 
 
