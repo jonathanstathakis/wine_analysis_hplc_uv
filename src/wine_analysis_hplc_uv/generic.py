@@ -25,8 +25,8 @@ class Exporter:
         wksh.sheet_df = self.df
         wksh.write_to_sheet()
 
-    def to_db(self, db_filepath: str, tbl_name: str):
+    def to_db(self, con, tbl_name: str):
         """
         Output contained self.df to designated database given by filepath.
         """
-        db_methods.df_to_tbl(df=self.df, db_filepath=db_filepath, tblname=tbl_name)
+        db_methods.write_df_to_db(df=self.df, con=con, tblname=tbl_name)

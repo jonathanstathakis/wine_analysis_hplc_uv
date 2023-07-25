@@ -4,7 +4,7 @@ ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 DB_PATH = os.environ.get("DB_DIR_PATH")
 
-LIB_DIR = "/Users/jonathan/0_jono_data/mres_data_library/"
+LIB_DIR = "/Users/jonathan/uni/0_jono_data/mres_data_library/"
 
 CH_META_TBL_NAME = "chemstation_metadata"
 CH_DATA_TBL_NAME = "chromatogram_spectra"
