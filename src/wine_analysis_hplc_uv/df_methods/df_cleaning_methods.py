@@ -16,16 +16,23 @@ def df_string_cleaner(df: pd.DataFrame) -> pd.DataFrame:
     df = df.applymap(lowercase_and_strip)
 
     # stripping and lowering case of all column and index values in df.
-    # 2023-06-14 12:15:44 this has the unfortunate side effect of converting all
+    # 2023-06-14 12:15:44 this has the unfortunate side effect of casting all
     # integer index vals to object. Add a test for numeric?
 
-    str_cols = df.columns.astype(str)
+    def process_index(df):
+        str_idx = df.index.astype(str)
+        if not str_idx.str.isnumeric().all():
+            df = df.rename(index=str_idx.str.strip().str.lower())
+        return df
 
-    if not str_cols.str.isnumeric().all():
-        df.columns = str_cols.str.strip().str.lower()
+    df = df.pipe(process_index)
+    # str_cols = df.columns.astype(str)
 
-    str_idx = df.index.astype(str)
-    if not str_idx.str.isnumeric().all():
-        df.index = str_idx.str.strip().str.lower()
+    # if not str_cols.str.isnumeric().all():
+    #     df.columns = str_cols.str.strip().str.lower()
+
+    # str_idx = df.index.astype(str)
+    # if not str_idx.str.isnumeric().all():
+    #     df = df.rename(index=str_idx.str.strip().str.lower())
 
     return df

@@ -1,52 +1,35 @@
-"""
-A file to contain all of the necessary cellartracker cleaning functions, to be run once the raw table is downloaded but before other operations. Works in conjuction with prototype_code/init_table_cellartracker.py
-"""
-
 import html
 import numpy as np
 from wine_analysis_hplc_uv.db_methods import db_methods
 from wine_analysis_hplc_uv.df_methods import df_cleaning_methods
 from wine_analysis_hplc_uv.generic import Exporter
-
-from wine_analysis_hplc_uv.definitions import (
-    DB_PATH,
-    CT_TBL_NAME,
-    CLEAN_CT_TBL_NAME,
-    TEST_SHEETS_KEY,
-)
+import numpy as np
+import pandas as pd
 
 
 class CTCleaner(Exporter):
-    def ct_cleaner(self):
-        self.df = df_cleaning_methods.df_string_cleaner(self.df)
-        self.df.columns = self.df.columns.str.lower()
-        self.df = self.df.rename({"wine": "name"}, axis=1)
-        self.df = self.df.replace({"1001": np.nan})
+    """
+    Contains all cleaning cellar tracker methods and inherits export methods from Exporter.
+    """
 
-        def unescape_html(s):
-            return html.unescape(s)
+    def lower_cols(self, df):
+        return df.rename(columns=str.lower)
 
-        try:
-            self.df["name"] = self.df["name"].apply(unescape_html)
-        except TypeError as e:
-            print("Type error encountered when cleaning html characters:", e)
+    def rename_wine_col(self, df):
+        return df.rename({"wine": "name"}, axis=1)
 
+    def replace_vintage_code(self, df):
+        return df.replace({"1001": np.nan})
+
+    def unescape_name_html(self, df):
+        return df.assign(name=lambda df: df["name"].apply(html.unescape))
+
+    def clean_df(self, df: pd.DataFrame):
+        self.df = (
+            self.df.pipe(df_cleaning_methods.df_string_cleaner)
+            .pipe(self.lower_cols)
+            .pipe(self.rename_wine_col)
+            .pipe(self.replace_vintage_code)
+            .pipe(self.unescape_name_html)
+        )
         return self.df
-
-    def __init__(self, db_path: str, raw_tbl_name: str):
-        self.db_path = db_path
-        self.raw_tbl_name = raw_tbl_name
-        self.df = db_methods.tbl_to_df(self.db_path, self.raw_tbl_name)
-        self.clean_df = self.ct_cleaner()
-
-
-def main():
-    ct_cleaner = CTCleaner(DB_PATH, CT_TBL_NAME)
-    ct_cleaner.to_db(db_filepath=DB_PATH, tbl_name=CLEAN_CT_TBL_NAME)
-    ct_cleaner.to_sheets(key=TEST_SHEETS_KEY, sheet_title=CLEAN_CT_TBL_NAME)
-
-    return None
-
-
-if __name__ == "__main__":
-    main()
