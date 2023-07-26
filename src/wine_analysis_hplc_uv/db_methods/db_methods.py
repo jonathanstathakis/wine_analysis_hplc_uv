@@ -20,27 +20,19 @@ from typing import List
 from wine_analysis_hplc_uv import definitions
 
 
-def write_df_to_db(df: pd.DataFrame, tblname: str, db_filepath: str):
-    try:
-        print(f"creating {tblname} table from df")
-        with db.connect(db_filepath) as con:
-            con.execute(f"CREATE OR REPLACE TABLE {tblname} AS SElECT * FROM df")
-    except Exception as e:
-        print(e)
+def write_df_to_db(df: pd.DataFrame, tblname: str, con: db.DuckDBPyConnection):
+    con.execute(f"CREATE OR REPLACE TABLE {tblname} AS SElECT * FROM df")
 
-    display_table_info(db_filepath, tblname)
+    # display_table_info(db_filepath, tblname)
     return None
 
 
-def display_table_info(db_filepath: str, table_name: str) -> None:
+def display_table_info(con: db.DuckDBPyConnection, table_name: str) -> None:
     print(f"\n\n###### {table_name.upper()} TABLE ######\n")
 
-    assert isinstance(db_filepath, str)
-
-    with db.connect(db_filepath) as con:
-        con.sql(f"DESCRIBE TABLE {table_name}").show()
-        con.sql(f"SELECT COUNT(*) FROM {table_name}").show()
-        con.sql(f"SELECT * FROM {table_name} LIMIT 5").show()
+    con.sql(f"DESCRIBE TABLE {table_name}").show()
+    con.sql(f"SELECT COUNT(*) FROM {table_name}").show()
+    con.sql(f"SELECT * FROM {table_name} LIMIT 5").show()
     return None
 
 
@@ -141,19 +133,4 @@ def to_be_added_pipe():
         SET
         name_ct = REPLACE(name_ct,'''','')
         """
-    )
-    # Add the new column
-    con.sql(
-        """
-        ALTER TABLE super_tbl 
-        ADD COLUMN wine VARCHAR;
-    """
-    )
-
-    # Populate the new column
-    con.sql(
-        """
-        UPDATE super_tbl
-        SET wine = vintage_ct || ' ' || name_ct;
-    """
     )
