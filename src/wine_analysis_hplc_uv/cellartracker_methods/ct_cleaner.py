@@ -12,7 +12,18 @@ class CTCleaner(Exporter):
     Contains all cleaning cellar tracker methods and inherits export methods from Exporter.
     """
 
-    def lower_cols(self, df):
+    def clean_df(self):
+        self.df = (
+            self.df.pipe(df_cleaning_methods.df_string_cleaner)
+            .pipe(self.lower_collabels)
+            .pipe(self.rename_wine_col)
+            .pipe(self.replace_vintage_code)
+            .pipe(self.unescape_name_html)
+            .pipe(self.remove_illegal_chars)
+            .pipe(self.add_wine_col)
+        )
+
+    def lower_collabels(self, df):
         return df.rename(columns=str.lower)
 
     def rename_wine_col(self, df):
@@ -24,12 +35,9 @@ class CTCleaner(Exporter):
     def unescape_name_html(self, df):
         return df.assign(name=lambda df: df["name"].apply(html.unescape))
 
-    def clean_df(self, df: pd.DataFrame):
-        self.df = (
-            self.df.pipe(df_cleaning_methods.df_string_cleaner)
-            .pipe(self.lower_cols)
-            .pipe(self.rename_wine_col)
-            .pipe(self.replace_vintage_code)
-            .pipe(self.unescape_name_html)
-        )
-        return self.df
+    def remove_illegal_chars(self, df):
+        # remove single quote character from df as it causes errors in sql statements during injections
+        return df.apply(lambda x: x.replace("'", "", regex=True))
+
+    def add_wine_col(self, df):
+        return df.assign(wine=df.vintage + " " + df.name)

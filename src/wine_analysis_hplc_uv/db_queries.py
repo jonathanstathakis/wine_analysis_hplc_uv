@@ -8,11 +8,11 @@ import duckdb as db
 def query_db(db_path: str, tbl_name: str):
     query = """--sql
     select
-        *
+        name
     from
-        chemstation_metadata
+        c_cellar_tracker
     where
-        "notebook" like '%116%';
+        "name" like '%joshua%';
     """
     with db.connect(db_path) as con:
         con.sql(query).show()
