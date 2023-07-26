@@ -4,6 +4,10 @@ from wine_analysis_hplc_uv import definitions
 import pandas as pd
 import pytest
 from wine_analysis_hplc_uv.cellartracker_methods.ct_cleaner import CTCleaner
+import logging
+
+logging.basicConfig()
+logger = logging.getLogger(__name__)
 
 
 @pytest.fixture
@@ -17,10 +21,12 @@ def dirty_ct(con):
 
 class Cleaned_CT(CTCleaner):
     def __init__(self, dirty_df):
-        self.lower_ct = self.lower_cols(dirty_df)
+        self.lower_ct = self.lower_collabels(dirty_df)
         self.rename_ct = self.rename_wine_col(self.lower_ct)
         self.replace_vintage_ct = self.replace_vintage_code(self.rename_ct)
         self.html_unescape_ct = self.unescape_name_html(self.replace_vintage_ct)
+        self.remove_illegal_chars_ct = self.remove_illegal_chars(self.html_unescape_ct)
+        self.wine_col_ct = self.add_wine_col(self.remove_illegal_chars_ct)
 
 
 @pytest.fixture
@@ -59,3 +65,17 @@ def test_replace_vintage_code(dirty_ct, cleaned_ct):
 def test_has_whitespace(dirty_ct):
     # Apply the function to each column in the DataFrame
     assert not dirty_ct.apply(test_methods_df.has_whitespace).any()
+
+
+def test_remove_illegal_chars(cleaned_ct):
+    # test to ensure that all identified illegal characters are removed - such as single quotes
+    a = cleaned_ct.remove_illegal_chars_ct["name"]
+    # str.contains returns a bool series with true if there is a match, assert not to invert it.
+    assert not cleaned_ct.remove_illegal_chars_ct["name"].str.contains("'").any()
+
+
+def test_add_wine_col(cleaned_ct):
+    # test whether forming the wine column (a primary key) is successful
+    df = cleaned_ct.wine_col_ct
+    wine_series = df["vintage"] + " " + df["name"]
+    pd.testing.assert_series_equal(df["wine"], wine_series, check_names=False)
