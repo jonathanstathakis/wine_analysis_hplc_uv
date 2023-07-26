@@ -107,30 +107,3 @@ def testing(con, wine_subset):
     a = get_a(con, wine_subset)
 
     return a
-
-
-@timeit
-def main():
-    con = db.connect(wine_analysis_hplc_uv.definitions.DB_PATH)
-
-
-if __name__ == "__main__":
-    main()
-
-
-def to_be_added_pipe():
-    """
-    TODO:
-    - [ ] add these to a processing pipe, i.e. CT cleaner.
-
-    A list of queries which I have directly applied to the existing super_tbl but will need to be added to a pipeline further down the track.
-    """
-    # clean the wine column
-    con.sql(
-        """
-        UPDATE
-        super_tbl
-        SET
-        name_ct = REPLACE(name_ct,'''','')
-        """
-    )
