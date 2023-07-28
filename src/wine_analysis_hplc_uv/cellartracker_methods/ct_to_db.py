@@ -7,13 +7,11 @@ import os
 import duckdb as db
 import logging
 
-logging.basicConfig()
-ct_logger = logging.Logger(__name__)
+logger = logging.getLogger(__name__)
 
 
-def ct_to_db(db_filepath: str, ct_tbl: str, un: str, pw: str):
-    con = db.connect(DB_PATH)
-
+def ct_to_db(con, ct_tbl: str, un: str, pw: str):
+    logger.info("ct to db")
     ct = MyCellarTracker(username=un, password=pw)
     ct.to_db(con=con, tbl_name=ct_tbl)
 

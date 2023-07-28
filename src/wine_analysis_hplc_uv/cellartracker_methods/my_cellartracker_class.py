@@ -3,9 +3,6 @@ A cellartracker class inheriting from CellarTracker with cleaning and export fun
 """
 from cellartracker import cellartracker
 import pandas as pd
-from wine_analysis_hplc_uv.my_sheetsinterface import gspread_methods as g_methods
-import duckdb as db
-from wine_analysis_hplc_uv.db_methods import db_methods
 from wine_analysis_hplc_uv.generic import Exporter
 
 
