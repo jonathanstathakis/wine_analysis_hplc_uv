@@ -8,14 +8,14 @@ import duckdb as db
 def query_db(db_path: str, tbl_name: str):
     query = """--sql
     select
-        name
+        notes
     from
-        c_cellar_tracker
-    where
-        "name" like '%joshua%';
+        c_sample_tracker
+    ;
     """
     with db.connect(db_path) as con:
-        con.sql(query).show()
+        a = con.sql(query).df()
+        print(a[a["notes"] == ""])
     return None
 
 

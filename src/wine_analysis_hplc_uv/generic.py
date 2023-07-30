@@ -3,6 +3,10 @@ Generic Class and method definitions
 """
 from wine_analysis_hplc_uv.db_methods import db_methods
 from wine_analysis_hplc_uv.my_sheetsinterface import gspread_methods as g_methods
+import pandas as pd
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class Exporter:

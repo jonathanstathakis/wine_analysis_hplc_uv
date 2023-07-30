@@ -1,27 +1,39 @@
 """ 
 A file to contain general duckdb database methods.
 """
-import os
-import sys
 
-import duckdb as db
 import pandas as pd
-import polars as pl
-from wine_analysis_hplc_uv.chemstation import chemstation_to_db_methods
-import duckdb as db
-import wine_analysis_hplc_uv
-from mydevtools.function_timer import timeit
-import seaborn as sns
-import logging
-
-logger = logging.Logger("db")
-logger.setLevel("DEBUG")
-from typing import List
 from wine_analysis_hplc_uv import definitions
+from mydevtools.function_timer import timeit
+import logging
+import duckdb as db
+
+logger = logging.getLogger(__name__)
 
 
 def write_df_to_db(df: pd.DataFrame, tblname: str, con: db.DuckDBPyConnection):
-    con.execute(f"CREATE OR REPLACE TABLE {tblname} AS SElECT * FROM df")
+    try:
+        # write given table in db from df
+        con.sql(f"CREATE OR REPLACE TABLE {tblname} AS SElECT * FROM df")
+
+        # get the db_name for the following log message
+        db_name = con.sql("select database_name from duckdb_columns()").fetchone()[0]
+
+        # log that the tbl has been written to the db
+        logger.info(f"{tblname} written to {db_name}")
+    except db.CatalogException as e:
+        logger.error(e)
+        # get list of all tables in db
+        logger.error(
+            "tables in db:" f" {con.sql('SELECT table_name FROM duckdb_tables()').df()}"
+        )
+    # double check that table is in db
+    try:
+        tbls_in_db = con.sql("SELECT table_name FROM duckdb_tables").df()
+        assert tblname in tbls_in_db.values
+    except AssertionError:
+        logger.error(f"\n{tbls_in_db}")
+        logger.error(msg=f"db is: {db_name}")
 
     # display_table_info(db_filepath, tblname)
     return None

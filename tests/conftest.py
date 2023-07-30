@@ -1,18 +1,17 @@
 import pytest
 import pandas as pd
-from wine_analysis_hplc_uv import definitions
 from wine_analysis_hplc_uv.chemstation.chemstationprocessor import ChemstationProcessor
 import numpy as np
-import duckdb as db
-
-
-@pytest.fixture
-def con():
-    return db.connect(definitions.DB_PATH)
 
 
 @pytest.fixture
 def ch_data_path():
+    # return "/Users/jonathan/mres_thesis/wine_analysis_hplc_uv/tests/test_data/agilent_D"
+    return "/Users/jonathan/uni/0_jono_data/mres_data_library"
+
+
+@pytest.fixture
+def sample_ch_data_path():
     return "/Users/jonathan/mres_thesis/wine_analysis_hplc_uv/tests/test_data/agilent_D"
 
 

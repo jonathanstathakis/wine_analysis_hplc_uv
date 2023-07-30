@@ -10,118 +10,82 @@ TODO:
 - [ ] SampleTracker.st_to_db
 """
 import logging
+import pytest
 
 logging.basicConfig(level=logging.INFO)
 sample_tracker_logger = logging.getLogger("wine_analysis_hplc_uv.sampletracker")
 sample_tracker_logger.setLevel(logging.DEBUG)
 test_logger = logging.getLogger(__name__)
-
+import duckdb as db
 import os
 import sys
-
-sys.path.append("/Users/jonathan/mres_thesis/wine_analysis_hplc_uv/tests")
-
 from wine_analysis_hplc_uv.sampletracker import sample_tracker_methods as st_methods
 from wine_analysis_hplc_uv.sampletracker import sample_tracker_processor
-from tests.mytestmethods.mytestmethods import test_report
 from wine_analysis_hplc_uv.df_methods import df_methods
 from wine_analysis_hplc_uv.my_sheetsinterface.gspread_methods import WorkSheet
 import pandas as pd
+from wine_analysis_hplc_uv.sampletracker.st_cleaner import STCleaner
+from mydevtools.testing import test_methods_df
 
 
-def test_sample_tracker():
-    tests = [
-        # (test_sample_tracker_df_builder,), # 2023-06-08 16:09:14 deleted this method, instead initializing directly from the wksh member obj.
-        (test_sample_tracker_class_init,),
-        (test_sample_tracker_df,),
-        (test_sample_tracker_clean_df,),
-        (test_to_sheets,),
-        (test_to_db, get_SampleTracker(get_key())),
-    ]
-
-    test_report(tests)
-
-
-def get_key():
+@pytest.fixture
+def gsheets_key():
     return os.environ.get("TEST_SAMPLE_TRACKER_KEY")
 
 
-def test_sample_tracker_df_builder():
-    sample_tracker_df = st_methods.sample_tracker_df_builder()
-    assert not sample_tracker_df.empty
-
-
-def get_SampleTracker(key=get_key()):
+@pytest.fixture
+def sample_tracker(gsheets_key):
     sample_tracker = sample_tracker_processor.SampleTracker(
-        sheet_title="test_sample_tracker", key=key
+        sheet_title="test_sample_tracker", key=gsheets_key
     )
     return sample_tracker
 
 
-def test_sample_tracker_class_init(key=get_key()):
-    st = get_SampleTracker(key)
-    return st
+@pytest.fixture
+def st_test_con():
+    con = db.connect(":memory:")
+    return con
 
 
-def test_sample_tracker_df(key=get_key()) -> None:
-    sample_tracker = get_SampleTracker(key=get_key())
+@pytest.fixture
+def st_tblname():
+    return "test_st_tbl"
+
+
+def test_sampletracker_init(sample_tracker):
+    assert sample_tracker
+
+
+def test_sample_tracker_df(sample_tracker) -> None:
     df_methods.test_df(sample_tracker.df)
     return None
 
 
-def test_sample_tracker_clean_df(key=get_key()) -> None:
-    sample_tracker = get_SampleTracker(key=get_key())
+def test_sample_tracker_clean_df(sample_tracker) -> None:
     df1 = sample_tracker.df.copy()
     df_methods.test_df(df1)
-    sample_tracker.clean_df_helper()
-    df2 = sample_tracker.df.copy()
-    df_methods.test_df(df2)
+    st_cleaner = STCleaner()
+    clean_st_df = st_cleaner.clean_st(df1)
+    df_methods.test_df(clean_st_df)
 
-    assert not df1.equals(df2)
+    test_methods_df.assert_frame_not_equal(df1, clean_st_df)
     return None
 
 
-def test_to_sheets(key=get_key(), sheet_title_2="test_to_sheets"):
+def test_to_sheets(sample_tracker, gsheets_key, sheet_title_2="test_to_sheets"):
     # create sampletracker obj and write to new sheet
-    sample_tracker = get_SampleTracker(key=key)
     sample_tracker.to_sheets_helper(sheet_title=sheet_title_2)
 
     # test contents of new sheet
-    new_wksh = WorkSheet(key=key, sheet_title=sheet_title_2)
+    new_wksh = WorkSheet(key=gsheets_key, sheet_title=sheet_title_2)
+
     assert sample_tracker.df.equals(new_wksh.sheet_df)
     new_wksh.delete_sheet(new_wksh.wksh)
 
 
-def get_db_filepath():
-    return os.path.join(os.getcwd(), "test_st.db")
+def test_to_db(sample_tracker, st_test_con, st_tblname):
+    sample_tracker.to_db(st_test_con, st_tblname)
 
+    db_df = st_test_con.sql(f"SELECT * FROM {st_tblname}").df()
 
-def get_db_tbl_name():
-    return "test_st_tbl"
-
-
-def test_to_db(st):
-    db_filepath = get_db_filepath()
-
-    if os.path.exists(db_filepath):
-        os.remove(db_filepath)
-
-    db_tbl_name = get_db_tbl_name()
-    st.to_db_helper(db_filepath=db_filepath, db_tbl_name=db_tbl_name)
-
-    db_df = None
-    import duckdb as db
-
-    with db.connect(db_filepath) as con:
-        db_df = con.sql(f"SELECT * FROM {db_tbl_name}").df()
-    os.remove(db_filepath)  # cleanup
-
-    pd.testing.assert_frame_equal(st.df, db_df)
-
-
-def main():
-    test_sample_tracker()
-
-
-if __name__ == "__main__":
-    main()
+    pd.testing.assert_frame_equal(sample_tracker.df, db_df)

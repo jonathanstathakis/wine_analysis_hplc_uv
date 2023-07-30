@@ -12,9 +12,9 @@ class CTCleaner(Exporter):
     Contains all cleaning cellar tracker methods and inherits export methods from Exporter.
     """
 
-    def clean_df(self):
+    def clean_df(self, df):
         self.df = (
-            self.df.pipe(df_cleaning_methods.df_string_cleaner)
+            df.pipe(df_cleaning_methods.df_string_cleaner)
             .pipe(self.lower_collabels)
             .pipe(self.rename_wine_col)
             .pipe(self.replace_vintage_code)
