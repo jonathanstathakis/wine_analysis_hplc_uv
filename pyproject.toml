@@ -126,6 +126,8 @@ line-length = 88
 [tool.pytest.ini_options]
 log_cli = true
 log_cli_level = "DEBUG"
+log_format = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+log_date_format = "%Y-%m-%d %H:%M:%S"
 
 [build-system]
 requires = ["poetry-core"]

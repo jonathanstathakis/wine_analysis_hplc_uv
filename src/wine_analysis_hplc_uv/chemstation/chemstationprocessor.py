@@ -1,10 +1,6 @@
-from multiprocessing import process
 import os
 import pandas as pd
-import shutil
 import collections
-from wine_analysis_hplc_uv.chemstation import logger
-
 from wine_analysis_hplc_uv.chemstation import (
     chemstation_methods,
     chemstation_to_db_methods as ch_db,
@@ -12,16 +8,20 @@ from wine_analysis_hplc_uv.chemstation import (
     ch_m_cleaner as ch_m_clean,
 )
 from wine_analysis_hplc_uv.chemstation.process_outputs import output_to_csv
-from typing import List, Tuple, Dict
+from typing import List
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class ChemstationProcessor:
     """
-    # Chemstation data processor.
+    # Chemstation data processor
 
     """
 
     def __init__(self, lib_path: str):
+        logger.info("initializing ChemstationProcessor..")
         self.lib_path: str = lib_path
 
         self.path_list: List[str] = chemstation_methods.uv_filepaths_to_list(
@@ -69,7 +69,8 @@ class ChemstationProcessor:
 
 
 def test_dup_ids(metadata_df: List[dict]) -> None:
-    # observe how many unique ids were generated. duplicates are probably caused by duplicate files/filenames.
+    # observe how many unique ids were generated.
+    # duplicates are probably caused by duplicate files/filenames.
     logger.debug(f"size of metadata_list: {len(metadata_df)}")
 
     # print the UUIDs that occur more than once.

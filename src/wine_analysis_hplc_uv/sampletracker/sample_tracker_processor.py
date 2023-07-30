@@ -7,11 +7,11 @@ Exporting back to Sheets (if desired) can either use that WorkSheet object or cr
 """
 
 from wine_analysis_hplc_uv.sampletracker import sample_tracker_methods as st_methods
-from wine_analysis_hplc_uv.sampletracker import init_raw_sample_tracker_table
 import pandas as pd
+from wine_analysis_hplc_uv.generic import Exporter
 
 
-class SampleTracker:
+class SampleTracker(Exporter):
     def __init__(self, sheet_title: str, key=st_methods.get_gsheet_key()) -> None:
         assert isinstance(key, str)
         self.sheet_title = sheet_title
@@ -21,10 +21,10 @@ class SampleTracker:
         )
         self.df = self.wksh.sheet_df
 
-    def to_db(self, db_filepath: str, db_tbl_name: str) -> None:
-        init_raw_sample_tracker_table.sampletracker_to_db(
-            df=self.df, db_filepath=db_filepath, db_table_name=db_tbl_name
-        )
+    # def to_db(self, db_filepath: str, db_tbl_name: str) -> None:
+    #     init_raw_sample_tracker_table.sampletracker_to_db(
+    #         df=self.df, db_filepath=db_filepath, db_table_name=db_tbl_name
+    #     )
 
     def to_sheets_helper(self, sheet_title: str = None, sudo: bool = False) -> None:
         """_summary_

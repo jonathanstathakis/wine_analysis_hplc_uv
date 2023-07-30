@@ -17,6 +17,7 @@ def write_chemstation_to_db(
 
 
 def df_to_db(df: pd.DataFrame, tblname: str, con: str) -> None:
+    logger.info(f"writing df to {tblname} table..")
     try:
         con.sql(
             f"""
