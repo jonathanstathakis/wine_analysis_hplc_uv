@@ -15,7 +15,6 @@ def get_test_db_path():
     dirpath = os.path.dirname(os.path.abspath(__file__))
     db_filename = "test_build_library.db"
     fullpath = os.path.join(dirpath, db_filename)
-    print(fullpath)
     return fullpath
 
 
