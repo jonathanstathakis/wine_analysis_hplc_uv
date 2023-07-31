@@ -34,7 +34,7 @@ df2 = pd.DataFrame({"col1": [1, 2, 3], "col3": ["g", "h", "i"]})
 
 tbl1_name = "tbl1"
 tbl2_name = "tbl2"
-with db.connect(":memory:") as con:
+with db.connect() as con:
     write_df(con, tbl1_name, df1)
     write_df(con, tbl2_name, df2)
     tbl1 = get_rel(con, tbl1_name)

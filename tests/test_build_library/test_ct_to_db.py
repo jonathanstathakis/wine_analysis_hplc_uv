@@ -22,13 +22,8 @@ def ct_pw():
 
 
 @pytest.fixture
-def test_ct_db_path():
-    return os.path.join(os.path.dirname(__file__), ":memory:")
-
-
-@pytest.fixture
-def db_con(test_ct_db_path):
-    return db.connect(test_ct_db_path)
+def db_con():
+    return db.connect()
 
 
 @pytest.fixture

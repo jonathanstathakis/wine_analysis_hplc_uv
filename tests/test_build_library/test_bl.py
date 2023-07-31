@@ -23,11 +23,10 @@ from scratch will take time.
 """
 
 
-def test_build_library_sample_set(ch_data_path):
-    db_path = os.path.join(os.path.dirname(__file__), "test_db")
-    con = db.connect(db_path)
+def test_build_library_sample_set(sample_ch_data_path):
+    con = db.connect()
     build_library.build_db_library(
-        data_lib_path=ch_data_path,
+        data_lib_path=sample_ch_data_path,
         con=con,
         ch_m_tblname=definitions.CH_META_TBL_NAME,
         ch_d_tblname=definitions.CH_DATA_TBL_NAME,
@@ -38,8 +37,3 @@ def test_build_library_sample_set(ch_data_path):
         ct_un=os.environ.get("CELLAR_TRACKER_UN"),
         ct_pw=os.environ.get("CELLAR_TRACKER_PW"),
     )
-    logger.info(con.sql("SELECT table_name FROM duckdb_tables;").df())
-
-    for tbl in con.sql("SELECT table_name FROM duckdb_tables").df()["table_name"]:
-        tbl_df = con.sql(f"SELECT * FROM {tbl}").pl()
-        logger.info(f"{tbl}\n{tbl_df.describe()}")
