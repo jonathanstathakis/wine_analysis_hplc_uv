@@ -13,6 +13,7 @@ Current operations:
 """
 import os
 import duckdb as db
+import polars as pl
 from wine_analysis_hplc_uv.sampletracker.st_cleaner import STCleaner
 from wine_analysis_hplc_uv.chemstation import ch_m_cleaner
 from wine_analysis_hplc_uv.cellartracker_methods.ct_cleaner import CTCleaner
@@ -21,11 +22,20 @@ from wine_analysis_hplc_uv.cellartracker_methods import ct_to_db
 from wine_analysis_hplc_uv.core import ch_to_db, st_to_db
 import logging
 
-# chemstation_logger = logging.getLogger("wine_analysis_hplc_uv.chemstation")
-# chemstation_logger.setLevel(logging.DEBUG)
-logging.basicConfig()
-logger = logging.getLogger(__name__)
-logger.setLevel("INFO")
+logging_level = logging.INFO
+logger = logging.getLogger()
+logger.setLevel(logging_level)
+
+# Set up a stream handler to log to the console
+stream_handler = logging.StreamHandler()
+stream_handler.setLevel(logging_level)
+formatter = logging.Formatter(
+    "%(asctime)s %(name)s: %(message)s", datefmt="%m/%d/%Y %I:%M:%S %p"
+)
+stream_handler.setFormatter(formatter)
+
+# Add handler to logger
+logger.addHandler(stream_handler)
 
 
 def build_db_library(
@@ -44,6 +54,15 @@ def build_db_library(
     Pipeline function to construct the super_table, a cleaned algamation of chemstation,
     sample_tracker and cellartracker tables.
     """
+    tblnames = dict(
+        ch_m_tblname=ch_m_tblname,
+        ch_d_tblname=ch_d_tblname,
+        st_tblname=st_tblname,
+        ct_tblname=ct_tblname,
+        clean_ch_m_tblname="c_" + ch_m_tblname,
+        clean_st_tblname="c_" + st_tblname,
+        clean_ct_tblname="c_" + ct_tblname,
+    )
 
     logger.info("beginning db library build..")
 
@@ -68,18 +87,27 @@ def build_db_library(
     dirty_ch_m_df = con.sql(f"select * from {ch_m_tblname}").df()
     ch_m_cleaner_ = ch_m_cleaner.ChMCleaner()
     ch_m_cleaner_.clean_ch_m(dirty_ch_m_df)
-    ch_m_cleaner_.to_db(con=con, tbl_name="c_" + ch_m_tblname)
+    ch_m_cleaner_.to_db(con=con, tbl_name=tblnames["clean_ch_m_tblname"])
 
     # st
     st_cleaner = STCleaner()
     st_cleaner.clean_st(con.sql(f"select * from {st_tblname}").df())
-    st_cleaner.to_db(con=con, tbl_name="c_" + st_tblname)
+    st_cleaner.to_db(con=con, tbl_name=tblnames["clean_st_tblname"])
 
     # ct
     raw_ct_df = con.sql(f"SELECT * FROM {ct_tblname}").df()
     ct_cleaner = CTCleaner()
     ct_cleaner.clean_df(raw_ct_df)
-    ct_cleaner.to_db(con=con, tbl_name="c_" + ct_tblname)
+    ct_cleaner.to_db(con=con, tbl_name=tblnames["clean_ct_tblname"])
+
+    def display_results(con):
+        logger.info(con.sql("SELECT table_name FROM duckdb_tables;").df())
+
+        for tbl in con.sql("SELECT table_name FROM duckdb_tables").df()["table_name"]:
+            tbl_df = con.sql(f"SELECT * FROM {tbl}").pl()
+            logger.info(f"{tbl}\n{tbl_df.describe()}")
+
+    display_results(con)
 
     return None
 

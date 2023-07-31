@@ -43,7 +43,7 @@ def sample_tracker(gsheets_key):
 
 @pytest.fixture
 def st_test_con():
-    con = db.connect(":memory:")
+    con = db.connect()
     return con
 
 
