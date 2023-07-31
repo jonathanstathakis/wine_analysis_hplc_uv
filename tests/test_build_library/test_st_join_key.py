@@ -43,38 +43,17 @@ def test_form_join_df(formforeignkey):
 
 
 def test_add_foreign_key(formforeignkey, corecon):
-    join_df = formforeignkey.get_fuzzy_join_df()
+    st_df = corecon.sql("SELECT * FROM c_sample_tracker").df()
+    logging.info(st_df.shape)
 
-    logger.info(join_df.columns)
+    formforeignkey.st_with_foreign_key(corecon)
 
-    # create temp st table with join_key_col
+    new_st_df = corecon.sql("SELECT * FROM st_temp_join1").df()
+    logging.info(new_st_df.shape)
 
-    st_temp = corecon.sql(
-        """--sql
-                      CREATE TEMPORARY TABLE st_temp
-                      AS
-                      SELECT * FROM c_sample_tracker;
-                      ALTER TABLE
-                      st_temp
-                      ADD COLUMN
-                      join_key VARCHAR;
-                      UPDATE st_temp
-                      SET join_key = concat(st_temp.vintage,' ',st_temp.name);
-                      SELECT * FROM st_temp LIMIT 5;
-                      """
-    ).pl()
+    # check if only 1 column added and same rows as st_df
+    assert new_st_df.shape == tuple([st_df.shape[0] + 1, st_df.shape[1]])
 
-    logger.info(st_temp.describe())
-
-    # sql_st_with_fkey = corecon.sql("""--sql
-    #                         CREATE TEMP table st_wfkey
-    #                         AS
-    #                         SELECT st.detection, st.sampler, st.samplecode, st.vintage, st.name, st.open_date, st.sampled_date, st.added_to_cellartracker, st.notes, st.size, join_df.ct_wine_name
-    #                         FROM c_sample_tracker st
-    #                         JOIN join_df
-    #                         ON (st.vintage || ' ' || st.name) = (join_df.vintage_st || ' ' || join_df.name_st)
-    #                         """).pl()
-
-    # logger.info(sql_st_with_fkey.describe())
-
-    # logger.info(formforeignkey.st_with_foreign_key())
+    # check if any nulls
+    for col in st_df.drop("wine", axis=1).columns:
+        assert new_st_df[col].isna().sum() == 0
