@@ -12,11 +12,8 @@ import pandas as pd
 logging.basicConfig()
 testlogger = logging.getLogger(__name__)
 testlogger.setLevel("INFO")
-from wine_analysis_hplc_uv.chemstation import logger as chemlogger
 from glob import glob
 from wine_analysis_hplc_uv.chemstation.chemstation_methods import uv_filepaths_to_list
-
-chemlogger.setLevel("INFO")
 
 
 def test_verified_ch_m_csv(verified_ch_m, caplog):

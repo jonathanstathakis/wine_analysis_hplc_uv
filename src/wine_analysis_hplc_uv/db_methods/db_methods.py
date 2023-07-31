@@ -16,8 +16,7 @@ def write_df_to_db(df: pd.DataFrame, tblname: str, con: db.DuckDBPyConnection):
         # write given table in db from df
         con.sql(f"CREATE OR REPLACE TABLE {tblname} AS SElECT * FROM df")
 
-        # get the db_name for the following log message
-        db_name = con.sql("select database_name from duckdb_columns()").fetchone()[0]
+        db_name = con.sql("SELECT current_database()").fetchone()[0]
 
         # log that the tbl has been written to the db
         logger.info(f"{tblname} written to {db_name}")

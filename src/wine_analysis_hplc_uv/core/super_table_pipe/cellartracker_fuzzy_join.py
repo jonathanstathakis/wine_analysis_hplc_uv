@@ -1,10 +1,8 @@
-"""
-
-"""
 import pandas as pd
 from fuzzywuzzy import fuzz, process
-from wine_analysis_hplc_uv.core.super_table_pipe import form_join_col
 import logging
+
+logger = logging.getLogger(__name__)
 
 
 def cellar_tracker_fuzzy_join(
@@ -22,8 +20,11 @@ def cellar_tracker_fuzzy_join(
         # print("joining metadata_table+sample_tracker with cellar_tracker\n")
         cellartracker_df.attrs["name"] = "cellar tracker table"
 
-        in_df = form_join_col.form_join_col(in_df)
-        cellartracker_df = form_join_col.form_join_col(cellartracker_df)
+        in_df = in_df.assign(join_key=lambda df: df["vintage"] + " " + df["name"])
+
+        cellartracker_df = cellartracker_df.assign(
+            join_key=lambda df: df["vintage"] + " " + df["name"]
+        )
 
         merge_df = join_dfs_with_fuzzy(in_df, cellartracker_df)
 

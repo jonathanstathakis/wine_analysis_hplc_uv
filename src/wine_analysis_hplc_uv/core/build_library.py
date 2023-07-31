@@ -14,12 +14,15 @@ Current operations:
 import os
 import duckdb as db
 import polars as pl
-from wine_analysis_hplc_uv.sampletracker.st_cleaner import STCleaner
+
 from wine_analysis_hplc_uv.chemstation import ch_m_cleaner
 from wine_analysis_hplc_uv.cellartracker_methods.ct_cleaner import CTCleaner
 from wine_analysis_hplc_uv import definitions
 from wine_analysis_hplc_uv.cellartracker_methods import ct_to_db
-from wine_analysis_hplc_uv.core import ch_to_db, st_to_db
+from wine_analysis_hplc_uv.core import ch_to_db, st_ct_join, st_to_db
+from wine_analysis_hplc_uv.core import clean_st_to_db
+from wine_analysis_hplc_uv.core import st_ct_join
+
 import logging
 
 logging_level = logging.INFO
@@ -90,15 +93,20 @@ def build_db_library(
     ch_m_cleaner_.to_db(con=con, tbl_name=tblnames["clean_ch_m_tblname"])
 
     # st
-    st_cleaner = STCleaner()
-    st_cleaner.clean_st(con.sql(f"select * from {st_tblname}").df())
-    st_cleaner.to_db(con=con, tbl_name=tblnames["clean_st_tblname"])
+    clean_st_to_db.clean_st_to_db(con)
 
     # ct
     raw_ct_df = con.sql(f"SELECT * FROM {ct_tblname}").df()
     ct_cleaner = CTCleaner()
     ct_cleaner.clean_df(raw_ct_df)
     ct_cleaner.to_db(con=con, tbl_name=tblnames["clean_ct_tblname"])
+
+    # join st with ct to get the primary key then write it back to st for furture joins
+    c_st = con.sql("SELECT * FROM c_sample_tracker").df()
+    c_ct = con.sql("SELECT * FROM c_cellar_tracker").df()
+
+    st_ct_fkey = st_ct_join.FormForeignKeySTCT(c_st, c_ct)
+    st_ct_fkey.st_with_foreign_key(con)
 
     def display_results(con):
         logger.info(con.sql("SELECT table_name FROM duckdb_tables;").df())

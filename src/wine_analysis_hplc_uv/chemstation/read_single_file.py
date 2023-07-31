@@ -5,9 +5,11 @@ import uuid
 from typing import List, Tuple, Dict, Union
 import rainbow as rb
 import pandas as pd
-from wine_analysis_hplc_uv.chemstation import logger
 import numpy as np
 import traceback
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def read_single_file(

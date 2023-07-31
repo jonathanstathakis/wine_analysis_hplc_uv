@@ -176,3 +176,5 @@ build/*
 bin/*
 tests/test_data/*
 wine_analysis_hplc_uv_2.code-workspace
+wahc.duckdb
+wahu.duckdb
