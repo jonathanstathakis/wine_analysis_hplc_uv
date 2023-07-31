@@ -6,23 +6,23 @@ import duckdb as db
 from wine_analysis_hplc_uv.db_methods import db_methods
 from wine_analysis_hplc_uv import definitions
 from mydevtools.function_timer import timeit
-import polars as pl
 import seaborn as sns
 import matplotlib.pyplot as plt
-import numpy as np
-import pandas as pd
 from sklearn.decomposition import PCA
+import os
 
 
 def get_sampleids(con):
-    sampleids = con.sql(
-        f"""
-            SELECT id from (select id from super_tbl WHERE id NOT NULL AND detection='cuprac')USING SAMPLE 10
-            """
-    ).fetchall()
+    sql_file = os.path.join(os.path.dirname(__file__), "test.sql")
 
-    subset_wines = tuple([wine[0] for wine in sampleids])
-    return subset_wines
+    with open(sql_file, "r") as f:
+        query = f.read()
+
+    sampleids = con.sql(query).pl()
+    return sampleids
+
+    # subset_wines = tuple([wine[0] for wine in sampleids])
+    # return subset_wines
 
 
 @timeit

@@ -11,7 +11,6 @@ from wine_analysis_hplc_uv.definitions import (
 import re
 import logging
 
-logging.basicConfig()
 logger = logging.getLogger(__name__)
 
 

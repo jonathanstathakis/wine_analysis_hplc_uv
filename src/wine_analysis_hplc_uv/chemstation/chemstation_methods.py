@@ -3,7 +3,9 @@ All the methods used to preprocess the chemstation files into the db
 """
 import os
 import fnmatch
-from wine_analysis_hplc_uv.chemstation import logger
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def uv_filepaths_to_list(root_dir_path: str) -> list:

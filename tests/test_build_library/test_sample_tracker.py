@@ -1,31 +1,17 @@
-"""_summary_
-
-TODO:
-
-- [x] sample_tracker_df_builder
-- [x] SampleTracker initialisation
-- [x] SampleTracker.df
-- [x] SampleTracker.clean_df
-- [x] SampleTracker.to_sheets
-- [ ] SampleTracker.st_to_db
-"""
-import logging
 import pytest
-
-logging.basicConfig(level=logging.INFO)
-sample_tracker_logger = logging.getLogger("wine_analysis_hplc_uv.sampletracker")
-sample_tracker_logger.setLevel(logging.DEBUG)
-test_logger = logging.getLogger(__name__)
 import duckdb as db
 import os
 import sys
-from wine_analysis_hplc_uv.sampletracker import sample_tracker_methods as st_methods
 from wine_analysis_hplc_uv.sampletracker import sample_tracker_processor
 from wine_analysis_hplc_uv.df_methods import df_methods
 from wine_analysis_hplc_uv.my_sheetsinterface.gspread_methods import WorkSheet
 import pandas as pd
 from wine_analysis_hplc_uv.sampletracker.st_cleaner import STCleaner
 from mydevtools.testing import test_methods_df
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 @pytest.fixture

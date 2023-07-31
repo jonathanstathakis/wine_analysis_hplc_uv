@@ -4,7 +4,9 @@ A module to db_filepathtain chemstation database interface methods
 from typing import Tuple, List, Dict
 import pandas as pd
 from wine_analysis_hplc_uv.db_methods import db_methods
-from wine_analysis_hplc_uv.chemstation import logger
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def write_chemstation_to_db(

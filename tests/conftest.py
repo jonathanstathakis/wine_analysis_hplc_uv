@@ -2,6 +2,20 @@ import pytest
 import pandas as pd
 from wine_analysis_hplc_uv.chemstation.chemstationprocessor import ChemstationProcessor
 import numpy as np
+from wine_analysis_hplc_uv import definitions
+import duckdb as db
+
+import os
+
+db_path = definitions.DB_PATH
+print(db_path)
+
+
+@pytest.fixture
+def corecon():
+    assert isinstance(db_path, str)
+    con = db.connect(db_path)
+    return con
 
 
 @pytest.fixture
