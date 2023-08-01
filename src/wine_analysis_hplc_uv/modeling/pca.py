@@ -1,6 +1,3 @@
-"""
-
-"""
 import pandas as pd
 import polars as pl
 import duckdb as db
@@ -165,25 +162,25 @@ def get_wine_data(con):
     # cs columns: id, mins, wavelength, value
     wine_data = con.sql(
         """--sql
-                        CREATE OR REPLACE TEMPORARY TABLE
-                        wine_data
-                        AS
-                        SELECT
-                        t.detection, t.samplecode, t.wine, t.color, t.varietal, t.id, cs.mins, cs.wavelength, cs.value
-                        FROM
-                        ch_m_st_ct_temp t
-                        LEFT JOIN
-                        chromatogram_spectra cs
-                        ON
-                        (
-                            t.id=cs.id
-                        )
-                        WHERE
-                        cs.wavelength=450
-                        AND
-                        cs.mins<30;
-                        SELECT * FROM wine_data;
-                        """
+        CREATE OR REPLACE TEMPORARY TABLE
+        wine_data
+        AS
+        SELECT
+        t.detection, t.samplecode, t.wine, t.color, t.varietal, t.id, cs.mins, cs.wavelength, cs.value
+        FROM
+        ch_m_st_ct_temp t
+        LEFT JOIN
+        chromatogram_spectra cs
+        ON
+        (
+            t.id=cs.id
+        )
+        WHERE
+        cs.wavelength=450
+        AND
+        cs.mins<30;
+        SELECT * FROM wine_data;
+        """
     ).df()
 
     logger.info(f"after join, wine_data has shape:{wine_data.shape}..")
@@ -201,13 +198,16 @@ def pivot_wine_data(df):
     and consisting of absorbance values.
 
     """
-    logger.info("pivoting wine_data..")
+    # list of identified 'bad' samples to be excluded from downstream operations.
+    bad_samples = definitions.BAD_CUPRAC_SAMPLES
+
     logger.info(f"before pivot, shape: {df.shape}")
     out_df = (
         df.loc[:, ["id", "samplecode", "wine", "value"]]
+        .query("samplecode not in @bad_samples")
         .assign(i=lambda df: df.groupby(["id"]).cumcount())
-        .assign(id_wine=lambda df: df["samplecode"] + "_-" + df["wine"])
-        .pivot(columns="id_wine", values="value", index="i")
+        .assign(code_wine=lambda df: df["samplecode"] + "_-" + df["wine"])
+        .pivot(columns="code_wine", values="value", index="i")
     )
     logger.info(f"after pivot, shape: {out_df.shape}..")
     logger.info(f"{out_df.isna().sum()}")
@@ -244,20 +244,32 @@ def build_model(df, ax):
     ax.set_xlabel("PC1")
     ax.set_ylabel("PC2")
     ax.set_title("PCA Biplot")
-    # fig.show()
     return ax
+
+
+def build_figure(data):
+    fig, (ax1, ax2) = plt.subplots(nrows=1, ncols=2, figsize=(12, 6))
+
+    a = plot_wine_data(data, ax=ax1)
+    b = build_model(data, ax=ax2)
+
+    return fig
+
+
+def get_data(con):
+    wine_data = get_wine_data(con)
+    pwine_data = pivot_wine_data(wine_data)
+    return pwine_data
 
 
 def main():
     con = db.connect(definitions.DB_PATH)
-    wine_data = get_wine_data(con)
-    pwine_data = pivot_wine_data(wine_data)
+    pwine_data = get_data(con)
     plt1, (ax1, ax2) = plt.subplots(nrows=1, ncols=2, figsize=(12, 6))
-
     plot_wine_data(pwine_data, ax=ax1)
     build_model(pwine_data, ax=ax2)
-
-    plt1.tight_layout()
+    fig = build_figure(pwine_data)
+    fig.tight_layout()
 
 
 if __name__ == "__main__":

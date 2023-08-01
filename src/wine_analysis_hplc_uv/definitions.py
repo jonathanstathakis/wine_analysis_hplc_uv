@@ -30,3 +30,5 @@ TEST_WINE_NAMES = [
     "2018 crawford river cabernets",
     "2021 john duval wines shiraz concilio",
 ]
+
+BAD_CUPRAC_SAMPLES = ["128", "161", "163", "164", "165", "ca0101", "ca0301"]
