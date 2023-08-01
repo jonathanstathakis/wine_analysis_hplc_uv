@@ -56,6 +56,8 @@ def get_sc_df(
     # type: list = None,
 ):
     """
+    2023-08-01 12:42:39 Note: this is currently defunct as I want to focus on developing queries from scratch every time so i get more comfortable writing them. Keeping to provide groundwork for future user-facing functionality.
+
     Form a longform spectrum chromatogram rel object for a given list of wines, wavelengths, and minutes.
 
     Note: mins is a tuple of 2 elements, element zero the start of the mins interval, element one is the end of the interval
