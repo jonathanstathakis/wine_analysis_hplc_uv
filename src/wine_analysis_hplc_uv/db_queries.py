@@ -18,10 +18,46 @@ def query_db(db_path: str, tbl_name: str):
     return None
 
 
+def st_ct_anti_join(con):
+    con.sql(
+        """--sql
+            SELECT
+            st.samplecode, st.vintage, st.name, st.ct_wine_name
+            FROM
+            c_sample_tracker st
+            ANTI JOIN
+            c_cellar_tracker ct
+            ON
+            st.ct_wine_name=ct.wine
+            WHERE
+            st.added_to_cellartracker='y'
+            """
+    ).show()
+
+
+def ct_query(con):
+    con.sql(
+        """--sql
+            SELECT
+            *
+            FROM
+            c_cellar_tracker
+            WHERE
+            name
+            LIKE
+            '%tasmania%'
+            """
+    ).show()
+
+
 def main():
+    con = db.connect(DB_PATH)
+    st_ct_anti_join(con)
+    ct_query(con)
     return None
 
 
 if __name__ == "__main__":
-    query_db(DB_PATH, CH_META_TBL_NAME)
+    # query_db(DB_PATH, CH_META_TBL_NAME)
+
     main()

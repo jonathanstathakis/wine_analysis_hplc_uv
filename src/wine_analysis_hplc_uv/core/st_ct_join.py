@@ -43,5 +43,5 @@ class FormForeignKeySTCT:
         new_st = con.sql("SELECT * FROM c_sample_tracker").df()
 
         # check if any nulls
-        for col in self.st_df.drop("wine", axis=1).columns:
+        for col in self.st_df.columns:
             assert new_st[col].isna().sum() == 0
