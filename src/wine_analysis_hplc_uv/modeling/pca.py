@@ -216,46 +216,48 @@ def pivot_wine_data(df):
     return out_df
 
 
-def plot_wine_data(df):
-    fig, pivoted_data_ax = plt.subplots(1)
-    sns.lineplot(data=df)
-    fig.suptitle("pivoted data")
-    pivoted_data_ax.legend(bbox_to_anchor=(0.5, -0.15), loc="upper center")
-    fig.show()
+def plot_wine_data(df, ax):
+    sns.lineplot(data=df, ax=ax, legend=False)
+    ax.set_title("pivoted data")
+    ax.set_xlabel("observation (Hz)")
+    ax.set_ylabel("abs. (mAU)")
+    # ax.legend(bbox_to_anchor=(0.5, -0.15), loc="upper center")
+    return ax
 
 
-def make_biplot(features, ldngs, scalePC1, scalePC2):
-    fig, ax = plt.subplots(figsize=(14, 9))
-
-    for i, feature in enumerate(features):
-        ax.arrow(0, 0, ldngs[0, i], ldngs[1, i])
-        ax.text(ldngs[0, i] * 1.15, ldngs[1, i] * 1.15, feature, fontsize=18)
-
-    ax.scatter(scalePC1, scalePC2)
-    ax.set_xlabel("PC1", fontsize=20)
-    ax.set_ylabel("PC2", fontsize=20)
-    ax.set_title("Figure 1", fontsize=20)
-    fig.show()
-
-
-def build_model(df):
+def build_model(df, ax):
     pca = PCA(n_components=2)
-    model = pca.fit_transform(df.values)
+    model = pca.fit_transform(X=df.fillna(0).values)
     PC1 = model[:, 0]
     PC2 = model[:, 1]
+
     ldngs = pca.components_
     scalePC1 = PC1 / (PC1.max() - PC1.min())
     scalePC2 = PC2 / (PC2.max() - PC2.min())
     features = df.columns.tolist()
 
-    make_biplot(features=features, ldngs=ldngs, scalePC1=scalePC1, scalePC2=scalePC2)
+    for i, feature in enumerate(features):
+        ax.arrow(0, 0, ldngs[0, i], ldngs[1, i])
+        ax.text(ldngs[0, i] * 1.15, ldngs[1, i] * 1.15, feature, fontsize=8)
+
+    ax.scatter(scalePC1, scalePC2)
+    ax.set_xlabel("PC1")
+    ax.set_ylabel("PC2")
+    ax.set_title("PCA Biplot")
+    # fig.show()
+    return ax
 
 
 def main():
     con = db.connect(definitions.DB_PATH)
     wine_data = get_wine_data(con)
     pwine_data = pivot_wine_data(wine_data)
-    build_model(pwine_data)
+    plt1, (ax1, ax2) = plt.subplots(nrows=1, ncols=2, figsize=(12, 6))
+
+    plot_wine_data(pwine_data, ax=ax1)
+    build_model(pwine_data, ax=ax2)
+
+    plt1.tight_layout()
 
 
 if __name__ == "__main__":
