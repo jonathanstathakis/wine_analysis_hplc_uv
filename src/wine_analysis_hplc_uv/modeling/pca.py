@@ -198,13 +198,9 @@ def pivot_wine_data(df):
     and consisting of absorbance values.
 
     """
-    # list of identified 'bad' samples to be excluded from downstream operations.
-    bad_samples = definitions.BAD_CUPRAC_SAMPLES
-
     logger.info(f"before pivot, shape: {df.shape}")
     out_df = (
         df.loc[:, ["id", "samplecode", "wine", "value"]]
-        .query("samplecode not in @bad_samples")
         .assign(i=lambda df: df.groupby(["id"]).cumcount())
         .assign(code_wine=lambda df: df["samplecode"] + "_-" + df["wine"])
         .pivot(columns="code_wine", values="value", index="i")
@@ -217,17 +213,23 @@ def pivot_wine_data(df):
 
 
 def plot_wine_data(df, ax):
-    sns.lineplot(data=df, ax=ax, legend=False)
-    ax.set_title("pivoted data")
-    ax.set_xlabel("observation (Hz)")
-    ax.set_ylabel("abs. (mAU)")
+    z = sns.lineplot(data=df, ax=ax, legend=False)
+    a = ax.set_title("pivoted data")
+    b = ax.set_xlabel("observation")
+    c = ax.set_ylabel("abs. (mAU)")
     # ax.legend(bbox_to_anchor=(0.5, -0.15), loc="upper center")
     return ax
 
 
 def build_model(df, ax):
+    from sklearn.preprocessing import StandardScaler
+
+    scaler = StandardScaler()
+    x = df.fillna(0).values
+    x = scaler.fit_transform(x)
+
     pca = PCA(n_components=2)
-    model = pca.fit_transform(X=df.fillna(0).values)
+    model = pca.fit_transform(X=x)
     PC1 = model[:, 0]
     PC2 = model[:, 1]
 
@@ -237,13 +239,14 @@ def build_model(df, ax):
     features = df.columns.tolist()
 
     for i, feature in enumerate(features):
-        ax.arrow(0, 0, ldngs[0, i], ldngs[1, i])
-        ax.text(ldngs[0, i] * 1.15, ldngs[1, i] * 1.15, feature, fontsize=8)
+        a = ax.arrow(0, 0, ldngs[0, i], ldngs[1, i])
+        b = ax.text(ldngs[0, i] * 1.15, ldngs[1, i] * 1.15, feature, fontsize=8)
 
-    ax.scatter(scalePC1, scalePC2)
-    ax.set_xlabel("PC1")
-    ax.set_ylabel("PC2")
-    ax.set_title("PCA Biplot")
+    c = ax.scatter(scalePC1, scalePC2)
+    d = ax.set_xlabel("PC1")
+    e = ax.set_ylabel("PC2")
+    f = ax.set_title("PCA Biplot")
+
     return ax
 
 
