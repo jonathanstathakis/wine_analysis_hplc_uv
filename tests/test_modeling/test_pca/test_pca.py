@@ -1,7 +1,6 @@
 import pytest
 import logging
 import duckdb as db
-from wine_analysis_hplc_uv import db_methods, definitions
 from wine_analysis_hplc_uv.modeling import pca
 
 import logging
