@@ -13,26 +13,37 @@ def gda():
         """
 
         def __init__(self):
-            self.detection = ["cuprac", "raw"]
-            self.samplecode = ["116", "111", "148", "90"]
-            self.wine = [
-                "2018 crawford river cabernets",
-                "2022 vinden estate the vinden headcase pokolbin blanc",
-                "2019 shaw and smith shiraz balhannah",
+            self.detection = [("cuprac",), ("raw",)]
+            self.samplecode = [
+                ("116",),
+                ("111",),
+                ("148",),
+                ("90",),
+                ("116", "111"),
             ]
-            self.color = ["red", "white", "orange"]
+            self.wine = [
+                ("2018 crawford river cabernets",),
+                ("2022 vinden estate the vinden headcase pokolbin blanc",),
+                ("2019 shaw and smith shiraz balhannah",),
+                (
+                    "2022 vinden estate the vinden headcase pokolbin blanc",
+                    "2019 shaw and smith shiraz balhannah",
+                ),
+            ]
+            self.color = [("red",), ("white",), ("orange",), ("white", "orange")]
             self.varietal = [
                 # "carignan blend",
-                "cabernet-shiraz blend",
-                "chardonnay",
-                "riesling",
-                "sangiovese blend",
+                ("cabernet-shiraz blend",),
+                ("chardonnay",),
+                ("riesling",),
+                ("sangiovese blend",),
+                ("shiraz", "riesling"),
             ]
             self.mins = [(0, 30), (15, 45)]
             self.wavelength = [
-                254,
-                190,
-                # (254, 190)
+                (254,),
+                (190,),
+                (254, 190),
             ]
             # could add more here, this is a difficult problem. MVP means I should leave it as is,
             # can build up to slicing later down the track.
@@ -55,7 +66,7 @@ def cat_var_assertions(corecon, keyword):
         f"SELECT DISTINCT $keyword from wine_data", {"keyword": keyword}
     ).fetchall()
     assert len(tbl_detection_val) == 1
-    assert tbl_detection_val[0][0] == keyword
+    assert tuple(tbl_detection_val[0][0]) == keyword
 
 
 def test_samplecode(corecon, gda):
@@ -85,7 +96,11 @@ def test_color(corecon, gda):
 def test_wavelength(corecon, gda):
     for wavelength in gda.wavelength:
         print("\n", wavelength)
-        get_data.get_wine_data(corecon, wavelength=wavelength)
+        get_data.get_wine_data(
+            corecon,
+            wavelength=wavelength,
+            # detection=('cuprac',)
+        )
 
         cat_var_assertions(corecon, wavelength)
 
@@ -103,12 +118,27 @@ def test_wine(corecon, gda):
         print("\n", wine)
         get_data.get_wine_data(corecon, wine=wine)
         cat_var_assertions(corecon, keyword=wine)
+        print(
+            corecon.sql(
+                """--sql
+                        SELECT
+                        wavelength
+                        from
+                        wine_data
+                        """
+            ).fetchall()
+        )
 
 
 def test_mins(corecon, gda):
     for mins in gda.mins:
         print("\n", mins)
-        get_data.get_wine_data(corecon, mins=mins)
+        get_data.get_wine_data(
+            corecon,
+            mins=mins,
+            wavelength=(254,),
+            wine=("2022 vinden estate the vinden headcase pokolbin blanc",),
+        )
         wd_mins = corecon.sql(
             "SELECT min(mins), max(mins), count(mins) from wine_data"
         ).df()
