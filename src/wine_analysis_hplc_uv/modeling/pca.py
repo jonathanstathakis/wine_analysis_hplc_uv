@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 
 @timeit
-def pivot_wine_data(df):
+def pivot_wine_pddf(df):
     """
     Pivot wine_data on wines to produce a wide df with columns labeled with wine names
     and consisting of absorbance values.
@@ -83,7 +83,7 @@ def build_figure(data):
 
 def get_data(con):
     wine_data = get_data.get_wine_data(con)
-    pwine_data = pivot_wine_data(wine_data)
+    pwine_data = pivot_wine_pddf(wine_data)
     return pwine_data
 
 
