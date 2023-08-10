@@ -1,5 +1,7 @@
 from mydevtools.function_timer import timeit
 import logging
+import pandas as pd
+import polars as pl
 
 logging.basicConfig(level="INFO")
 logger = logging.getLogger(__name__)
@@ -125,7 +127,20 @@ def main():
     import duckdb as db
 
     con = db.connect(definitions.DB_PATH)
-    get_wine_data(con)
+
+    @timeit
+    def get_df(con):
+        con.sql("COPY wine_data to 'output.parquet' (FORMAT PARQUET)")
+        # print(df.shape)
+
+    get_df(con)
+
+    @timeit
+    def read_parquet():
+        df = pl.read_parquet("output.parquet")
+        print(df.shape)
+
+    read_parquet()
 
 
 if __name__ == "__main__":

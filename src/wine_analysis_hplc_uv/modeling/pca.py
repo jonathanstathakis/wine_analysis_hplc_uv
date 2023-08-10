@@ -82,7 +82,7 @@ def build_figure(data):
 
 
 def get_data(con):
-    wine_data = get_wine_data(con)
+    wine_data = get_data.get_wine_data(con)
     pwine_data = pivot_wine_data(wine_data)
     return pwine_data
 
