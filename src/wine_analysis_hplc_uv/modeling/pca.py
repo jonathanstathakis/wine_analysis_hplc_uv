@@ -22,14 +22,15 @@ def pivot_wine_pddf(df):
     """
     logger.info(f"before pivot, shape: {df.shape}")
     out_df = (
-        df.loc[:, ["id", "samplecode", "wine", "value"]]
+        df.loc[:, ["id", "samplecode", "wine", "value", "mins"]]
         .assign(i=lambda df: df.groupby(["id"]).cumcount())
         .assign(code_wine=lambda df: df["samplecode"] + "_-" + df["wine"])
-        .pivot(columns="code_wine", values="value", index="i")
+        .pivot(columns="code_wine", values=["value", "mins"], index="i")
+        .swaplevel(0, 1, axis=1)
     )
     logger.info(f"after pivot, shape: {out_df.shape}..")
     logger.info(f"{out_df.isna().sum()}")
-    logger.info(f"\n{out_df}")
+    # logger.info(f"\n{out_df}")
 
     return out_df
 

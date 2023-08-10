@@ -49,3 +49,6 @@ That being said, this is blazingly fast to return results and produce plots.
 Ok, now that I've established the basis of some tools for working with these large datasets I will go back to working on the preprocessing pipeline.
 
 The wine set i will work on is the same one as above.
+
+Fist step is to produce the dataframes in an appropriate format to work on. This has been achieved by modifying the `pivot_wine_data` function in pca module to produce a dataframe with a heirarchical index of ('wine', ['mins', 'val']).
+

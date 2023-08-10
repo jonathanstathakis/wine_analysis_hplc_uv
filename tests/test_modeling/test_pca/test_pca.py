@@ -30,5 +30,5 @@ def test_get_wine_data(wine_data):
 def test_pivot_wine_data(wine_data):
     # test pivoting wine data
     p_wine_data = pca.pivot_wine_pddf(wine_data)
-
+    logger.info(p_wine_data.head())
     assert not p_wine_data.empty
