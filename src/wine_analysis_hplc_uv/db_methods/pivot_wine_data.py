@@ -61,6 +61,7 @@ def pivot_wine_data(con):
             CREATE TEMPORARY TABLE pwine_data AS
             SELECT
             wine,
+            samplecode,
             mins,
             value,
             ROW_NUMBER() OVER (PARTITION BY samplecode ORDER BY mins) AS obs_num
@@ -72,7 +73,7 @@ def pivot_wine_data(con):
         """--sql
             CREATE OR REPLACE TEMPORARY TABLE pwine_data AS
             SELECT *
-            FROM (PIVOT (SELECT obs_num, wine, value FROM pwine_data) ON wine USING FIRST(value))
+            FROM (PIVOT (SELECT obs_num, wine, value, samplecode, mins FROM pwine_data) ON samplecode USING FIRST(wine) as wine, FIRST(value) as value, FIRST(mins) as mins)
             ORDER BY obs_num
             """
     )
@@ -95,6 +96,7 @@ def pivot_wine_data(con):
             """
     ).df()
 
+    con.sql("SELECT * FROM pwine_data LIMIT 5").show()
     wines.plot()
     plt.show()
 
