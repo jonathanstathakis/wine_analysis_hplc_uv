@@ -64,7 +64,7 @@ def pivot_wine_data(con):
             samplecode,
             mins,
             value,
-            ROW_NUMBER() OVER (PARTITION BY samplecode ORDER BY mins) AS obs_num
+            ROW_NUMBER() OVER (PARTITION BY samplecode ORDER BY mins) AS rowcount
             FROM wine_data;
             """
     )
@@ -73,8 +73,8 @@ def pivot_wine_data(con):
         """--sql
             CREATE OR REPLACE TEMPORARY TABLE pwine_data AS
             SELECT *
-            FROM (PIVOT (SELECT obs_num, wine, value, samplecode, mins FROM pwine_data) ON samplecode USING FIRST(wine) as wine, FIRST(value) as value, FIRST(mins) as mins)
-            ORDER BY obs_num
+            FROM (PIVOT (SELECT rowcount, wine, value, samplecode, mins FROM pwine_data) ON samplecode USING FIRST(wine) as wine, FIRST(value) as value, FIRST(mins) as mins)
+            ORDER BY rowcount
             """
     )
 
@@ -92,13 +92,36 @@ def pivot_wine_data(con):
 
     wines = con.sql(
         """--sql
-            SELECT * EXCLUDE(obs_num) FROM pwine_data
+            SELECT * EXCLUDE(rowcount) FROM pwine_data
             """
     ).df()
 
-    con.sql("SELECT * FROM pwine_data LIMIT 5").show()
-    wines.plot()
-    plt.show()
+    print(wines.head())
+    wines = (
+        wines.pipe(
+            lambda df: df.set_axis(
+                pd.MultiIndex.from_tuples(
+                    [tuple(c.split("_")) for c in df.columns],
+                    names=["samplecode", "vars"],
+                ),
+                axis=1,
+            )
+        )
+        .rename_axis("i")
+        # .reset_index(names=['i'])
+        .stack(["samplecode"])
+        .reset_index()
+        .set_index(["i", "samplecode", "wine"])
+        .unstack(["samplecode", "wine"])
+        .reorder_levels(["samplecode", "wine", "vars"], axis=1)
+        # .reset_index()
+        # .pivot(columns=['samplecode','wine'], values=['mins','value'], index='i', value)
+    )
+    print(wines.head())
+    print(wines.axes)
+    print(wines.shape)
+
+    # plt.show()
 
 
 from mydevtools.function_timer import timeit
