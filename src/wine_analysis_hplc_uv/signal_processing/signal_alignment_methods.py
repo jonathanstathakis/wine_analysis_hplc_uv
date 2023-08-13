@@ -74,7 +74,8 @@ def interpolate_chromatogram_times(df_series: pd.Series):
 
     print("interpolated time series:\n")
     print(
-        f"range: {min(time_points)} to {max(time_points)} with length {len(time_points)}"
+        f"range: {min(time_points)} to {max(time_points)} with length"
+        f" {len(time_points)}"
     )
 
     # Interpolate all chromatograms to the common set of time points

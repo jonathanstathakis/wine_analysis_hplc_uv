@@ -8,7 +8,6 @@ rule: ditch time.
 
 """
 
-import imp
 import os
 import pickle
 import shutil
@@ -22,6 +21,7 @@ import streamlit as st
 st.set_page_config(layout="wide")
 from typing import List, Union
 
+from wine_analysis_hplc_uv import definitions
 from wine_analysis_hplc_uv.plot_methods import plotly_plot_methods
 from wine_analysis_hplc_uv.scripts.core_scripts import (
     signal_data_treatment_methods as dt,
@@ -115,25 +115,32 @@ def peak_alignment_pipe(
     st.write(df.drop(f"raw {wavelength}", axis=1))
 
     # get raw matrices
-    signal_df_series = df[raw_signal_col_name]
     st.header("raw signal")
 
-    signal_df_series.pipe(peak_alignment_st_output)
-    # subtract baseline. If baseline not subtracted, alignment WILL NOT work.
-    signal_df_series = signal_df_series.pipe(sa.baseline_subtraction)
-    signal_df_series.pipe(peak_alignment_st_output)
-    signal_df_series = signal_df_series.pipe(dt.normalize_library_absorbance)
-    signal_df_series.pipe(peak_alignment_st_output)
-    signal_df_series = signal_df_series.pipe(sa.interpolate_chromatogram_times)
-    signal_df_series.pipe(peak_alignment_st_output)
-
+    signal_df_series = (
+        df[raw_signal_col_name]
+        .pipe(peak_alignment_st_output)
+        .pipe(
+            sa.baseline_subtraction
+        )  # subtract baseline. If baseline not subtracted, alignment WILL NOT work.
+        .pipe(peak_alignment_st_output)
+        .pipe(dt.normalize_library_absorbance)
+        .pipe(peak_alignment_st_output)
+        .pipe(sa.interpolate_chromatogram_times)
+        .pipe(peak_alignment_st_output)
+    )
     # calculate correlations between chromatograms as pearson's r, identify sample with highest average correlation, store key as most represntative sample for downstream peak alignment.
-    y_df = signal_df_series.pipe(sample_name_signal_df_builder)
-    corr_df = y_df.corr()
-    highest_corr_key = find_representative_sample(corr_df)
+    highest_corr_key = (
+        signal_df_series.pipe(sample_name_signal_df_builder)
+        .corr()
+        .pipe(find_representative_sample)
+    )
+    (
+        signal_df_series.pipe(sa.peak_alignment, highest_corr_key).pipe(
+            peak_alignment_st_output
+        )
+    )
 
-    signal_df_series.pipe(sa.peak_alignment, highest_corr_key)
-    signal_df_series.pipe(peak_alignment_st_output)
     # # # align the library time axis with dtw
     # peak_aligned_series_name = f'aligned_{wavelength}'
     # df[peak_aligned_series_name] = sa.peak_alignment(df[time_interpolated_chromatogram_name], highest_corr_key)
@@ -202,7 +209,8 @@ def find_representative_sample(corr_df=pd.DataFrame) -> str:
     st.subheader("average highest correlation value")
     st.write(corr_df["mean"])
     st.write(
-        f"{corr_df['mean'].idxmax()} has the highest average correlation with {corr_df['mean'].max()}\n"
+        f"{corr_df['mean'].idxmax()} has the highest average correlation with"
+        f" {corr_df['mean'].max()}\n"
     )
 
     return highest_corr_key
@@ -226,7 +234,7 @@ def peak_alignment_st_output(series: pd.Series) -> None:
 
 def main():
     pickle_filepath = "alignment_df_pickle.pk1"
-    db_path = "/Users/jonathan/wine_analysis_hplc_uv/prototype_code/wine_auth_db.db"
+    db_path = definitions.DB_PATH
     wavelength = "254"
     # display_in_st=True
 
