@@ -4,6 +4,7 @@ import pandas as pd
 from wine_analysis_hplc_uv.db_methods import get_data
 from wine_analysis_hplc_uv.modeling import pca
 import matplotlib.pyplot as plt
+import seaborn as sns
 
 
 def get_sample(con):
@@ -39,66 +40,69 @@ def pivot_wine_data(con):
     2023-08-10 07:22:03
 
     """
-    con.sql(
-        """--sql
-            describe wine_data
-            """
-    ).show()
 
-    con.sql(
-        """--sql
-            CREATE OR REPLACE TEMPORARY TABLE wine_data AS
-            SELECT
-            *
-            from
-            wine_data
-            """
-    )
-
-    # add row numbers
-    con.sql(
-        """--sql
-            CREATE TEMPORARY TABLE pwine_data AS
-            SELECT
-            wine,
-            samplecode,
-            mins,
-            value,
-            ROW_NUMBER() OVER (PARTITION BY samplecode ORDER BY mins) AS rowcount
-            FROM wine_data;
-            """
-    )
-
+    """
+    for a previously created long table 'wine_data' apply a pivot to reshape it into
+    wide form to reduce memory size prior to transferring to python.
+    
+    
+    1. Adds a numerical row index to each sample 'grouping' to enable pivoting
+    2. pivot on samplecode as the unique identifier. The pivot merely reshapes rather
+        than aggregating
+        
+    """
     con.sql(
         """--sql
             CREATE OR REPLACE TEMPORARY TABLE pwine_data AS
             SELECT *
-            FROM (PIVOT (SELECT rowcount, wine, value, samplecode, mins FROM pwine_data) ON samplecode USING FIRST(wine) as wine, FIRST(value) as value, FIRST(mins) as mins)
-            ORDER BY rowcount
+            FROM (
+                    PIVOT (
+                        SELECT rowcount,
+                            wine,
+                            value,
+                            samplecode,
+                            mins
+                        FROM (
+                                SELECT wine,
+                                    samplecode,
+                                    mins,
+                                    value,
+                                    ROW_NUMBER() OVER (
+                                        PARTITION BY samplecode
+                                        ORDER BY mins
+                                    ) AS rowcount
+                                FROM wine_data
+                            )
+                    ) ON samplecode
+                    USING
+                        FIRST(wine) as wine,
+                        FIRST(value) as value,
+                        FIRST(mins) as mins
+                )
             """
     )
 
-    con.sql(
-        """--sql
-            SELECT table_name, estimated_size, column_count from duckdb_tables where table_name='pwine_data'
-            """
-    ).show()
-
-    con.sql(
-        """--sql
-            SELECT  table_name, column_name from duckdb_columns where table_name='pwine_data'
-            """
-    ).show()
-
-    wines = con.sql(
+    wine = con.sql(
         """--sql
             SELECT * EXCLUDE(rowcount) FROM pwine_data
+            --USING
+            --SAMPLE
+            --5
             """
     ).df()
 
-    print(wines.head())
-    wines = (
-        wines.pipe(
+    return wine
+
+
+def stack_df(df):
+    """
+    reshape an unstacked multi-index column df to a stacked df for plotting purposes.
+
+    probs not gna use this but its a useful example for personal use.
+    """
+
+    df = (
+        df.pipe(
             lambda df: df.set_axis(
                 pd.MultiIndex.from_tuples(
                     [tuple(c.split("_")) for c in df.columns],
@@ -114,20 +118,12 @@ def pivot_wine_data(con):
         .set_index(["i", "samplecode", "wine"])
         .unstack(["samplecode", "wine"])
         .reorder_levels(["samplecode", "wine", "vars"], axis=1)
-        # .reset_index()
-        # .pivot(columns=['samplecode','wine'], values=['mins','value'], index='i', value)
+        .sort_index(axis=1, level=0, sort_remaining=True)
     )
-    print(wines.head())
-    print(wines.axes)
-    print(wines.shape)
 
-    # plt.show()
+    return df
 
 
-from mydevtools.function_timer import timeit
-
-
-@timeit
 def main():
     con = db.connect(definitions.DB_PATH)
     # get_sample(con)
