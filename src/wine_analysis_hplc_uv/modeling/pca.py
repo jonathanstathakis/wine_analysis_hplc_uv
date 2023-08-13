@@ -13,28 +13,6 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-@timeit
-def pivot_wine_pddf(df):
-    """
-    Pivot wine_data on wines to produce a wide df with columns labeled with wine names
-    and consisting of absorbance values.
-
-    """
-    logger.info(f"before pivot, shape: {df.shape}")
-    out_df = (
-        df.loc[:, ["id", "samplecode", "wine", "value", "mins"]]
-        .assign(i=lambda df: df.groupby(["id"]).cumcount())
-        .assign(code_wine=lambda df: df["samplecode"] + "_-" + df["wine"])
-        .pivot(columns="code_wine", values=["value", "mins"], index="i")
-        .swaplevel(0, 1, axis=1)
-    )
-    logger.info(f"after pivot, shape: {out_df.shape}..")
-    logger.info(f"{out_df.isna().sum()}")
-    # logger.info(f"\n{out_df}")
-
-    return out_df
-
-
 def plot_wine_data(df, ax):
     z = sns.lineplot(data=df, ax=ax, legend=False)
     a = ax.set_title("pivoted data")

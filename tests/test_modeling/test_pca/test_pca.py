@@ -22,13 +22,3 @@ def test_get_wine_data(wine_data):
     # check if empty and if any nulls. no nulls expected
     assert not wine_data.empty
     assert wine_data.isna().sum().sum() == 0
-
-
-# wine data columns:
-# Index(['detection', 'samplecode', 'wine', 'color', 'varietal', 'id', 'mins',
-# 'wavelength', 'value'],
-def test_pivot_wine_data(wine_data):
-    # test pivoting wine data
-    p_wine_data = pca.pivot_wine_pddf(wine_data)
-    logger.info(p_wine_data.head())
-    assert not p_wine_data.empty
