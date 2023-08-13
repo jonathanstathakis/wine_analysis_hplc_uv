@@ -52,3 +52,48 @@ The wine set i will work on is the same one as above.
 
 Fist step is to produce the dataframes in an appropriate format to work on. This has been achieved by modifying the `pivot_wine_data` function in pca module to produce a dataframe with a heirarchical index of ('wine', ['mins', 'val']).
 
+2023-08-10 16:57:19
+
+Getting there. With the help of user __Alex__ ive got a method of pivoting the tables out in duckdb prior to moving to Python, making everything lightning fast. However, working with multiindexes is a goddamn pain, and i need to learn how to do that better. Also extracting 'obs_num' with the pivot would be v useful, but currently dont seem to be able to.
+
+[pivot_wine_data](src/wine_analysis_hplc_uv/db_methods/pivot_wine_data.py) will need a big clean up before we can proceed really, but we're still testing it.
+
+It currently looks like ive still got duplicates in the set somehow, specifically:
+
+98         2020 barone ricasoli chianti classico rocca di ... mins      0
+                                                              value     0
+
+Which is forcing the dataset to be twice as long as it should be. 72         2021 de bortoli sacred hill cabernet merlot        mins   5712.
+
+##  Sequence Alignment
+
+2023-08-13 12:19:38
+
+The first stage of the preprocessing pipeline is sequence alignment, specifically Multiple Sequence Alignment (MSA). This is necessary because the chromatograph can have a variation in observation points. What is the variation in observation points?
+
+dog walk transcription:
+
+db long table pivot wine data test:
+
+- [ ] multiindex test
+- [ ] shape before and after pivot
+  - [ ] get counts of unique values `n_unique` in pivot columns (i.e primary key i.e. 'id'), column count `n_col` and row count `n_row`. To calculate the expected shape, divide row count by `n_unique` to get pivot table `n_row`, add `n_unique` to `n_col` to get pivot table `n_col`.
+- [ ] cell contents
+  - [ ] presence of nulls as `sum_null`. `sum_null` > 1 is an issue.
+
+
+To debug the too long pivot table, try swapping `sample_code` out for `id`, a possibly more reliable primary key.
+
+
+## Justification of need for MSA
+
+For a time series $y = f(x)$, MSA aligns $x$ of all sequences determined to be related so that they all experience the same variation (none) from the input, and thus all output variation is contained within $f(x)$ unique to that signal.
+
+From what I've seen so far (very little) it is a concern if observation frequencies differ, or start and stop at different times. In my dataset the observation time points differ minutely, and thus the question of whether it is necessary to undertake MSA can be raised. A first touch check of whether I need to could be to observe the point-by-point variance across the included time series. Frankly I'll need to do further research on both time series statistics and MSA.
+
+TODO:
+
+- [ ] annotate @brown_2020c
+- [ ] research MSA
+- [ ] research time series statistics
+- [ ] finish cleaning up and c
