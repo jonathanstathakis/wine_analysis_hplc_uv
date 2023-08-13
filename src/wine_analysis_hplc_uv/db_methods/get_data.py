@@ -119,29 +119,3 @@ def get_wine_data(
             "min_end": mins[1],
         },
     )
-
-
-def main():
-    logger.info("beginning main..")
-    from wine_analysis_hplc_uv import definitions
-    import duckdb as db
-
-    con = db.connect(definitions.DB_PATH)
-
-    @timeit
-    def get_df(con):
-        con.sql("COPY wine_data to 'output.parquet' (FORMAT PARQUET)")
-        # print(df.shape)
-
-    get_df(con)
-
-    @timeit
-    def read_parquet():
-        df = pl.read_parquet("output.parquet")
-        print(df.shape)
-
-    read_parquet()
-
-
-if __name__ == "__main__":
-    main()
