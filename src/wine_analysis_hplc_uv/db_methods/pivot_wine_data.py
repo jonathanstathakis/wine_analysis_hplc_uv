@@ -91,6 +91,16 @@ def pivot_wine_data(con):
             """
     ).df()
 
+    wine = wine.pipe(
+        lambda df: df.set_axis(
+            pd.MultiIndex.from_tuples(
+                [tuple(c.split("_")) for c in df.columns],
+                names=["samplecode", "vars"],
+            ),
+            axis=1,
+        )
+    )
+
     return wine
 
 
@@ -122,20 +132,3 @@ def stack_df(df):
     )
 
     return df
-
-
-def main():
-    con = db.connect(definitions.DB_PATH)
-    # get_sample(con)
-    get_data.get_wine_data(
-        con,
-        # samplecode=('124', '130', '125', '133', '174'),
-        wavelength=(254,),
-        # color=("red",),
-        detection=("raw",),
-    )
-    pivot_wine_data(con)
-
-
-if __name__ == "__main__":
-    main()
