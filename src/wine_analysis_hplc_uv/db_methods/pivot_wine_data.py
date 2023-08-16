@@ -5,6 +5,9 @@ from wine_analysis_hplc_uv.db_methods import get_data
 from wine_analysis_hplc_uv.modeling import pca
 import matplotlib.pyplot as plt
 import seaborn as sns
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def get_sample(con):
@@ -81,18 +84,18 @@ def pivot_wine_data(
                                     ) AS rowcount
                                 FROM wine_data
                             )
-                    ) ON samplecode
+                    ) ON id
                     USING
                         FIRST(detection) as detection,
                         FIRST(wine) as wine,
                         FIRST(value) as value,
                         FIRST(mins) as mins,
-                        FIRST(id) as id
+                        FIRST(samplecode) as samplecode
                 )
             """
     )
 
-    wine = (
+    pwine = (
         con.sql(
             """--sql
             SELECT
@@ -111,17 +114,24 @@ def pivot_wine_data(
         .set_index("rowcount")
     )
 
-    wine = wine.pipe(
-        lambda df: df.set_axis(
-            pd.MultiIndex.from_tuples(
-                [tuple(c.split("_")) for c in df.columns],
-                names=["samplecode", "vars"],
-            ),
-            axis=1,
-        ).rename_axis("i")
+    pwine = (
+        pwine.pipe(
+            lambda df: df.set_axis(
+                pd.MultiIndex.from_tuples(
+                    [tuple(c.split("_")) for c in df.columns],
+                    names=["id", "vars"],
+                ),
+                axis=1,
+            ).rename_axis("i")
+        )
+        .stack(0)
+        .reset_index()
+        .pivot(columns=["samplecode", "wine"], index="i")
+        .reorder_levels(["samplecode", "wine", "vars"], axis=1)
+        .sort_index(level=0, axis=1)
     )
 
-    return wine
+    return pwine
 
 
 def stack_df(df):

@@ -6,7 +6,6 @@ import logging
 
 logger = logging.getLogger(__name__)
 pd.options.display.width = None
-pd.options.display.show_dimensions = True
 pd.options.display.max_colwidth = 20
 pd.options.display.max_rows = 20
 pd.options.display.max_columns = 15
@@ -53,8 +52,8 @@ def gda():
                 (190,),
                 (254, 190),
             ]
-            # could add more here, this is a difficult problem. MVP means I should leave it as is,
-            # can build up to slicing later down the track.
+            # could add more here, this is a difficult problem. MVP means I should
+            # leave it as is, can build up to slicing later down the track.
 
     gda = GetDataArgs()
 
@@ -72,7 +71,7 @@ def cat_var_assertions(corecon, keyword):
 
     # check that only 1 keyword value present
     tbl_detection_val = corecon.execute(
-        f"SELECT DISTINCT $keyword from wine_data", {"keyword": keyword}
+        "SELECT DISTINCT $keyword from wine_data", {"keyword": keyword}
     ).fetchall()
     assert len(tbl_detection_val) == 1
     assert tuple(tbl_detection_val[0][0]) == keyword
@@ -163,8 +162,24 @@ def test_sliceby_mins(corecon, gda):
 
 
 def test_pivot_wine_data(corecon, gda):
-    get_data.get_wine_data(corecon, wavelength=("254",))
+    """
+    lastmod: 2023-08-16 14:49:43
 
+    Test that the pivot performs as expected.
+
+    The expected output is a wide dataframe ~ 6000 rows long.
+
+    """
+    get_data.get_wine_data(
+        corecon,
+        wavelength=("254",),
+        samplecode=(
+            "100",
+            "116",
+        ),
+    )
+
+    # get number of unique wines in wd to predict the shape post-pivot.
     n_wines = len(
         corecon.execute(
             """--sql
@@ -191,23 +206,20 @@ def test_pivot_wine_data(corecon, gda):
     logger.info(f"\n{wd_shape}")
     # logger.info(n_cols)
 
-    exp_pivot_n_rows = wd_shape["estimated_size"] / n_wines
-    logger.info(exp_pivot_n_rows)
-    # exp_pivot_n_cols = int(*n_wines)
-    wine = pivot_wine_data.pivot_wine_data(corecon)
+    exp_pivot_n_rows = wd_shape.at[0, "estimated_size"] / n_wines
+    exp_pivot_n_cols = wd_shape.at[0, "column_count"] * n_wines
+
+    logger.info(f"n_wines: {n_wines}")
+    logger.info(f"expected nrows: {exp_pivot_n_rows}")
+    logger.info(f"expected ncols: {exp_pivot_n_cols}")
+
+    pwine = pivot_wine_data.pivot_wine_data(corecon)
+
+    logger.info(f"\n{pwine}")
+    logger.info(f"{type(pwine)}")
 
     # cols: 1. samplecode, 2. vars
-    (
-        wine
-        # .dropna()
-        .stack(0)
-        .assign(av_mins=lambda df: df.groupby("i")["mins"].mean())
-        .unstack("samplecode")
-        # .pipe(lambda df: df if logger.info(f"\n{df.iloc[:5,:5]}") is None else df)
-        .pipe(lambda df: df if logger.info(f"\n{df.shape}") is None else df)
-        .pipe(lambda df: df if logger.info(f"\n{df.loc[:5,'av_mins']}") is None else df)
-        .pipe(lambda df: df if logger.info(f"\n{df.columns}") is None else df)
-    )
+    # (pwine.pipe(lambda df: df if logger.info(df) is None else df))
 
     # pw_shape = corecon.sql("""--sql
     #                   SELECT
