@@ -18,15 +18,15 @@ def corecon():
     return con
 
 
-@pytest.fixture
-def ch_data_path():
-    # return "/Users/jonathan/mres_thesis/wine_analysis_hplc_uv/tests/test_data/agilent_D"
-    return "/Users/jonathan/uni/0_jono_data/mres_data_library"
+class DataPaths:
+    def __init__(self):
+        self.sampleset = "/Users/jonathan/mres_thesis/wine_analysis_hplc_uv/tests/test_data/agilent_D"
+        self.fullset = "/Users/jonathan/mres_thesis/wine_analysis_hplc_uv/tests/test_data/agilent_D"
 
 
 @pytest.fixture
-def sample_ch_data_path():
-    return "/Users/jonathan/mres_thesis/wine_analysis_hplc_uv/tests/test_data/agilent_D"
+def datapaths():
+    return DataPaths()
 
 
 @pytest.fixture
@@ -50,5 +50,5 @@ def verified_ch_m(ch_m_csv_path) -> None:
 
 
 @pytest.fixture
-def chemstationprocessor(ch_data_path):
-    return ChemstationProcessor(ch_data_path)
+def chemstationprocessor(datapaths):
+    return ChemstationProcessor(datapaths.sampleset)

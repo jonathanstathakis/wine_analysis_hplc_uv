@@ -7,47 +7,50 @@ Contains general df methods to improve quality of life when working with pandas 
 """
 
 import pandas as pd
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def describe_df(df: pd.DataFrame) -> None:
-    print(f"df size: {df.size:,}")
-    print(f"df shape: {df.shape}")
+    logger.info(f"df size: {df.size:,}")
+    logger.info(f"df shape: {df.shape}")
     if len(df.columns) < 10:
-        print(f"df column labels: {df.columns}")
+        logger.info(f"df column labels: {df.columns}")
     else:
-        print(f"first 10 column labels:{df.columns[:10]}")
-    print(f"df index labels:, {df.index}")
+        logger.info(f"first 10 column labels:{df.columns[:10]}")
+    logger.info(f"df index labels:, {df.index}")
     if len(df.index) < 10:
-        print(f"df index labels: {df.index}")
+        logger.info(f"df index labels: {df.index}")
     else:
-        print(f"first 10 indexes: {df.index[:10]}")
+        logger.info(f"first 10 indexes: {df.index[:10]}")
 
     isna_tot = df.isna().sum().sum()
 
-    print(f"df total na count: {isna_tot:,}")
+    logger.info(f"df total na count: {isna_tot:,}")
 
     isna_ratio = isna_tot / df.size
 
-    print(f"ratio of nas:{round(isna_ratio, 2):,}")
+    logger.info(f"ratio of nas:{round(isna_ratio, 2):,}")
 
     def sum_na_by_col(df):
         na_sum_series = df.isna().sum()
         na_sum_series = na_sum_series[na_sum_series > 0]
 
-        print(f"df na count by column {na_sum_series}")
+        logger.info(f"df na count by column {na_sum_series}")
 
     sum_na_by_col(df)
-    print(df.head(3))
+    logger.info(df.head(3))
 
     return None
 
 
 def test_df(df: pd.DataFrame) -> None:
-    print("testing if df empty..")
+    logger.info("testing if df empty..")
     assert not df.empty, "DataFrame is empty"
-    print("testing for any nulls..")
-    assert not df.isnull().values.any(), "DataFrame contains NaN values"
-    print("testing for any duplicate rows..")
+    logger.info("testing for any nulls..")
+    assert not df.isnull().values.all(), "DataFrame contains NaN values"
+    logger.info("testing for any duplicate rows..")
     assert (
         len(df.drop_duplicates()) > 1
     ), "DataFrame does not have more than one unique row"

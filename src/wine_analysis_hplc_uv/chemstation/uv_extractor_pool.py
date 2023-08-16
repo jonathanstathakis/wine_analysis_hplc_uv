@@ -42,6 +42,9 @@ def uv_extractor_pool(
             data_df: pd.DataFrame = data_dict["data"]
             data_df["id"] = data_dict["id"]
 
+            for label in ("id", "mins"):
+                assert label in data_df.columns, data_df.columns
+
             data_df = data_df.melt(
                 id_vars=["id", "mins"],
                 var_name="wavelength",

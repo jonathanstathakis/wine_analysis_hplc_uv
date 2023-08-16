@@ -48,7 +48,7 @@ class ChemstationProcessor:
         )
 
     def clean_metadata(self) -> pd.DataFrame:
-        return ch_m_clean.ch_metadata_tbl_cleaner(self.metadata_df)
+        return ch_m_clean.ChMCleaner().clean_ch_m(self.metadata_df)
 
     def to_csv_helper(
         self,

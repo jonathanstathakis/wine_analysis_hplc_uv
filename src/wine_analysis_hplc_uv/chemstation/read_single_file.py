@@ -6,7 +6,6 @@ from typing import List, Tuple, Dict, Union
 import rainbow as rb
 import pandas as pd
 import numpy as np
-import traceback
 import logging
 
 logger = logging.getLogger(__name__)
@@ -57,21 +56,20 @@ def read_single_file(
         id="",
     )
 
-    try:
-        datadir = rb.read(path=path)
-        uv_file = datadir.get_file(filename=uv_name)
+    # try:
+    datadir = rb.read(path=path)
+    uv_file = datadir.get_file(filename=uv_name)
 
-        # get the metadata_dict contained within the uv_file object
-        # and combine it with my predefined terms
-        metadata_dict.update(uv_file.metadata)
-        metadata_dict.update(datadir.metadata)
+    # get the metadata_dict contained within the uv_file object
+    # and combine it with my predefined terms
+    metadata_dict.update(uv_file.metadata)
+    metadata_dict.update(datadir.metadata)
 
-        uv_data_dict["data"] = uv_data_to_df(uv_file=uv_file)
-        uv_data_dict["id"] = metadata_dict["id"]
+    uv_data_dict["data"] = uv_data_to_df(uv_file=uv_file)
+    uv_data_dict["id"] = metadata_dict["id"]
 
-    except Exception as e:
-        logger.error(f"{metadata_dict['path']} encountered an error: {e}")
-        print(traceback.print_exc())
+    # except Exception as e:
+    #     logger.error(f"{metadata_dict['path']} encountered an error: {e}")
 
     returndict: Dict[
         str, Union[Dict[str, str], Dict[str, Union[str, pd.DataFrame]]]

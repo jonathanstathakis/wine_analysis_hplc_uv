@@ -11,8 +11,8 @@ logger = logging.getLogger(__name__)
 
 
 @pytest.fixture
-def dirty_ct(con):
-    df = con.sql(f"SELECT * FROM {definitions.CT_TBL_NAME}").df()
+def dirty_ct(corecon):
+    df = corecon.sql(f"SELECT * FROM {definitions.CT_TBL_NAME}").df()
 
     assert isinstance(df, pd.DataFrame)
     assert not df.empty

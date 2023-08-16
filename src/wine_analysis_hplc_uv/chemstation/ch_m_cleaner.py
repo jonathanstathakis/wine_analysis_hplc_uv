@@ -34,8 +34,8 @@ class ChMCleaner(Exporter):
 
 def rename_ch_m_collabels(df):
     """ """
-    original_names = ["notebook", "date", "method"]
-    new_names = ["samplecode", "acq_date", "acq_method"]
+    original_names = ["notebook", "date", "method", "Injection Volume"]
+    new_names = ["samplecode", "acq_date", "acq_method", "inj_vol"]
 
     rename_dict = dict(zip(original_names, new_names))
     df = df.rename(rename_dict, axis=1)

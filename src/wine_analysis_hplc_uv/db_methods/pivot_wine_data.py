@@ -35,7 +35,9 @@ def get_sample(con):
     plt.show()
 
 
-def pivot_wine_data(con):
+def pivot_wine_data(
+    con,
+):
     """
     2023-08-10 07:22:03
 
@@ -57,13 +59,19 @@ def pivot_wine_data(con):
             SELECT *
             FROM (
                     PIVOT (
-                        SELECT rowcount,
+                        SELECT
+                            rowcount,
                             wine,
-                            value,
                             samplecode,
-                            mins
+                            id,
+                            mins,
+                            value,
+                            detection,
                         FROM (
-                                SELECT wine,
+                                SELECT
+                                    wine,
+                                    id,
+                                    detection,
                                     samplecode,
                                     mins,
                                     value,
@@ -75,21 +83,33 @@ def pivot_wine_data(con):
                             )
                     ) ON samplecode
                     USING
+                        FIRST(detection) as detection,
                         FIRST(wine) as wine,
                         FIRST(value) as value,
-                        FIRST(mins) as mins
+                        FIRST(mins) as mins,
+                        FIRST(id) as id
                 )
             """
     )
 
-    wine = con.sql(
-        """--sql
-            SELECT * EXCLUDE(rowcount) FROM pwine_data
+    wine = (
+        con.sql(
+            """--sql
+            SELECT
+            * 
+            FROM
+            pwine_data
+            ORDER BY
+            rowcount
             --USING
             --SAMPLE
             --5
             """
-    ).df()
+        )
+        .df()
+        .assign(rowcount=lambda df: df.rowcount - 1)
+        .set_index("rowcount")
+    )
 
     wine = wine.pipe(
         lambda df: df.set_axis(
@@ -98,7 +118,7 @@ def pivot_wine_data(con):
                 names=["samplecode", "vars"],
             ),
             axis=1,
-        )
+        ).rename_axis("i")
     )
 
     return wine

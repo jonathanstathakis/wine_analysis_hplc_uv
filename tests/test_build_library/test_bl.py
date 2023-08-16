@@ -23,10 +23,15 @@ from scratch will take time.
 """
 
 
-def test_build_library_sample_set(sample_ch_data_path):
+@pytest.fixture
+def sample_ch_data_path():
+    return "tests/test_data/agilent_D"
+
+
+def test_build_library(datapaths):
     con = db.connect()
     build_library.build_db_library(
-        data_lib_path=sample_ch_data_path,
+        data_lib_path=datapaths.fullset,
         con=con,
         ch_m_tblname=definitions.CH_META_TBL_NAME,
         ch_d_tblname=definitions.CH_DATA_TBL_NAME,

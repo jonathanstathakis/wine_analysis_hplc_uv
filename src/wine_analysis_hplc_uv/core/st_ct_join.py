@@ -25,7 +25,7 @@ class FormForeignKeySTCT:
 
         c_st = con.sql("SELECT * FROM c_sample_tracker").df()
 
-        con.sql(
+        new_st = con.sql(
             """--sql
             CREATE OR REPLACE TABLE c_sample_tracker
             AS
@@ -37,11 +37,10 @@ class FormForeignKeySTCT:
             join_df
             ON
             (CONCAT(st.samplecode,st.vintage, st.name)=CONCAT(join_df.samplecode,join_df.vintage_st,join_df.name_st));
+            SELECT * FROM c_sample_tracker
             """
-        )
-
-        new_st = con.sql("SELECT * FROM c_sample_tracker").df()
+        ).df()
 
         # check if any nulls
-        for col in self.st_df.columns:
+        for col in new_st.columns:
             assert new_st[col].isna().sum() == 0

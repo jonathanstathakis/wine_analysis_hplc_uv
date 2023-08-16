@@ -93,7 +93,66 @@ From what I've seen so far (very little) it is a concern if observation frequenc
 
 TODO:
 
+- [x] identify issue with too long sample.
+- [ ] write pivot table test
 - [ ] annotate @brown_2020c
 - [ ] research MSA
 - [ ] research time series statistics
-- [ ] finish cleaning up and c
+- [ ] restore use of peak alignment module with current data format
+
+## Too long pivot table exploration
+
+Changing samplecode to id has not fixed it. Again, lets identify the culprit.
+
+[This](solve_too_long_pwine_data.ipynb) is a jupyter notebook in which I will perform investigations to determine the cause of these errors.
+
+2023-08-15 07:43:17
+
+Solved - 98 was run on an older method resulting in different run parameters, 72 is an algamation of two samples, only one of which is still in sampletracker. This is layover from when I was validating the avantor column.
+
+98 can be straight up dropped, not worth it to validate the method. 72 is slightly more difficult, but I think ill just drop it too. They have been removed by excluding them from the `get_data` query `AND ((SELECT UNNEST($samplecode)) IS NULL OR st.samplecode IN (SELECT * FROM UNNEST($samplecode))) AND st.samplecode NOT IN ('72','98')`. The associated is now broken because the target samples are no longer retrieved by `get_data`, but if I found a way of making that exclusion optional then it could work again. Not worth the time to worry about atm though.
+
+## Introducing Injection Volume Into the dataset
+
+One factor I overlooked is that the injection of my CUPRAC samples differ, initially they were set to 10uL but after issues with precipitation it was dropped to 5uL. This will affect the heights of the samples as per beer-lambert law. So to adjust for injection volume I need to get the injection volume measurements from the .acaml file, add it to rainbow, and rerun the pipe. Its good to rerun it anyway, keeps it from going stale, so to speak.
+
+2023-08-15 08:47:14
+
+The injection volume can be found in .D/acq.macaml at the XPath `/ACAML/Doc/Content/MethodConfiguration/MethodDescription/Section/Section[3]/Section[4]/Parameter[5]/Value`.
+
+2023-08-15 09:06:02
+
+Problem - Injection volume is stored in `acq.macaml`,  which is currently not parsed by rainbow. The secondary problem is that `parse_metadata` is setup to only read from one type of file, with a case-like setup of serial IF clauses each with their own return statement. My solution will be to add a `acq.macaml` parse as the first block within `parse_metadata`. This way we will avoid changing the logic.
+
+2023-08-15 12:20:37
+
+Got it. The generated xpath was incorrect, it should have read:
+
+`/MethodConfiguration/MethodDescription/Section/Section[1]/Section[2]/Parameter[2]/Value`
+
+Had to manually locate it by starting with a root xpath and iterating through the returned children, adding more to the path and iterating again until i reached my goal.
+
+I have added some documentation, a test based on previously generated 094.D metadata, have commited and pushed. Now I will generate a library in a new db and check the injection volume distribution.
+
+2023-08-15 15:36:47
+
+Testing the modifications on my dataset through chemstation tests (which have been updated as pytest format and added to tests dir) have revealed that the xpath developed from 094 is not universal. Fun. I will now try to develop one for 116.D
+
+2023-08-15 17:28:17
+
+Ok, for a set of 4 DD (data dirs .D) I have shown that half of them work with the 116.D xpath, and half with the 094.D. Since both 116.D and 094.D are in the sampleset.. thats not really saying much. Time to expand it to the full set.
+
+2023-08-16 13:10:20
+
+Discovered that there were at least 5 different absolute xpaths to Injection Volume depending on the sample in question. Scrapped absolute paths for a relative approach based on `.findall()` and filtering by parameter. This approach has been verified on the whole dataset, tested and commited. The results of this study are [here](tests/testing_inj_vol.ipynb), awhere we found that no CUPRAC samples in the current dataset were collected with a 10uL injection volume. It was good to verify though.
+
+Now I am retesting the build_library pipe, which is producing a number of errors:
+
+ERROR tests/test_build_library/test_ch_to_db.py::test_uv_filepaths_to_list
+ERROR tests/test_build_library/test_ch_to_db.py::test_chpro_ch_m
+ERROR tests/test_chemstation/test_chemstation.py::test_metadata_df
+ERROR tests/test_chemstation/test_chemstation.py::test_data_df
+ERROR tests/test_chemstation/test_chemstation.py::test_data_to_db
+ERROR tests/test_chemstation/test_chemstation.py::test_dup_key_test
+
+I will go through them one by one and whittle down the problems.

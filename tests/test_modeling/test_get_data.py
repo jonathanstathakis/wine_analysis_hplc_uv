@@ -1,10 +1,16 @@
-from wine_analysis_hplc_uv.db_methods import get_data
+from wine_analysis_hplc_uv.db_methods import get_data, pivot_wine_data
 import pytest
 import pandas as pd
 import duckdb as db
 import logging
 
 logger = logging.getLogger(__name__)
+pd.options.display.width = None
+pd.options.display.show_dimensions = True
+pd.options.display.max_colwidth = 20
+pd.options.display.max_rows = 20
+pd.options.display.max_columns = 15
+pd.options.display.colheader_justify = "left"
 
 
 @pytest.fixture
@@ -57,7 +63,8 @@ def gda():
 
 def cat_var_assertions(corecon, keyword):
     wine_data_shape = corecon.sql(
-        "select table_name, estimated_size, column_count from duckdb_tables where table_name='wine_data'"
+        "select table_name, estimated_size, column_count from duckdb_tables where"
+        " table_name='wine_data'"
     ).pl()
     print(wine_data_shape)
     assert wine_data_shape["estimated_size"][0] > 1
@@ -153,3 +160,74 @@ def test_sliceby_mins(corecon, gda):
 
         # test if maximum value is within 10% of stated max mins. as above
         assert (mins[1] - wd_mins.at[0, "max(mins)"]) / mins[1] <= 0.1
+
+
+def test_pivot_wine_data(corecon, gda):
+    get_data.get_wine_data(corecon, wavelength=("254",))
+
+    n_wines = len(
+        corecon.execute(
+            """--sql
+                              SELECT
+                              DISTINCT samplecode
+                              FROM
+                              wine_data
+                              """
+        ).fetchall()
+    )
+
+    wd_shape = corecon.execute(
+        """--sql
+        SELECT
+        table_name, estimated_size, column_count
+        FROM
+        duckdb_tables()
+        WHERE
+        table_name='wine_data'
+        """
+    ).df()
+
+    logger.info(n_wines)
+    logger.info(f"\n{wd_shape}")
+    # logger.info(n_cols)
+
+    exp_pivot_n_rows = wd_shape["estimated_size"] / n_wines
+    logger.info(exp_pivot_n_rows)
+    # exp_pivot_n_cols = int(*n_wines)
+    wine = pivot_wine_data.pivot_wine_data(corecon)
+
+    # cols: 1. samplecode, 2. vars
+    (
+        wine
+        # .dropna()
+        .stack(0)
+        .assign(av_mins=lambda df: df.groupby("i")["mins"].mean())
+        .unstack("samplecode")
+        # .pipe(lambda df: df if logger.info(f"\n{df.iloc[:5,:5]}") is None else df)
+        .pipe(lambda df: df if logger.info(f"\n{df.shape}") is None else df)
+        .pipe(lambda df: df if logger.info(f"\n{df.loc[:5,'av_mins']}") is None else df)
+        .pipe(lambda df: df if logger.info(f"\n{df.columns}") is None else df)
+    )
+
+    # pw_shape = corecon.sql("""--sql
+    #                   SELECT
+    #     table_name, estimated_size, column_count
+    #     FROM
+    #     duckdb_tables()
+    #     WHERE
+    #     table_name='pwine_data'
+    #                    """)
+
+    # logger.info(f"\n{pw_shape}")
+    # logger.info("after pivot, df:")
+    # logger.info(wine.shape)
+    # logger.info(f"\n{wine.columns[0:5]}")
+    # logger.info(f"\n{wine}")
+
+    # assert (
+    #     wine
+    #     .stack([0])
+    #     .isna()
+    #     #.groupby('samplecode')
+    #     .sum().sum()
+    # ) == 0
