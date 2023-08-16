@@ -163,11 +163,20 @@ def test_sliceby_mins(corecon, gda):
 
 def test_pivot_wine_data(corecon, gda):
     """
-    lastmod: 2023-08-16 14:49:43
+    lastmod: 2023-08-17 09:34:16
 
-    Test that the pivot performs as expected.
+    Test that the pivot (pwd) of wine_data (wd) is sucessful.
 
     The expected output is a wide dataframe ~ 6000 rows long.
+
+    The current tests are:
+
+    1. check that the pwd shape is less than 10_000
+    2. check that wd has more rows than pwd
+    3. check that pwd has more columns than wd
+
+    TODO:
+    - [ ] expand on tests by including data type / content testing.
 
     """
     get_data.get_wine_data(
@@ -206,40 +215,34 @@ def test_pivot_wine_data(corecon, gda):
     logger.info(f"\n{wd_shape}")
     # logger.info(n_cols)
 
-    exp_pivot_n_rows = wd_shape.at[0, "estimated_size"] / n_wines
-    exp_pivot_n_cols = wd_shape.at[0, "column_count"] * n_wines
-
-    logger.info(f"n_wines: {n_wines}")
-    logger.info(f"expected nrows: {exp_pivot_n_rows}")
-    logger.info(f"expected ncols: {exp_pivot_n_cols}")
-
     pwine = pivot_wine_data.pivot_wine_data(corecon)
 
     logger.info(f"\n{pwine}")
     logger.info(f"{type(pwine)}")
 
     # cols: 1. samplecode, 2. vars
-    # (pwine.pipe(lambda df: df if logger.info(df) is None else df))
 
-    # pw_shape = corecon.sql("""--sql
-    #                   SELECT
-    #     table_name, estimated_size, column_count
-    #     FROM
-    #     duckdb_tables()
-    #     WHERE
-    #     table_name='pwine_data'
-    #                    """)
+    pw_shape = corecon.sql(
+        """--sql
+                      SELECT
+        table_name, estimated_size, column_count
+        FROM
+        duckdb_tables()
+        WHERE
+        table_name='pwine_data'
+                       """
+    ).df()
 
-    # logger.info(f"\n{pw_shape}")
-    # logger.info("after pivot, df:")
-    # logger.info(wine.shape)
-    # logger.info(f"\n{wine.columns[0:5]}")
-    # logger.info(f"\n{wine}")
+    logger.info(f"shape: {pw_shape}")
 
-    # assert (
-    #     wine
-    #     .stack([0])
-    #     .isna()
-    #     #.groupby('samplecode')
-    #     .sum().sum()
-    # ) == 0
+    # simple shape test. Make sure that the pivot table has less than 10_000 rows
+
+    assert pw_shape.at[0, "estimated_size"] < 10_000
+
+    # now compare shape of wd and pwd. pwd should have more columns, wd should have more rows
+
+    # rows
+    assert wd_shape.at[0, "estimated_size"] > pw_shape.at[0, "estimated_size"]
+
+    # columns
+    assert wd_shape.at[0, "column_count"] < pw_shape.at[0, "column_count"]
