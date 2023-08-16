@@ -177,6 +177,11 @@ def test_pivot_wine_data(corecon, gda):
 
     TODO:
     - [ ] expand on tests by including data type / content testing.
+    - [ ] multiindex test
+    - [ ] shape before and after pivot
+    - [ ] get counts of unique values `n_unique` in pivot columns (i.e primary key i.e. 'id'), column count `n_col` and row count `n_row`. To calculate the expected shape, divide row count by `n_unique` to get pivot table `n_row`, add `n_unique` to `n_col` to get pivot table `n_col`. UPDATE: doesnt work, not sure why but the estimates are wrong.
+    - [ ] cell contents
+        - [ ] presence of nulls as `sum_null`. `sum_null` > 1 is an issue.
 
     """
     get_data.get_wine_data(
