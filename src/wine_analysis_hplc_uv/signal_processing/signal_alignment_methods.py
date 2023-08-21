@@ -115,9 +115,8 @@ def peak_alignment(chromatogram_df_series: pd.Series, highest_corr_key: str):
         alignment = dtw(
             query_chromatogram_np_array,
             reference_chromatogram_np_array,
-            step_pattern="asymmetric",
-            open_end=True,
-            open_begin=True,
+            # open_end=True,
+            # open_begin=True,
         )
 
         # Align the current chromatogram to the reference chromatogram using the calculated path

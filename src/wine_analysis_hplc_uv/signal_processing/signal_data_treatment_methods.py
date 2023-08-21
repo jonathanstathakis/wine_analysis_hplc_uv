@@ -6,18 +6,22 @@ import pandas as pd
 import streamlit as st
 from pybaselines import Baseline
 from scipy.signal import find_peaks
+from typing import Any
 
 
 def calc_baseline(signal_df: pd.DataFrame) -> pd.DataFrame:
     """
     Create baseline obj then fit the baseline on it. return baseline as df of ['mins','input_colname']
     """
-    input_signal_time_axis_colname = list(signal_df.columns)[0]
-    input_signal_y_axis_colname = list(signal_df.columns)[1]
+    input_signal_time_axis_colname: str = list(signal_df.columns)[0]
+    input_signal_y_axis_colname: str = list(signal_df.columns)[1]
 
-    output_signal_axis_colname = "baseline"
-    baseline_obj = Baseline(signal_df[input_signal_time_axis_colname])
-    baseline_y = baseline_obj.iasls(signal_df[input_signal_y_axis_colname])[0]
+    output_signal_axis_colname: str = "baseline"
+
+    baseline_obj: Baseline = Baseline(signal_df[input_signal_time_axis_colname])
+    baseline_y: tuple[Any, dict[str, Any]] = baseline_obj.iasls(
+        signal_df[input_signal_y_axis_colname]
+    )[0]
     baseline_df = signal_df[[input_signal_time_axis_colname]].copy(deep=True)
     baseline_df[output_signal_axis_colname] = baseline_y
     return baseline_df
@@ -96,7 +100,9 @@ def subtract_baseline_from_spectra(df: pd.DataFrame) -> pd.DataFrame:
         if non_numeric_columns.any():
             non_numeric_column_names = df.columns[non_numeric_columns].tolist()
             raise ValueError(
-                f"\nError: dataframe with non-numeric columns passed to subtract_baseline_from_spectra(). Non-numeric columns: {non_numeric_column_names}\n"
+                "\nError: dataframe with non-numeric columns passed to"
+                " subtract_baseline_from_spectra(). Non-numeric columns:"
+                f" {non_numeric_column_names}\n"
             )
 
     try:

@@ -1,10 +1,33 @@
 """
 ~~rule: signal dataframes are always structured index | mins | signal~~
-rule: dataframes with a combination of signal and metadata will always have the sample name as the index.
+rule: dataframes with a combination of signal and metadata will always have the sample 
+name as the index.
 rule: use dictionaries to handle collections of dataframes.
 rule: ditch time.
 
-1. interpolate time axis, then just store 1 time array in a df. reduces dimensionality by 1.
+1. interpolate time axis, then just store 1 time array in a df. reduces dimensionality
+by 1.
+
+2023-08-20 18:37:26: Revitalizing the pipe. Ideally we're gna convert it to a 
+multiindexed approach of (samplecode, wine, signal).
+2023-08-20 18:39:20: TBH I should create a mock df in the format the pipe is expecting
+in order to test the pipe before and after structure format conversion.
+2023-08-20 18:44:33: since I have a function to form the old-style data structure
+format, I can use them, but that will require reforming the super table, at least in
+some form.
+2023-08-20 18:46:47: because the hash is different, I wont be able to form the sample
+dataset that the pipe was originally formed on.
+2023-08-21 14:10:45: because db_methods.get_spectra has been deleted, and I cant be
+bothered trying to revert to an undeleted state, I'll just form a mock structure from
+the current multiindexed structure.
+2023-08-21 14:55:56: the baseline subraction module actually acts on a series of 
+dataframes, not a dict. minimal difference..
+
+TODO:
+- [x] test pipe with mock df
+- [ ] convert pipeline to multiindexed data structure
+    - [ ] get rid of pickling approaches
+
 
 """
 
@@ -27,6 +50,7 @@ from wine_analysis_hplc_uv.scripts.core_scripts import (
     signal_data_treatment_methods as dt,
 )
 from wine_analysis_hplc_uv.signal_processing import signal_alignment_methods as sa
+from wine_analysis_hplc_uv.signal_processing import signal_data_treatment_methods as sdt
 
 # create your figure and get the figure object returned
 
@@ -95,36 +119,50 @@ def rw_pipe_pickle(series: pd.Series, pickle_dir_path: str = None):
     return df
 
 
-def peak_alignment_pipe(
+def get_unaligned_data(
     db_path: str,
-    wavelength: Union[str, List[str]] = None,
     pickle_path_prefix: "str" = None,
+    wavelength: Union[str, List[str]] = None,
 ):
+    con = db.connect(db_path)
+    raw_signal_col_name = f"raw {wavelength}"
+    df = get_library(con, wavelength, raw_signal_col_name)
+    return df
+
+
+import pandera as pa
+from pandera.typing import DataFrame, Series
+
+
+class SampleSignalSchema(pa.DataFrameModel):
+    mins: Series[float]
+    value: Series[float]
+
+
+class PeakAlignmentPipeSchema(pa.DataFrameModel):
+    raw_df: Series[DataFrame[SampleSignalSchema]]
+
+
+def peak_alignment_pipe(df: DataFrame[PeakAlignmentPipeSchema]):
     """
     A pipe to align a supplied library of chromatograms.
     """
-    raw_signal_col_name = f"raw {wavelength}"
-
-    con = db.connect(db_path)
-
     # get the library and 254 nm signal
 
-    df = get_library(con, wavelength, raw_signal_col_name)
-
     st.subheader("Group Contents")
-    st.write(df.drop(f"raw {wavelength}", axis=1))
+    st.write(df)
 
     # get raw matrices
     st.header("raw signal")
 
     signal_df_series = (
-        df[raw_signal_col_name]
+        df["raw_df"]
         .pipe(peak_alignment_st_output)
         .pipe(
             sa.baseline_subtraction
         )  # subtract baseline. If baseline not subtracted, alignment WILL NOT work.
         .pipe(peak_alignment_st_output)
-        .pipe(dt.normalize_library_absorbance)
+        .pipe(sdt.normalize_library_absorbance)
         .pipe(peak_alignment_st_output)
         .pipe(sa.interpolate_chromatogram_times)
         .pipe(peak_alignment_st_output)
@@ -144,6 +182,23 @@ def peak_alignment_pipe(
     # # # align the library time axis with dtw
     # peak_aligned_series_name = f'aligned_{wavelength}'
     # df[peak_aligned_series_name] = sa.peak_alignment(df[time_interpolated_chromatogram_name], highest_corr_key)
+
+    return df
+
+
+def get_library(
+    con: db.DuckDBPyConnection, wavelength: str, signal_col_name: str
+) -> pd.DataFrame:
+    # get the selected runs to build the library
+    df = fetch_sample_dataframes_with_spectra(con)
+    df = df.set_index("name_ct", drop=True)
+
+    # select the 254nm wavelength column across the library
+
+    df[signal_col_name] = dt.subset_spectra(df["spectra"], wavelength)
+
+    # 2023-08-21 14:53:06 at this point its a long form df with [name_ct, mins, value]
+    df = df.drop("spectra", axis=1)
 
     return df
 
@@ -169,21 +224,6 @@ def fetch_sample_dataframes_with_spectra(con: db.DuckDBPyConnection) -> None:
 
         df = con.sql(query).df()
         df = db_methods.get_spectra(df, con)
-
-    return df
-
-
-def get_library(
-    con: db.DuckDBPyConnection, wavelength: str, signal_col_name: str
-) -> pd.DataFrame:
-    # get the selected runs to build the library
-    df = fetch_sample_dataframes_with_spectra(con)
-    df = df.set_index("name_ct", drop=True)
-
-    # select the 254nm wavelength column across the library
-
-    df[signal_col_name] = dt.subset_spectra(df["spectra"], wavelength)
-    df = df.drop("spectra", axis=1)
 
     return df
 
@@ -229,14 +269,19 @@ def peak_alignment_st_output(series: pd.Series) -> None:
 
     st.plotly_chart(fig)
 
-    return None
+    return series
+
+
+def get_mock_df():
+    df = pd.DataFrame(dict(mins=[1, 2, 3, 4, 5], signal=[0, 10, 100, 10, 0]))
+    return dict(df1=df)
 
 
 def main():
     pickle_filepath = "alignment_df_pickle.pk1"
     db_path = definitions.DB_PATH
     wavelength = "254"
-    # display_in_st=True
+    display_in_st = True
 
     pickle_pipe_check(db_path, wavelength, pickle_filepath)
 

@@ -4,6 +4,7 @@ import plotly.io as pio
 from plotly import graph_objects as go
 
 from ..scripts.core_scripts import signal_data_treatment_methods as dt
+from wine_analysis_hplc_uv.signal_processing import signal_data_treatment_methods as sdt
 
 
 def plot_signal_in_series(series: pd.Series, x_key, y_key):
@@ -110,7 +111,7 @@ def get_peak_df(df: pd.DataFrame) -> go.Scatter:
 
     min_height = y_range / len(y)
 
-    peak_df = dt.peak_finder(x=x, y=y, in_height=min_height, in_prominence=0.1)
+    peak_df = sdt.peak_finder(x=x, y=y, in_height=min_height, in_prominence=0.1)
 
     peak_x, peak_y = peak_df[peak_df.columns[0]], peak_df[peak_df.columns[1]]
 

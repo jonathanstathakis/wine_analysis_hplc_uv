@@ -12,7 +12,7 @@ I will developing a module/query to pivot db tables [here](src/wine_analysis_hpl
 
 the following call produces an acceptable sample set:
 
-```python
+``` python
 get_data.get_wine_data(
         con,
         samplecode=('124', '130', '125', '133', '174'),
@@ -29,7 +29,7 @@ I would like to add an 'obs_num' column to each sample in the long table based o
 
 To add row numbers to the long table to act as an index for the pivot:
 
-```sql
+``` sql
 SELECT
   wine,
   mins,
@@ -50,40 +50,27 @@ Ok, now that I've established the basis of some tools for working with these lar
 
 The wine set i will work on is the same one as above.
 
-Fist step is to produce the dataframes in an appropriate format to work on. This has been achieved by modifying the `pivot_wine_data` function in pca module to produce a dataframe with a heirarchical index of ('wine', ['mins', 'val']).
+Fist step is to produce the dataframes in an appropriate format to work on. This has been achieved by modifying the `pivot_wine_data` function in pca module to produce a dataframe with a heirarchical index of ('wine', \['mins', 'val'\]).
 
 2023-08-10 16:57:19
 
-Getting there. With the help of user __Alex__ ive got a method of pivoting the tables out in duckdb prior to moving to Python, making everything lightning fast. However, working with multiindexes is a goddamn pain, and i need to learn how to do that better. Also extracting 'obs_num' with the pivot would be v useful, but currently dont seem to be able to.
+Getting there. With the help of user **Alex** ive got a method of pivoting the tables out in duckdb prior to moving to Python, making everything lightning fast. However, working with multiindexes is a goddamn pain, and i need to learn how to do that better. Also extracting 'obs_num' with the pivot would be v useful, but currently dont seem to be able to.
 
 [pivot_wine_data](src/wine_analysis_hplc_uv/db_methods/pivot_wine_data.py) will need a big clean up before we can proceed really, but we're still testing it.
 
 It currently looks like ive still got duplicates in the set somehow, specifically:
 
-98         2020 barone ricasoli chianti classico rocca di ... mins      0
-                                                              value     0
+98 2020 barone ricasoli chianti classico rocca di ... mins 0 value 0
 
-Which is forcing the dataset to be twice as long as it should be. 72         2021 de bortoli sacred hill cabernet merlot        mins   5712.
+Which is forcing the dataset to be twice as long as it should be. 72 2021 de bortoli sacred hill cabernet merlot mins 5712.
 
-##  Sequence Alignment
+## Sequence Alignment
 
 2023-08-13 12:19:38
 
 The first stage of the preprocessing pipeline is sequence alignment, specifically Multiple Sequence Alignment (MSA). This is necessary because the chromatograph can have a variation in observation points. What is the variation in observation points?
 
-dog walk transcription:
-
-db long table pivot wine data test:
-
-- [ ] multiindex test
-- [ ] shape before and after pivot
-  - [ ] get counts of unique values `n_unique` in pivot columns (i.e primary key i.e. 'id'), column count `n_col` and row count `n_row`. To calculate the expected shape, divide row count by `n_unique` to get pivot table `n_row`, add `n_unique` to `n_col` to get pivot table `n_col`.
-- [ ] cell contents
-  - [ ] presence of nulls as `sum_null`. `sum_null` > 1 is an issue.
-
-
-To debug the too long pivot table, try swapping `sample_code` out for `id`, a possibly more reliable primary key.
-
+db long table pivot wine data test: To debug the too long pivot table, try swapping `sample_code` out for `id`, a possibly more reliable primary key.
 
 ## Justification of need for MSA
 
@@ -93,12 +80,14 @@ From what I've seen so far (very little) it is a concern if observation frequenc
 
 TODO:
 
-- [x] identify issue with too long sample.
-- [ ] write pivot table test
-- [ ] annotate @brown_2020c
-- [ ] research MSA
-- [ ] research time series statistics
-- [ ] restore use of peak alignment module with current data format
+-   [x] identify issue with too long sample.
+-   [x] write pivot table test
+-   [ ] summarise @brown_2020c 3.05
+-   [ ] annotate @brown_2020 3.06 (and make book section item to cite)
+-   [ ] research Savitzky-Golay smoothing
+-   [ ] research MSA
+-   [ ] research time series statistics
+-   [ ] restore use of peak alignment module with current data format
 
 ## Too long pivot table exploration
 
@@ -113,11 +102,17 @@ Changing samplecode to id has not fixed it. Again, lets identify the culprit.
 One factor I overlooked is that the injection of my CUPRAC samples differ, initially they were set to 10uL but after issues with precipitation it was dropped to 5uL. This will affect the heights of the samples as per beer-lambert law. So to adjust for injection volume I need to get the injection volume measurements from the .acaml file, add it to rainbow, and rerun the pipe. Its good to rerun it anyway, keeps it from going stale, so to speak.
 
 2023-08-15 08:47:14: The injection volume can be found in .D/acq.macaml at the XPath `/ACAML/Doc/Content/MethodConfiguration/MethodDescription/Section/Section[3]/Section[4]/Parameter[5]/Value`.
-2023-08-15 09:06:02": Problem - Injection volume is stored in `acq.macaml`,  which is currently not parsed by rainbow. The secondary problem is that `parse_metadata` is setup to only read from one type of file, with a case-like setup of serial IF clauses each with their own return statement. My solution will be to add a `acq.macaml` parse as the first block within `parse_metadata`. This way we will avoid changing the logic.
-2023-08-15 12:20:37: Got it. The generated xpath was incorrect, it should have read: `/MethodConfiguration/MethodDescription/Section/Section[1]/Section[2]/Parameter[2]/Value` Had to manually locate it by starting with a root xpath and iterating through the returned children, adding more to the path and iterating again until i reached my goal. I have added some documentation, a test based on previously generated 094.D metadata, have commited and pushed. Now I will generate a library in a new db and check the injection volume distribution.
-2023-08-15 15:36:47: Testing the modifications on my dataset through chemstation tests (which have been updated as pytest format and added to tests dir) have revealed that the xpath developed from 094 is not universal. Fun. I will now try to develop one for 116.D
-2023-08-15 17:28:17: Ok, for a set of 4 DD (data dirs .D) I have shown that half of them work with the 116.D xpath, and half with the 094.D. Since both 116.D and 094.D are in the sampleset.. thats not really saying much. Time to expand it to the full set.
-2023-08-16 13:10:20: Discovered that there were at least 5 different absolute xpaths to Injection Volume depending on the sample in question. Scrapped absolute paths for a relative approach based on `.findall()` and filtering by parameter. This approach has been verified on the whole dataset, tested and commited. The results of this study are [here](tests/testing_inj_vol.ipynb), awhere we found that no CUPRAC samples in the current dataset were collected with a 10uL injection volume. It was good to verify though.
-2023-08-16 14:38:30: `build_library` has been validated, rerun with injection volume update. verified, changes have been commited. Back to.. whatever i was doing?
-2023-08-16 14:40:09: 
 
+2023-08-15 09:06:02": Problem - Injection volume is stored in `acq.macaml`, which is currently not parsed by rainbow. The secondary problem is that `parse_metadata` is setup to only read from one type of file, with a case-like setup of serial IF clauses each with their own return statement. My solution will be to add a `acq.macaml` parse as the first block within `parse_metadata`. This way we will avoid changing the logic.
+
+2023-08-15 12:20:37: Got it. The generated xpath was incorrect, it should have read: `/MethodConfiguration/MethodDescription/Section/Section[1]/Section[2]/Parameter[2]/Value` Had to manually locate it by starting with a root xpath and iterating through the returned children, adding more to the path and iterating again until i reached my goal. I have added some documentation, a test based on previously generated 094.D metadata, have commited and pushed. Now I will generate a library in a new db and check the injection volume distribution. 2023-08-15 15:36:47: Testing the modifications on my dataset through chemstation tests (which have been updated as pytest format and added to tests dir) have revealed that the xpath developed from 094 is not universal. Fun. I will now try to develop one for 116.D 
+
+2023-08-15 17:28:17: Ok, for a set of 4 DD (data dirs .D) I have shown that half of them work with the 116.D xpath, and half with the 094.D. Since both 116.D and 094.D are in the sampleset.. thats not really saying much. Time to expand it to the full set.
+
+2023-08-16 13:10:20: Discovered that there were at least 5 different absolute xpaths to Injection Volume depending on the sample in question. Scrapped absolute paths for a relative approach based on `.findall()` and filtering by parameter. This approach has been verified on the whole dataset, tested and commited. The results of this study are [here](tests/testing_inj_vol.ipynb), awhere we found that no CUPRAC samples in the current dataset were collected with a 10uL injection volume. It was good to verify though. 2023-08-16 14:38:30: `build_library` has been validated, rerun with injection volume update. verified, changes have been commited. Back to.. whatever i was doing?
+
+## MSA
+
+### MSA reading notes
+
+| @listgarten_2004 | A MSA study proposing a novel HMM model with an example of application on TIC LC-MS 2D signal dataset.|
