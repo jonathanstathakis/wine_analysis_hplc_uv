@@ -116,3 +116,12 @@ One factor I overlooked is that the injection of my CUPRAC samples differ, initi
 ### MSA reading notes
 
 | @listgarten_2004 | A MSA study proposing a novel HMM model with an example of application on TIC LC-MS 2D signal dataset.|
+
+## Revitalizing the peak alignment pipe
+
+[The peak alignment pipe](src/wine_analysis_hplc_uv/signal_processing/peak_alignment/peak_alignment_pipe.py) has been revitalized using a mock dataset shaped into the same structure as the pipe originally expected. tHis has been done to then rewrite the pipe to match the new multiindexed approach. While working on this though I started wondering about dataframe schema validation for pipes, a solution to the ever-present problem of how to ensure the input of a pipe is appropriate for it. Turns out many others have encountered the same problem, and that there many dataframe validation packages out there, including [pandera](https://pandera.readthedocs.io/en/stable/index.html). It looks promising, but perhaps overkill. Specifically, in order to handle a variable number and name of columns, they would need to be regex-matchable, as as [described here](https://pandera.readthedocs.io/en/stable/dataframe_schemas.html#column-regex-pattern-matching).
+
+So I think we'll write a prefunctory validation function based on the properties of the multiindex. Specifically, we're talking about the dataframe resulting from the `pivot_wine_data` function.
+
+2023-08-22 11:42:11: lets peel it back even more than that. Just make sure the multiindex names are correct.
+
