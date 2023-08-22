@@ -56,7 +56,13 @@ def mock_df():
 
 @pytest.fixture
 def pwd(corecon):
-    get_data.get_wine_data(con=corecon, wavelength=(200,), mins=(0, 1))
+    get_data.get_wine_data(
+        con=corecon,
+        detection=("cuprac",),
+        varietal=("shiraz",),
+        wavelength=(450,),
+        mins=(0, 30),
+    )
     df = pivot_wine_data.pivot_wine_data(corecon)
     idx = pd.IndexSlice
     df = df.loc[:, idx[:, :, ["mins", "value"]]]
@@ -98,11 +104,11 @@ def test_multiindex_level_2(pwd) -> None:
     ), "incorrect pattern sequence"
 
 
-def test_baseline_2(mock_df):
+def test_baseline_2(pwd):
     """
     testing the method via groupby rather than vertical indexing
     """
-    df = mock_df
+    df = pwd
 
     out = (
         df.stack(["samplecode", "wine"])
@@ -113,13 +119,15 @@ def test_baseline_2(mock_df):
                 baseline=Baseline(grp["mins"]).iasls(grp["value"])[0]
             )
         )
-        .pivot(columns=["samplecode", "wine"], index="idx")
+        .groupby(["samplecode", "wine"], as_index=False)
+        .apply(lambda grp: grp.assign(value_bcorr=grp["value"] - grp["baseline"]))
+        .pivot(columns=["samplecode", "wine"], index="i")
         .reorder_levels(["samplecode", "wine", "vars"], axis=1)
         .sort_index(axis=1)
-        .reindex(["mins", "value", "baseline"], level=2, axis=1)
+        .reindex(["mins", "value", "baseline", "value_bcorr"], level=2, axis=1)
     )
     print(out)
-    # out.loc[:, pd.IndexSlice[:, :, ["baseline", "value"]]].plot()
-    # plt.show()
+    out.loc[:, pd.IndexSlice["154", :, ["value", "baseline"]]].plot()
+    plt.show()
 
     assert False
