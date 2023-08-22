@@ -39,8 +39,8 @@ def get_sample(con):
 
 
 def pivot_wine_data(
-    con,
-):
+    con: db.DuckDBPyConnection,
+) -> pd.DataFrame:
     """
     2023-08-10 07:22:03
 
@@ -95,7 +95,7 @@ def pivot_wine_data(
             """
     )
 
-    pwine = (
+    pwine_df = (
         con.sql(
             """--sql
             SELECT
@@ -114,8 +114,8 @@ def pivot_wine_data(
         .set_index("rowcount")
     )
 
-    pwine = (
-        pwine.pipe(
+    pwine_df = (
+        pwine_df.pipe(
             lambda df: df.set_axis(
                 pd.MultiIndex.from_tuples(
                     [tuple(c.split("_")) for c in df.columns],
@@ -131,7 +131,7 @@ def pivot_wine_data(
         .sort_index(level=0, axis=1)
     )
 
-    return pwine
+    return pwine_df
 
 
 def stack_df(df):
