@@ -3627,6 +3627,16 @@ full = ["Pillow", "PyCryptodome"]
 image = ["Pillow"]
 
 [[package]]
+name = "pyperclip"
+version = "1.8.2"
+description = "A cross-platform clipboard module for Python. (Only handles plain text for now.)"
+optional = false
+python-versions = "*"
+files = [
+    {file = "pyperclip-1.8.2.tar.gz", hash = "sha256:105254a8b04934f0bc84e9c24eb360a591aaf6535c9def5f29d92af107a9bf57"},
+]
+
+[[package]]
 name = "pyphen"
 version = "0.14.0"
 description = "Pure Python module to hyphenate text"
@@ -5555,4 +5565,4 @@ test = ["pytest"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.11,<3.12"
-content-hash = "b717ae707ee4db9a2d61fbe6a036cf3560db89a9a2c6846c55594d6d6b108a35"
+content-hash = "37210c15e349e1aff40f835bb3d8b0f8f0da76d96158a28db919a115c51a29f5"
