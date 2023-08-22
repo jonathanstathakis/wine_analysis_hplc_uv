@@ -18,6 +18,9 @@ import duckdb as db
 from wine_analysis_hplc_uv.db_methods import pivot_wine_data, get_data
 from pybaselines import Baseline
 import matplotlib.pyplot as plt
+import logging
+
+logger = logging.getLogger(__name__)
 
 pd.options.display.width = None
 pd.options.display.max_colwidth = 20
@@ -49,7 +52,7 @@ def mock_df():
             }
         )
         .rename_axis(["samplecode", "wine", "vars"], axis=1)
-        .rename_axis("idx", axis=0)
+        .rename_axis("i", axis=0)
         # .pipe(lambda df: df if print(df) is None else df)
     )
 
@@ -74,7 +77,6 @@ def test_multiindex_level_0(pwd) -> None:
     test whether name is 'samplecode'. as per level_1 test, lack of standardisation
     means its hard to right a robust test.
     """
-    assert pwd.columns.names[0] == "samplecode"
 
 
 def test_multiindex_level_1(pwd) -> None:
@@ -82,7 +84,6 @@ def test_multiindex_level_1(pwd) -> None:
     test whether name is 'wine'. Hard to conduct any further testing at this point due
     to lack of standardisation of wine name patterns. can develop later if nes.
     """
-    assert pwd.columns.names[1] == "wine"
 
 
 def test_multiindex_level_2(pwd) -> None:
@@ -90,12 +91,18 @@ def test_multiindex_level_2(pwd) -> None:
     Test level 2 multiindex by check members and repeated pattern of ['mins','value']
     """
     names = pwd.columns.names
-    assert names[2] == "vars"
 
     # the pipe assumes that the vars index level follows pattern ['mins','value'], and
     # only contains those values (2023-08-22 11:56:49 this may change later)
 
-    vars_values = pwd.columns.get_level_values("vars").to_list()
+
+def check_dataframe_props(df: pd.DataFrame):
+    assert df.columns.names[0] == "samplecode"
+    assert df.columns.names[1] == "wine"
+    assert df.columns.names[2] == "vars"
+    assert df.index.name == "i"
+
+    vars_values = df.columns.get_level_values("vars").to_list()
     pattern = ["mins", "value"]
     pat_len = len(pattern)
     assert len(vars_values) % pat_len == 0, "mismatched length of list"
@@ -104,11 +111,13 @@ def test_multiindex_level_2(pwd) -> None:
     ), "incorrect pattern sequence"
 
 
-def test_baseline_2(pwd):
+def test_baseline(pwd):
     """
     testing the method via groupby rather than vertical indexing
     """
     df = pwd
+
+    df.pipe(check_dataframe_props)
 
     out = (
         df.stack(["samplecode", "wine"])
