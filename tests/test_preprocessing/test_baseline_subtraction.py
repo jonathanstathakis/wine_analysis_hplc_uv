@@ -98,32 +98,7 @@ def test_multiindex_level_2(pwd) -> None:
     ), "incorrect pattern sequence"
 
 
-def test_baseline(mock_df):
-    df = mock_df
-
-    b = (
-        df.loc[:, pd.IndexSlice[:, :, "mins"]]
-        .apply(
-            lambda x: Baseline(x).iasls(
-                df.loc[
-                    :,
-                    pd.IndexSlice[
-                        x.name[0],
-                        x.name[1],
-                        "value",
-                    ],
-                ]
-            )[0]
-        )
-        .rename(columns={"mins": "baseline"}, level=2)
-    )
-
-    print(pd.concat([df, b], axis=1).sort_index(axis=1))
-
-    assert False
-
-
-def test_baseline_2(mock_df, monkeypatch):
+def test_baseline_2(mock_df):
     """
     testing the method via groupby rather than vertical indexing
     """
@@ -132,22 +107,19 @@ def test_baseline_2(mock_df, monkeypatch):
     out = (
         df.stack(["samplecode", "wine"])
         .reset_index()
-        .groupby(["samplecode", "wine"])
+        .groupby(["samplecode", "wine"], as_index=False)
         .apply(
             lambda grp: grp.assign(
                 baseline=Baseline(grp["mins"]).iasls(grp["value"])[0]
             )
         )
-        .drop(["samplecode", "wine"], axis=1)
-        .reset_index()
-        .drop("level_2", axis=1)
         .pivot(columns=["samplecode", "wine"], index="idx")
         .reorder_levels(["samplecode", "wine", "vars"], axis=1)
         .sort_index(axis=1)
         .reindex(["mins", "value", "baseline"], level=2, axis=1)
     )
     print(out)
-    out.loc[:, pd.IndexSlice[:, :, ["baseline", "value"]]].plot()
-    plt.show()
+    # out.loc[:, pd.IndexSlice[:, :, ["baseline", "value"]]].plot()
+    # plt.show()
 
     assert False
