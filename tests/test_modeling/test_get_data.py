@@ -184,6 +184,7 @@ def test_pivot_wine_data(corecon, gda):
         - [ ] presence of nulls as `sum_null`. `sum_null` > 1 is an issue.
 
     """
+
     get_data.get_wine_data(
         corecon,
         wavelength=("254",),
@@ -238,7 +239,7 @@ def test_pivot_wine_data(corecon, gda):
                        """
     ).df()
 
-    logger.info(f"shape: {pw_shape}")
+    logger.info(f"shape:\n{pw_shape}")
 
     # simple shape test. Make sure that the pivot table has less than 10_000 rows
 
