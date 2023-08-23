@@ -4,10 +4,9 @@ signals. The baseline modules are at this time for a peak alignment pipe located
 [here](src/wine_analysis_hplc_uv/signal_processing/peak_alignment/peak_alignment_pipe.py)
 
 TODO:
-
-- [ ] establish a schema
-- [ ] get test dataset
-- [ ] establish metrics for measuring baseline subtraction change.
+- [ ] create a mock_df class initialized from a manually defined dict, then modify it
+in class to fail variously defined tests, i.e. duplicated samplecodes, wrong order vars,
+strings in column, not sorted mins, wrong order multiindex
 """
 
 import pytest
@@ -31,7 +30,6 @@ pd.options.display.colheader_justify = "left"
 """
 rules:
 1. level 0 must only have unique values
-2. level 1 must match the regex '\d{4}|nv ..' (figure it out)
 3. level 2 must only contain ['mins'],['value'], in that order.
 """
 
