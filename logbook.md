@@ -125,3 +125,12 @@ So I think we'll write a prefunctory validation function based on the properties
 
 2023-08-22 11:42:11: lets peel it back even more than that. Just make sure the multiindex names are correct.
 
+2023-08-23 09:52:28: Multiindex dataframe validation has been established as `check_dataframe_props`, currently stored [here](tests/test_preprocessing/test_baseline_subtraction.py). It checks that the column index level names match expectation, and that for the vars level, the columns ['mins','values'] are in the right order for X number of sample columns. There is also a list of TODO features to add to make it more specific.
+
+2023-08-23 13:47:09:
+
+The time has come to adapt the rest of the peak alignment pipeline, however, the first thing to do is to produce a sample dataset. Operations like the baseline calculation are very time-consuming, so decimation is key to a quick development cycle. Ideally it will be a process that will decimate from the baseline as much as possible while preserving all peaks. I should develop this in a jupyter notebook where I can also place my notes about decimation processes.
+
+## EDA decisions
+
+I have reached a point where I need to start keeping a formal track of decisions made during EDA. These will be kept the [README](README.md#eda-decisions), with links to the associated notebook justifying the decision.
