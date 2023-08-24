@@ -134,3 +134,20 @@ The time has come to adapt the rest of the peak alignment pipeline, however, the
 ## EDA decisions
 
 I have reached a point where I need to start keeping a formal track of decisions made during EDA. These will be kept the [README](README.md#eda-decisions), with links to the associated notebook justifying the decision.
+
+## Time axis offset
+
+I have discovered that each samples time axis reliably follows a frequeny of 2.5Hz (assuming that is the setting), but is offset by a specific value given by the first value. Subtracting the first value from every value in the time axis column corrects the offset so that every observation is now at the same time value. Refer to [this notebook](./notebooks/determining_time_axis_offset.ipynb) for the specifics and proof.
+
+## Higher dimensional dataframe plotting
+
+To plot 2D data in a high-dimensional (multiindex columns) dataframe, need to shed the higher level labels to be able to refer to the specific columns, i.e. 'mins', and 'value'. In a pipe:
+
+```python
+...
+.groupby(['level1','level2',...,'leveln'],axis=1)
+.apply(lambda grp: display(grp.droplevel(axis=1, level=['level1','level2',...,'leveln']).plot(x='colx',y='coly')))
+...
+```
+
+
