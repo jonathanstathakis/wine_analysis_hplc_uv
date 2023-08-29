@@ -8,6 +8,12 @@ def test_dataset():
 
     154 has 1 observation more than the others, but its NaN.
     """
+
+    def check_df(df):
+        print(df.columns.get_level_values("vars"))
+        assert False
+        return df
+
     df = (
         pd.DataFrame(
             {
@@ -20,9 +26,9 @@ def test_dataset():
                     5: np.nan,
                 },
                 ("154", "2020 leeuwin estate shiraz art series", "value"): {
-                    0: 13.516165316104889,
+                    0: 0,
                     1: 3.5185739398002625,
-                    2: -4.017174243927002,
+                    2: 4.017174243927002,
                     3: 3.0876919627189636,
                     4: 4.1618868708610535,
                     5: np.nan,
@@ -37,9 +43,9 @@ def test_dataset():
                 ("163", "2015 yangarra estate shiraz mclaren vale", "value"): {
                     0: 4.745416343212128,
                     1: 6.816156208515167,
-                    2: -0.3344714641571045,
-                    3: -0.5525872111320496,
-                    4: -0.521630048751831,
+                    2: 0.3344714641571045,
+                    3: 0.5525872111320496,
+                    4: 0.521630048751831,
                 },
                 ("165", "2020 izway shiraz bruce", "mins"): {
                     0: 17.68166666666667,
@@ -65,9 +71,9 @@ def test_dataset():
                 ("176", "2021 john duval wines shiraz concilio", "value"): {
                     0: 20.684920251369476,
                     1: 5.100332200527191,
-                    2: -9.549513459205627,
-                    3: -1.8068403005599976,
-                    4: -1.110166311264038,
+                    2: 9.549513459205627,
+                    3: 1.8068403005599976,
+                    4: 1.110166311264038,
                 },
                 ("177", "2021 torbreck shiraz the struie", "mins"): {
                     0: 17.686666666666667,
@@ -79,9 +85,9 @@ def test_dataset():
                 ("177", "2021 torbreck shiraz the struie", "value"): {
                     0: 24.621665477752686,
                     1: 6.3974931836128235,
-                    2: -8.841246366500854,
-                    3: -1.0299012064933777,
-                    4: -0.2767592668533325,
+                    2: 8.841246366500854,
+                    3: 1.0299012064933777,
+                    4: 0.2767592668533325,
                 },
                 ("ca0301", "2021 chris ringland shiraz", "mins"): {
                     0: 17.680616666666666,
@@ -93,9 +99,9 @@ def test_dataset():
                 ("ca0301", "2021 chris ringland shiraz", "value"): {
                     0: 4.944443702697754,
                     1: 4.77755069732666,
-                    2: -0.40030479431152344,
-                    3: -0.2757161855697632,
-                    4: -0.2722740173339844,
+                    2: 0.40030479431152344,
+                    3: 0.2757161855697632,
+                    4: 0.2722740173339844,
                 },
                 ("torbreck-struie", "2021 torbreck shiraz the struie", "mins"): {
                     0: 17.685616666666668,
@@ -107,7 +113,7 @@ def test_dataset():
                 ("torbreck-struie", "2021 torbreck shiraz the struie", "value"): {
                     0: 41.36265814304352,
                     1: 7.269956171512604,
-                    2: -11.186964809894562,
+                    2: 11.186964809894562,
                     3: 1.871950924396515,
                     4: 1.8909499049186707,
                 },
@@ -115,6 +121,30 @@ def test_dataset():
         )
         .rename_axis(["samplecode", "wine", "vars"], axis=1)
         .rename_axis("i", axis=0)
+        .stack(["samplecode", "wine"])
+        .reset_index()
+        .set_index(["samplecode", "wine", "i"])
+        .pipe(lambda df: df if print(df) else df)
+        .assign(
+            value=lambda df: df["value"].where(
+                ~(df.index.get_level_values("i") == 0), 0
+            )
+        )  # set the first value to zero
+        .assign(
+            value=lambda df: df["value"].where(
+                ~(df.index.get_level_values("i") == 4), 0
+            )
+        )  # set the last value to zero
+        .assign(
+            value=lambda df: df["value"].where(
+                ~(df.index.get_level_values("i") == 3), df["value"].max()
+            )
+        )  # set the last to always be equal to the max, should ensure an always
+        # positive baseline gradient
+        .unstack(["samplecode", "wine"])
+        .reorder_levels(["samplecode", "wine", "vars"], axis=1)
+        .sort_index(axis=1)
+        # .pipe(check_df)
     )
     return df
 

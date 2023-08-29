@@ -28,7 +28,7 @@ logger = logging.getLogger(__name__)
 
 pd.options.display.width = None
 # pd.options.display.max_colwidth = 20
-pd.options.display.max_rows = 20
+pd.options.display.max_rows = 35
 pd.options.display.max_columns = 15
 pd.options.display.colheader_justify = "left"
 import random
@@ -46,21 +46,25 @@ def signalprocessor():
 
 
 @pytest.fixture()
-def cupshz_dset(signalprocessor):
+def cupshz_dset(signalprocessor: SignalProcessor):
     df = preprocessing_test_dataset.test_dataset()
     df.pipe(signalprocessor.validate_dataframe)
     return df
 
 
-def test_validate_dataframe(signalprocessor, cupshz_dset: pd.DataFrame) -> None:
+def test_validate_dataframe(
+    signalprocessor: SignalProcessor, cupshz_dset: pd.DataFrame
+) -> None:
     signalprocessor.validate_dataframe(cupshz_dset)
 
 
-def test_cupshz_dset(cupshz_dset):
+def test_cupshz_dset(cupshz_dset: pd.DataFrame) -> None:
     assert not cupshz_dset.empty
 
 
-def test_adjust_timescale(signalprocessor, cupshz_dset: pd.DataFrame) -> None:
+def test_adjust_timescale(
+    signalprocessor: SignalProcessor, cupshz_dset: pd.DataFrame
+) -> None:
     df = cupshz_dset.pipe(signalprocessor.adjust_timescale)
 
 
@@ -80,7 +84,7 @@ class BadDataSet:
             self.base_dataset.stack(["samplecode", "wine"])
             .assign(
                 mins=lambda df: df.groupby(["samplecode", "wine"])["mins"].transform(
-                    lambda x: x * random.uniform(0, 1)
+                    lambda x: x * random.uniform(1, 2)
                 )
             )
             .unstack(["samplecode", "wine"])
@@ -91,17 +95,17 @@ class BadDataSet:
 
 
 @pytest.fixture
-def baddatasets(cupshz_dset):
+def baddatasets(cupshz_dset: pd.DataFrame):
     return BadDataSet(cupshz_dset)
 
 
-def test_baddataset(baddatasets):
+def test_baddataset(baddatasets: BadDataSet):
     print(baddatasets.fail_offset)
     assert False
 
 
 def test_correct_offset(
-    signalprocessor, cupshz_dset: pd.DataFrame, baddatasets
+    signalprocessor: SignalProcessor, cupshz_dset: pd.DataFrame, baddatasets: BadDataSet
 ) -> None:
     # expect this to fail as they contain irregular frequency
     try:
@@ -121,32 +125,22 @@ def test_correct_offset(
     )
 
 
-# def test_baseline(pwd):
-#     """
-#     testing the method via groupby rather than vertical indexing
-#     """
-#     df = pwd
+def test_baseline_subtraction(
+    signalprocessor: SignalProcessor, cupshz_dset: pd.DataFrame
+) -> None:
+    """
+    Test whether baseline subtraction was successful by observing the shape of the
+    data before and after subtraction
+    """
+    # without time axis processing
+    # (cupshz_dset.pipe(signalprocessor.subtract_baseline))
 
-#     df.pipe(check_dataframe_props)
+    # with time axis processing
 
-#     out = (
-#         df.stack(["samplecode", "wine"])
-#         .reset_index()
-#         .groupby(["samplecode", "wine"], as_index=False)
-#         .apply(
-#             lambda grp: grp.assign(
-#                 baseline=Baseline(grp["mins"]).iasls(grp["value"])[0]
-#             )
-#         )
-#         .groupby(["samplecode", "wine"], as_index=False)
-#         .apply(lambda grp: grp.assign(value_bcorr=grp["value"] - grp["baseline"]))
-#         .pivot(columns=["samplecode", "wine"], index="i")
-#         .reorder_levels(["samplecode", "wine", "vars"], axis=1)
-#         .sort_index(axis=1)
-#         .reindex(["mins", "value", "baseline", "value_bcorr"], level=2, axis=1)
-#     )
-#     print(out)
-#     # out.loc[:, pd.IndexSlice["154", :, ["value", "baseline"]]].plot()
-#     # plt.show()
+    (
+        cupshz_dset.pipe(signalprocessor.adjust_timescale)
+        .pipe(signalprocessor.correct_offset)
+        .pipe(signalprocessor.subtract_baseline)
+    )
 
-#     assert False
+    assert False

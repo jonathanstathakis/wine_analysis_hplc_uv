@@ -150,4 +150,14 @@ To plot 2D data in a high-dimensional (multiindex columns) dataframe, need to sh
 ...
 ```
 
+## Time Series Characterization and Compression
 
+2023-08-29 10:50:22
+
+My experiments to characterize the time axis of my dataset and develop some unification methods has resulted in a OOP API for time axis unification [here](src/wine_analysis_hplc_uv/signal_processing/mindex_signal_processing.py). The report can be found [here](notebooks/time_series_characterization_and_compression/time_axis_characterisation_and_compression.ipynb).
+
+The long and short of it is that all the time series require a small amount of adjustment prior to higher level processing, and that it is feasible that a 80% compression size across the datasets can be achieved.
+
+In the interest of speeding up development, I should consider processing the entire dataset and storing it in a seperate database file, as the compression will drastically increase extraction time.
+
+In the meantime I will continue with my adaption of the peak alignment module to mindex format.
