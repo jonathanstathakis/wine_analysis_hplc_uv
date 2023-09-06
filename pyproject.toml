@@ -121,6 +121,8 @@ dtw-python = "^1.3.0"
 pandas-datareader = "^0.10.0"
 pyperclip = "^1.8.2"
 random-word = "^1.0.11"
+panel = "^1.2.2"
+jupyter-bokeh = "^3.0.7"
 
 [tool.poetry.group.dev.dependencies]
 jupyter = "^1.0.0"

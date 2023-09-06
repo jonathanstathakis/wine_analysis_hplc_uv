@@ -152,12 +152,43 @@ To plot 2D data in a high-dimensional (multiindex columns) dataframe, need to sh
 
 ## Time Series Characterization and Compression
 
-2023-08-29 10:50:22
+2023-08-29 10:50:22 My experiments to characterize the time axis of my dataset and develop some unification methods has resulted in a OOP API for time axis unification [here](src/wine_analysis_hplc_uv/signal_processing/mindex_signal_processing.py). The report can be found [here](notebooks/time_series_characterization_and_compression/time_axis_characterisation_and_compression.ipynb). The long and short of it is that all the time series require a small amount of adjustment prior to higher level processing, and that it is feasible that a 80% compression size across the datasets can be achieved.
 
-My experiments to characterize the time axis of my dataset and develop some unification methods has resulted in a OOP API for time axis unification [here](src/wine_analysis_hplc_uv/signal_processing/mindex_signal_processing.py). The report can be found [here](notebooks/time_series_characterization_and_compression/time_axis_characterisation_and_compression.ipynb).
+2023-08-29 10:58:22 In the interest of speeding up development, I should consider processing the entire dataset and storing it in a seperate database file, as the compression will drastically increase extraction time. In the meantime I will continue with my adaption of the peak alignment module to mindex format.
 
-The long and short of it is that all the time series require a small amount of adjustment prior to higher level processing, and that it is feasible that a 80% compression size across the datasets can be achieved.
+2023-08-29 10:58:54 I was developing the baseline subtraction method, however the limited size of the sample data meant that my baselines were generally negative, resulting in unexpected changes once the baseline was subtracted. With the development of a downsampling [protocol](./notebooks/time_series_characterization_and_compression/downsampling_signals.ipynb) I should produce a csv file with the downsampled signals (or parquet) for use in testing. This will match the overall behavior of the data better than a subset.
 
-In the interest of speeding up development, I should consider processing the entire dataset and storing it in a seperate database file, as the compression will drastically increase extraction time.
+## Stack datatype conversion
 
-In the meantime I will continue with my adaption of the peak alignment module to mindex format.
+2023-08-30 10:57:20
+
+When working within a multiindex environment, it gets very tiresome to be constantly pivoting between tidy and long formats. The 'stack' methods are a bit odd in how they stack inside out, so to speak, so its required me to reorder and sort the column indexes every time i go from long to tidy:
+
+```python
+df = (
+      df
+      .unstack(["wine", "samplecode"])
+      .reorder_levels(["samplecode", "wine", "vars"], axis=1)
+      .sort_index(axis=1)
+      .reindex(["mins", "value"], level=2, axis=1)
+        )
+```
+
+I thought I'd found a way of shortcutting it by a series of stacks and unstacks on different levels of the column index:
+
+```python
+.stack(['vars']).unstack(['samplecode','wine','vars']) # from long to tidy
+```
+
+Except that as my datatypes became more sophisticated, columns belonging to the same level took on different types. Specifically, the 'vars' level contained 'mins', and 'value'. Initially, 'mins' and 'value' were floats, so there was no problem with datatype compatibility, however mins is now `timedelta`, and 'value' has remained a float. The issue is, that `.stack[('vars')]` puts the 'mins' and 'value' elements in the same column with alternating indexes, and pandas is forced to typecast them both to `object` dtype. As this is the final operation possible, the only alternative would be to iterate through each multiindex and typecast them back to their preferred format. It seems that the first option is the necessary one.
+
+## Seaborn plotting
+
+Seaborn is built around long format data. For all kinds of data, ensure that 1 there is 1 column for x, 1 column for y, and 1+ column for categories.
+
+## Project Organization
+
+2023-09-04 12:21:45
+
+Yet again I'm having problems with project organization. Long story short I want a method of adding verticality to my EDA processes so that state changes of the data can be kept track of and ordered. To give an example, I've applied a number of processes to the data including correcting offsets, smoothing, scaling etc, but without a top-level method of tracking (and justifying) these steps, then as the number of processes (and code) increases, it will become proportionally more difficult to both track and formalize these processes/decisions. In the past I have tried to establish a thesis homepage, however the problem with these approaches is that unless you are constantly present and editing the homepage, current efforts rapidly become detached from there, making it effortsome to reestablish synchronicity. The solution I will take today will be to establish a chapter level notebook that will display the results of efforts created in other pythoon/notebook files. For example, for the preprocesing phase I will establish a chapter notebook that summarises the investigation including establishing the test data set, the ordered processing steps etc. In the meantime, it will merely link to the relevent low-level notebook, but we can experiment later with embedding ala qmd. Also, To ensure that there is clean and organized code, all but the basest operations should be stored in python files rather than written in notebooks themselves, then imported into the notebook - notebook is to display tables and figures, not the code (in this context).
+

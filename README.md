@@ -13,4 +13,7 @@ As I progress through my pipelines, EDA will produce certain decisions on how to
 | i | Decision                                                     | notebook                                                 |
 |---|--------------------------------------------------------------|----------------------------------------------------------|
 | 1 | time axis precision is milliseconds                          | [notebook](notebooks/determining_time_precision.ipynb)   |
-| 2 | time axis needs to be centered by subtraction of first value | [notebook](notebooks/determining_time_axis_offset.ipynb) |
+| 2 | time axis needs to be offset corrected by subtraction of first value | [notebook](notebooks/determining_time_axis_offset.ipynb) |
+| 3 | time interval of 0 - 20 mins (after offset correction) to be used | [notebook](notebooks/developing_baseline_subtraction.ipynb) |
+| 4 | asls to be used for baseline correction | [notebook](notebooks/developing_baseline_subtraction.ipynb) |
+| 5 |  
