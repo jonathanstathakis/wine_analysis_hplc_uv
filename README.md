@@ -1,6 +1,8 @@
 # Project README
 
+## Meta
 
+2023-09-07 13:18:55 - Have added [nbstripout](https://github.com/kynan/nbstripout) as a pre-commit hook to ensure that notebooks are never commited with output. This hook will check if there is output, and clear it if so, simply requiring you to add the change before commiting again.
 
 ## PCA Modelling
 
@@ -17,3 +19,4 @@ As I progress through my pipelines, EDA will produce certain decisions on how to
 | 3 | time interval of 0 - 20 mins (after offset correction) to be used | [notebook](notebooks/developing_baseline_subtraction.ipynb) |
 | 4 | asls to be used for baseline correction | [notebook](notebooks/developing_baseline_subtraction.ipynb) |
 | 5 |  
+
