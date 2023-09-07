@@ -33,7 +33,11 @@ TEST_WINE_NAMES = [
 
 BAD_CUPRAC_SAMPLES = ["128", "161", "163", "164", "165", "ca0101", "ca0301"]
 
-TEST_PARQ_PATH = "/Users/jonathan/mres_thesis/wine_analysis_hplc_uv/tests/test_data/processing_test_set/cupshz_testset.pq"
+# the unprocesssed cupshz dataset
+
+RAW_PARQ_PATH = "/Users/jonathan/mres_thesis/wine_analysis_hplc_uv/tests/test_data/processing_test_set/cupshz_testset_raw.pq"
+
+XPRO_DOWNSAMPLED_PARQ_PATH = "/Users/jonathan/mres_thesis/wine_analysis_hplc_uv/tests/test_data/processing_test_set/cupshz_testset_x.pq"
 
 # path to the y-axis processed (not baseline corrected) file
-PRO_PARQ_PATH = "/Users/jonathan/mres_thesis/wine_analysis_hplc_uv/tests/test_data/processing_test_set/y_pro_cuprac_shzset.pq"
+XPRO_YPRO_DOWNSAMPLED_PARQ_PATH = "/Users/jonathan/mres_thesis/wine_analysis_hplc_uv/tests/test_data/processing_test_set/y_pro_cuprac_shzset_xy.pq"
