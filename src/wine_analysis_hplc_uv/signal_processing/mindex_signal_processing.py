@@ -3,7 +3,7 @@
 
 A module destined to replace [this one](./src/wine_analysis_hplc_uv/signal_processing/signal_data_treatment_methods.py). Primarily it differs in that it will have a class API, and expect a multiindexed dataframe as input.
 """
-
+import numpy as np
 import pandas as pd
 import logging
 from pybaselines import Baseline
@@ -61,30 +61,68 @@ class SignalProcessor:
         logger.info("df validated")
         return df
 
-    def adjust_timescale(self, df: pd.DataFrame) -> pd.DataFrame:
+    def standardize_time(self, df: pd.DataFrame) -> pd.DataFrame:
         """
-        Refer to
-        [time_axis_characterisation_and_normalization](notebooks/time_axis_characterisation_and_normalization.ipynb). It
-        has been determined that the minimum level of precision that ensures that each
-        time axis value is unique. This is achieved by first converting each mins
-        value to timedelta then rounding to millisecond "L".
+        Take a tidy format df of column levels ['samplecode','wine','vars'] and vars
+        of ['mins','value'] with 'i' index and return a df of same format but 'mins'
+        as global index of datatype `pd.TimeDelta`, rounded to millisecond and resampled
+        to mean sampling frequency.
 
+        Refer to
+        [time_axis_characterisation_and_normalization](notebooks/time_axis_characterisation_and_normalization.ipynb) and
+        [downsampling_signals](notebooks/downsampling_signals.ipynb).
+
+        It has been determined that the minimum level of precision that ensures that each
+        time axis value is unique is a millisecond scale, thus after datatype conversion
+        the mins columns are rounded to "L". Next the 0 element time offset is corrected so
+        element zero = 0 mins. then the dataset is moved to a universal time index as
+        these modifications should have made them all equal.
+
+        Test by asserting the geometry changes as expected.
         """
+
+        # store to test the transformation later
+        oshape = df.shape
+
         df = (
-            df.pipe(self.validate_dataframe)
+            df
+            # .pipe(self.validate_dataframe)
             .stack(["samplecode", "wine"])
+            # convert to timedelta and round to milliseconds to correct float error
             .pipe(
                 lambda df: df.assign(
                     mins=pd.to_timedelta(df.loc[:, "mins"], unit="minutes").round("L")
                 )
             )
+            # correct 0 offest
+            .pipe(
+                lambda df: df.assign(
+                    mins=lambda df: df.groupby(["samplecode", "wine"])[
+                        "mins"
+                    ].transform(lambda x: x - x.iloc[0])
+                )
+            )
+            # move to universal time index
+            .pipe(
+                lambda df: df.set_index("mins", append=True).reset_index("i", drop=True)
+            )
             .unstack(["samplecode", "wine"])
             .reorder_levels(["samplecode", "wine", "vars"], axis=1)
             .sort_index(axis=1, level=1, sort_remaining=True)
-            .pipe(self.validate_dataframe)
-            .pipe(self.test_adjust_timescale)
-            #            .pipe(lambda df: df if print(df) else df)
+            # resample to mean frequency
+            .pipe(
+                lambda df: df.resample(
+                    f"{np.round(df.reset_index().mins.dt.total_seconds().diff().mean(),5)}S"
+                ).interpolate()
+            )
         )
+        # a rudimentary transformation test. As we are expecting the same number of rows
+        # after the transformation, test that. We're also expecting the number of columns
+        # to be halved as we move from intra-sample 'mins' columns to 1 mins index which
+        # is replacing 'i'.
+
+        expected_shape = (oshape[0], oshape[1] / 2)
+        assert df.shape == expected_shape
 
         return df
 
@@ -329,7 +367,7 @@ class SignalProcessor:
             .pipe(
                 lambda df: sns.FacetGrid(
                     df,
-                    col="samplecode",
+                    col="wine",
                     col_wrap=2,
                     hue="vars",
                     aspect=2,
@@ -406,30 +444,6 @@ class SignalProcessor:
             .pipe(
                 lambda df: df.groupby(["samplecode"], group_keys=False).apply(
                     lambda df: df.assign(value=lambda df: df.value - df.value[0])
-                )
-            )
-            .unstack(["samplecode", "wine"])
-            .reorder_levels(["samplecode", "wine", "vars"], axis=1)
-        )
-
-        return out_df
-
-    def min_max_scale(self, df: pd.DataFrame) -> pd.DataFrame:
-        """
-        For a dataframe of 1D signals, scale each to lie within 0 to 1 using
-        sklearn.preproprecessing.MinMaxScaler
-        """
-
-        from sklearn.preprocessing import MinMaxScaler
-
-        out_df = (
-            df.stack(["samplecode", "wine"])
-            .groupby(["samplecode"], group_keys=False)
-            .apply(
-                lambda df: df.assign(
-                    value=lambda df: MinMaxScaler().fit_transform(
-                        df.value.values.reshape(-1, 1)
-                    )
                 )
             )
             .unstack(["samplecode", "wine"])
