@@ -482,3 +482,18 @@ class SignalProcessor:
         )
 
         return out_df
+
+    def most_correlated(df: pd.DataFrame) -> str:
+        """
+        Take a tidy format df, identify the most correlated sample in the set and return its samplecode
+
+        See [identifying_most_similar_signal](notebooks/identifying_most_similar_signal.ipynb) for more information.
+        """
+        samplecode_idx = (
+            df.corr()
+            .mean()
+            .sort_values(ascending=False)
+            .loc[lambda df: df == df.max()]
+            .index.get_level_values("samplecode")
+        )
+        return samplecode_idx
