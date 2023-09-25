@@ -178,3 +178,5 @@ tests/test_data/*
 wine_analysis_hplc_uv_2.code-workspace
 wahc.duckdb
 wahu.duckdb
+src/wine_analysis_hplc_uv/notebooks/rw_cup_450_processed.parquet
+notebooks/My Library.bib
