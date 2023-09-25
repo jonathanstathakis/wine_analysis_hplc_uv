@@ -483,7 +483,7 @@ class SignalProcessor:
 
         return out_df
 
-    def most_correlated(df: pd.DataFrame) -> str:
+    def most_correlated(self, df: pd.DataFrame) -> str:
         """
         Take a tidy format df, identify the most correlated sample in the set and return its samplecode
 
