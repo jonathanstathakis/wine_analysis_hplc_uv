@@ -1,0 +1,3 @@
+# Description
+
+Authors developed a method of aligning GC-MS fingerprints sampled under different settings with the same sample on different instruments. The method involves establishing a set of standards that are run externally and internally, and the fingerprints are aligned to the external standard mix using the internal standards as markers. For the two case studies provided, the alignment was successful.
