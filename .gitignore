@@ -180,3 +180,27 @@ wahc.duckdb
 wahu.duckdb
 src/wine_analysis_hplc_uv/notebooks/rw_cup_450_processed.parquet
 notebooks/My Library.bib
+src/wine_analysis_hplc_uv/notebooks/logbooks/logbook_files/libs/bootstrap/bootstrap-icons.css
+src/wine_analysis_hplc_uv/notebooks/logbooks/logbook_files/libs/bootstrap/bootstrap-icons.woff
+src/wine_analysis_hplc_uv/notebooks/logbooks/logbook_files/libs/bootstrap/bootstrap.min.css
+src/wine_analysis_hplc_uv/notebooks/logbooks/logbook_files/libs/bootstrap/bootstrap.min.js
+src/wine_analysis_hplc_uv/notebooks/logbooks/logbook_files/libs/clipboard/clipboard.min.js
+src/wine_analysis_hplc_uv/notebooks/logbooks/logbook_files/libs/quarto-html/anchor.min.js
+src/wine_analysis_hplc_uv/notebooks/logbooks/logbook_files/libs/quarto-html/popper.min.js
+src/wine_analysis_hplc_uv/notebooks/logbooks/logbook_files/libs/quarto-html/quarto-syntax-highlighting.css
+src/wine_analysis_hplc_uv/notebooks/logbooks/logbook_files/libs/quarto-html/quarto.js
+src/wine_analysis_hplc_uv/notebooks/logbooks/logbook_files/libs/quarto-html/tippy.css
+src/wine_analysis_hplc_uv/notebooks/logbooks/logbook_files/libs/quarto-html/tippy.umd.min.js
+src/wine_analysis_hplc_uv/notebooks/logbooks/mres_logbook_files/libs/bootstrap/bootstrap-icons.css
+src/wine_analysis_hplc_uv/notebooks/logbooks/mres_logbook_files/libs/bootstrap/bootstrap-icons.woff
+src/wine_analysis_hplc_uv/notebooks/logbooks/mres_logbook_files/libs/bootstrap/bootstrap.min.css
+src/wine_analysis_hplc_uv/notebooks/logbooks/mres_logbook_files/libs/bootstrap/bootstrap.min.js
+src/wine_analysis_hplc_uv/notebooks/logbooks/mres_logbook_files/libs/clipboard/clipboard.min.js
+src/wine_analysis_hplc_uv/notebooks/logbooks/mres_logbook_files/libs/quarto-html/anchor.min.js
+src/wine_analysis_hplc_uv/notebooks/logbooks/mres_logbook_files/libs/quarto-html/popper.min.js
+src/wine_analysis_hplc_uv/notebooks/logbooks/mres_logbook_files/libs/quarto-html/quarto-syntax-highlighting.css
+src/wine_analysis_hplc_uv/notebooks/logbooks/mres_logbook_files/libs/quarto-html/quarto.js
+src/wine_analysis_hplc_uv/notebooks/logbooks/mres_logbook_files/libs/quarto-html/tippy.css
+src/wine_analysis_hplc_uv/notebooks/logbooks/mres_logbook_files/libs/quarto-html/tippy.umd.min.js
+src/wine_analysis_hplc_uv/notebooks/logbooks/logbook.html
+src/wine_analysis_hplc_uv/notebooks/logbooks/mres_logbook.html
