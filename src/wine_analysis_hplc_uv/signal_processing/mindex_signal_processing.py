@@ -255,21 +255,10 @@ class SignalProcessor:
         return df
 
     def subtract_baseline(self, df: pd.DataFrame) -> pd.DataFrame:
-        def plot_baseline_correction(grp):
-            fig, ax = plt.subplots(1)
-
-            grp.plot(
-                x="mins", y="value", ax=ax, title=grp.index.get_level_values("wine")[0]
-            )
-            grp.plot(x="mins", y="baseline", ax=ax)
-
-            plt.show()
-            return grp
+        """ """
 
         df = (
-            df
-            # .pipe(self.validate_dataframe)
-            .pipe(self.long_format)
+            df.pipe(self.long_format)
             .groupby(["samplecode", "wine"], as_index=False)
             .apply(
                 lambda grp: grp.assign(
@@ -475,10 +464,34 @@ class SignalProcessor:
             return df
 
         out_df = (
+            # move samplecode and wine to index
             df.stack(["samplecode", "wine"])
+            # groupby samplecode, excluding the group keys in the output
             .groupby(["samplecode"], group_keys=False)
+            # apply the predefined asls baseline fitting algo to each group
             .apply(lambda df: aslsblinefunc(df))
-            .unstack(["samplecode", "wine"])
+            # rename 'value' to 'signal' to differentiate it from the fitted baseline and baseline subtracted signal column
+            .rename(mapper={"value": "signal"}, axis=1)
+            # melt the frame while preserving the index to merge the 'signal', 'bline' and 'blinesub' column values to one column with a label column in order to reassign the labels as an ordered categorical index with name 'subsignal'
+            .melt(ignore_index=False, var_name="subsignal")
+            # reassign the signal label column to the frame as an ordered categorical index
+            .assign(
+                subsignal=lambda df: pd.CategoricalIndex(
+                    df.subsignal,
+                    categories=["signal", "bline", "blinesub"],
+                    ordered=True,
+                )
+            )
+            # reset the three level multiindex index to prepare for pivoting to tidy form
+            .reset_index()
+            # pivot from long to tidy with column heirarchy 'samplecode','wine','subsignal', index of 'mins'
+            .pivot(
+                columns=["samplecode", "wine", "subsignal"],
+                index="mins",
+                values="value",
+            )
+            # sort the column multiindex for visual clarity
+            .sort_index(axis="columns")
         )
 
         return out_df
@@ -497,3 +510,60 @@ class SignalProcessor:
             .index.get_level_values("samplecode")
         )
         return samplecode_idx
+
+    def unique_wine_label(self, df: pd.DataFrame) -> pd.DataFrame:
+        """
+        Form label dataframe from multiindex, form label column as concat of wine + cumcount+1.
+        Join with label column on samplecode index, use label column to map to wine, fill it
+        where NA with wine value (i.e. unique wine names) then replace wine column with label
+        through assign.
+        """
+        # add the label as a concatentation of cumcount+1 and wine name
+
+        labels = (
+            df.columns.to_frame()
+            .reset_index(drop=True)[["samplecode", "wine"]]
+            .set_index("samplecode")[lambda df: df.duplicated(keep=False)]
+            .assign(
+                label=lambda df: df["wine"]
+                + " "
+                + df.groupby(["wine"]).cumcount().add(1).astype(str)
+            )
+        )
+
+        # go to long format, join with label df on samplecode, merge label and wine column via
+        # where, replace wine column with the merge, go back to tidy format
+
+        df = (
+            df.stack(["samplecode", "wine"])
+            .reset_index("mins")
+            .join(labels["label"])
+            .rename_axis("vars", axis=1)
+            .reset_index()
+            .pipe(
+                lambda df: df.assign(
+                    wine=df["label"].where(~df["label"].isna(), df["wine"])
+                )
+            )
+            .drop(["label"], axis=1)
+            .set_index(["samplecode", "wine", "mins"])
+            .unstack(["samplecode", "wine"])
+            .reorder_levels(axis=1, order=["samplecode", "wine", "vars"])
+            .sort_index(axis=1, level="samplecode")
+        )
+
+        return df
+
+    def proPipe(self, df: pd.DataFrame) -> pd.DataFrame:
+        """
+        The full pipe to lead to a processed dataset
+        """
+
+        pro_df = (
+            df.pipe(self.unique_wine_label)
+            .pipe(self.standardize_time)
+            .pipe(self.zero_y_axis)
+            .pipe(self.baseline_correction)
+            .sort_index(axis=1)
+            .pipe(self.standardize_time)
+        )
