@@ -1,0 +1,56 @@
+---
+title: Thesis
+jupyter: python3
+toc: true
+number-sections: true
+---
+
+## Meta
+
+<!-- remove before publication -->
+
+[logbook](./mres_logbook.qmd)
+
+### Subprojects
+
+[cuprac](./notes/project.hplc.cuprac.md)
+
+## Sections
+
+### Introduction
+
+[Introduction](./chapter-introduction.qmd)
+
+{{< include chapter-introduction.qmd >}}
+
+### Experimental
+
+[Experimental](./chapter-experimental.qmd)
+
+{{< include ./chapter-experimental.qmd >}}
+
+#### Signal Processing
+
+[Signal Processing](./chapter_signal_preprocessing.ipynb)
+
+### Results
+
+#### Description of Dataset
+
+[Description of Dataset](./lib_eda/lib_eda.qmd)
+
+{{< include ./lib_eda/lib_eda.qmd >}}
+
+
+{{< include ./chapter_signal_preprocessing.ipynb >}}
+
+#### Profile Descriptions by Category
+
+[Chromatographic Differences Between Samples](./chromatographic_differences_in_samples.md)
+
+[Signal EDA By Category]()
+
+### Classification Modeling with XGBoost
+
+[Classification Modeling](./chapter-classification_modeling.ipynb)
+

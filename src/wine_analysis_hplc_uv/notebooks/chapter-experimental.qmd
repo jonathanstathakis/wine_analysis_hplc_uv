@@ -1,0 +1,77 @@
+---
+title: "Chapter X: Experimental"
+format: html
+toc: true
+bibliography: /Users/jonathan/zotero_library.bib
+---
+
+# Chapter X: Experimental
+
+## Editorial Meta
+
+This section is to contain notes relevant to the drafting and editing of this chapter.
+
+Use `{{ include }}` syntax to add section drafts. See [Includes](https://quarto.org/docs/authoring/includes.html)
+
+### Chapter Description
+
+This chapter will detail the chemical experimental procedures (as distinct from data experiments) of the thesis. Specifically, the underivatized and derivatized chromatographic profiling of my wine samples.
+
+### Layout
+
+Based on @mansfield_2008, generally speaking, a chemical science thesis will consist of the following: 'Abstract', 'Introduction', 'Results and Discussion', 'Experimental Method', 'Acknowledgements', 'Bibliography', 'Appendices'. Note that Results and Discussion may be divided into chapters by topic if there are sub-topics in the project.
+
+### Sources
+
+[Instrument Description](notes/mres_thesis_instrument-specs-setup.md) is a previously prepared note containing all the instrument specifications.
+
+## Content
+
+This section will describe the following:
+
+-   [ ] sample acquisition and preparation
+-   [ ] HPLC conditions
+-   [ ] CUPRAC conditions
+-   [ ] Data Extraction
+
+### Sample Acquisition and Preparation
+
+wine samples were accrued from a number of restaurants and retail outlets in Sydney, NSW who volunteered samples. once wine bottles were opened, samples were taken and placed in chromatographic injection vials which were the vials for immediately placed in to a freezer for storage prior to injection. The following details of each wine were recorded at the time of sampling. Wine, name, vintage and possible opening dates were recorded with the vial.
+
+When designing an chemico-analytical study, there is always a question of how much sample preparation is necessary for a given technique. More preparation may increase selectivity, decrease noise, or simplify the following assay, however, the disadvantage of a preparatory or derivatization stage is the added cost in resources and times to the analysis. It is generally considered that where possible, sample preparation times should be minimized [@kanu2021]. In regards to polyphenolic analysis of wine, a significant number of studies have reported utilizing direct injection of samples following microfiltration with little to no loss of signal quality [@sagratini_2012, @pereira_2010, @gambelli_2004, @boselli_2008, @gómez-alonso_2007]. Considering the need to minimize preparation time and evidence in the literature, direct injection was selected for this study after a series of screening experiments to judge detection range <!-- gna need to look up the proper term for this.. LoD right?--> of the instrument.
+
+#### Examples of Direct Injection of Wine in Literature
+
+| citekey                                        | location | description                                                                                                                     |
+|------------------------|------------------------|------------------------|
+| @sagratini2012                                 | pp. 1593 | phenolic compound analysis of Monteopulciano wines via direct injection into HPLC-MS                                            |
+| @pereira_HPLCDADMethodologyQuantification_2010 | pp. 1211 | polyphenol analysis via direct injection into HPLC-DAD. Experimented with other methods prior to defaulting to direct injection |
+| @gambelli_2004                                 | pp. 615  | phenolic content analysis of Italian red wines of different G.O. direct injection into HPLC-DAD                                 |
+| @boselli_2008                                  | pp. 710  | phenolic characterization of Lacrima di Morro d'Alba wines. Direct injection into HPLC-DAD                                      |
+| @gómez-gómez-alonso_2007                       | pp. 619  | Phenolic compound profiling with direct injection into HPLC column followed by UV/vis and fluoresence detection                 |
+
+Sample Preparation: Samples were siphoned into a leur-lock syringe and filtered with a 0.45um filter into an injection vial immediately prior to injection.
+
+# voice recording 1 transcription
+
+TODO: - \[ \] expand on sample preparation - \[ \] equipment - \[ \] syringe terumo, sterile, 3mL disposible leur lock tip. - \[ \] filters - millipore millix hv hydrophilic pvdf 0.45um - \[ \] Injection vials - amber, 12x32mm, 9mm, 1.8mL, Type 1
+
+# ETL Pipeline
+
+## Data Extraction Regime
+
+### Editorial Metadata REMOVE
+
+This section will describe the development of the ETL pipeline: , `rainbow` for data extraction, Python Pandas for intermediate data handling, Google Sheets for experiment tracking, Cellar Tracker and `cellartracker` for wine metadata, Duckdb for database storage.
+
+{{< include experimental.ETL_pipeline.draft.qmd >}}
+
+### HPLC Conditions
+
+An Agilent 1260 Infinity System (Forest Hill, Victoria, Australia) was used as the separation platform, made up of an autosampler, binary pump, thermal column compartment and 1290 diode array detector (1 μL flow-cell). Two Avantor Ace Excel C18 (Avantor, Pennsylvania, USA) 100 x 4.6mm column was used for all separations. One was fitted with `#INSERT PCD FITTIng` for use in PCD detections. Samples were filtered with a 0.45um syringe filter and injected directly into the column with no further preparation. A 10uL injection volume was selected and used for the underivatized samples. Sample seperation was performed at 3.16% gradient elution of Phase A: H2O, Phase B: MeOH. A 30 minute gradient was selected after several screening experiments determined that no peaks of interest eluted after this time. The spectrum range 190-400nm with 2nm steps was recorded for all samples so that this and future studies could make maximal use of the sample on hand.
+
+### CUPRAC Conditions
+
+Avantor Ace Excel C18 (Avantor, Pennsylvania, USA) 100 x 4.6mm column was fitted with a specialised flow splitting endfitting <!--find better phrasing for this -->. A 5uL injection volume was used for derivatized samples as it was found that 10uL would more rapidly form a precipitate on contact with the CUPRAC stream, blocking in-line filters after only a few runs.
+
+### Data Extraction

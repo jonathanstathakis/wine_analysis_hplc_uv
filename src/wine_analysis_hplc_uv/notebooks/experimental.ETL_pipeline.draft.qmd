@@ -1,0 +1,50 @@
+---
+title: "ETL Pipeline"
+format: html
+bibliography: references.bib
+---
+
+## Editorial Meta
+
+Intended for chapter: [Experimental](./chapter-experimental.qmd). Outline is [here](./experimental.ETL_pipeline.outline.qmd)
+
+## ETL Pipeline
+
+All analytical research starts by collecting data into a workspace and then applying mathematical and statistical techniques to develop insights. Within the world of data engineering, there is a specific data structure for this use case, the 'data warehouse', defined by @song_2009 as "..an integrated repository of data put into a form that can be easily understood, interpreted, and analyzed..". It is an example of an OnLine Analytical Processing (OLAP) system, used to produce insights about a dataset, whose design and intended behavior differs from Online Transaction Processing (OLAP) system used to manage continuous transactions, such as a business might use for their day to day processes. A basic example of an OLAP system is Microsoft Excel, which can both store and interact with collected data. Data warehouses are intended for long term storage of data without modification once entered. The process of gathering, organising, cleaning and storing the data is referred to in the data engineering community as an Extraction, Transformation and Loading (ETL) pipeline [@reis2022, @snowflake_etl_pipeline_2023].
+
+TODO<!--add a description of each stage of ETL-->. 
+
+TODO<!--could include relatinoal database definition. Probably should considering we're writing a goddamn thesis-->
+
+TODO<!-- add description of overall pipeline within the logic of ETL. For extraction, x,yz. For Transformation, a,b,c. For Loading, alpha. In transformation, discuss theory of joins -->
+
+
+
+<!--disconnected paragraph-->
+The Python programming language is a common medium in which to construct an ETL pipeline. The major reasons are that it is free and open source, well-documented, cross-platform, and there exists both a wealth of standard and third party libraries, as well as an active user and developer community [@crickard2020]. Working within the provided definitions of an ETL pipeline, the pipeline used to transport the raw data from the instrument to data warehouse will be described below.
+
+### Extraction
+
+TODO <!--Sentence reiterating idea of Extraction within ETL concept. -->.
+
+TODO <!--paragraph describing extraction. i.e. all of the data sources --> 
+
+TODO <!--chemstation data extraction-->
+The instrument used to profile the samples was controlled by Agilent Chemstation revision 3.05. A oft-encountered problem in chromatography is that companies like Agilent favor single device software licenses and proprietary encrypted binary file formats making it difficult for users to avoid using their software throughout the analysis process [@dąbrowski_2015, pp. 193]. Unfortunately, while later versions of Chemstation provide batch export methods, 3.05 lacked that feature. This meant that, for 200 samples, export would have taken approximately 60 hours of continuous computer work. Due to the closed source nature of chromatography instrument software, there are a number of developers working on alternatives, in fact a search for 'chromatography' on Git Hub returns 286 results ranging from file converters to full-blown analysis platforms. One such is Rainbow, by @shi2022, a package for converting vendor-specific encrypted data to Python data structures during runtime with the capability to output to Comma Separated Values (CSV) files. the code was adapted for use in the project to expand the returned information to include injection volumes, sequence names, original filepaths, and unique hash keys (to be used as identifiers).
+
+TODO <!--Sample Tracker data extraction-->
+
+TODO <!--Cellar Tracker data extraction-->
+
+### Transformation
+
+TODO <!--sentence reiterating definition of transformation within ETL concept --> 
+
+pandas is a free and open-source data analysis package written in Python intended for work with labeled, tabular data [@mckinney2022] such as chromatographic signals. It can be used to provide insights during prototyping, transformation and sanitation, and interface with downstream processes. It is so ubiquitous that most data-focused Python libraries allow direct use of pandas DataFrame objects.
+TODO <!--expand more on pandas-->
+
+Pandas was used to clean string data - reduce strings to lower case, remove white space and illegal characters, rename columns where necessary.
+
+
+
+TODO<!--add description of project use here-->

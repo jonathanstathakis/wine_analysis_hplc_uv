@@ -1,0 +1,446 @@
+---
+title: Wine Library Statistics
+toc: true
+toc-depth: 5
+echo: false
+format: html
+jupyter: python3
+---
+
+```{python}
+# load dependencies, global settings
+%reload_ext autoreload
+%autoreload 2
+from wine_analysis_hplc_uv.notebooks.lib_eda import lib_eda, publish_methods, cat_stats
+import pandas as pd
+import matplotlib.pyplot as plt
+import matplotlib as mpl
+import numpy as np
+import seaborn as sns
+import duckdb as db
+from wine_analysis_hplc_uv import definitions
+
+mpl.rcParams['figure.dpi'] = 600
+```
+
+```{python}
+def scale_fig_and_text(factor):
+    # Adjust figure size
+    mpl.rcParams["figure.figsize"] = tuple(factor * x for x in [6.4, 4.8])
+
+    # Adjust text size
+    mpl.rcParams["font.size"] = factor * 10  # default font size is 10
+    mpl.rcParams["axes.labelsize"] = factor * 10  # default label size is 10
+    mpl.rcParams["xtick.labelsize"] = factor * 10  # default xtick label size is 8
+    mpl.rcParams["ytick.labelsize"] = factor * 10  # default ytick label size is 8
+    mpl.rcParams["legend.fontsize"] = factor * 10  # default legend font size is 10
+    mpl.rcParams["axes.titlesize"] = factor * 12  # default axes title size is 12
+
+
+scale_fig_and_text(0.6)
+```
+
+```{python}
+# load and clean data
+con = db.connect(definitions.DB_PATH)
+df = con.sql(f"""--sql
+SELECT
+ct.wine,
+st.detection, 
+ct.type,
+ct.country,
+ct.varietal
+FROM
+c_sample_tracker st
+INNER JOIN
+c_cellar_tracker ct on st.ct_wine_name = ct.wine
+WHERE
+wine
+NOT NULL
+""").df()
+```
+
+## Introduction
+
+This document contains a preliminary report of the nature of the 2023 chromatographic spectrometry wine dataset, consisting of signals from an unadulterated UV/vis spectrum ('raw') and 'CUPRAC' derivatized spectrum.
+
+### Sample Provenence
+
+All samples were collected between February and May 2023, primarily from [Shell House](https://shellhouse.com.au/), with contributions from [Alberto's Lounge](https://swillhouse.com/venues/albertos-lounge/), and [The Bottle Shop - Bondi](https://merivale.com/the-bottle-shop/).
+
+## Nature of the Dataset
+
+As wines were sampled as they came in, there was little control over the distribution of samples. Thus, the first question to ask is how many samples were detected by each method, how many individual wines are within the dataset, how many are repetitions, and how many wines have repetitions. Following this, the next question is the distribution of wine characteristics, the most important of which are wine *type*, *variety*, and *country* of origin. The answer to these questions is explored below.
+
+## Sample Identity
+
+```{python}
+#| output: false
+summary_pivot_df = lib_eda.summary_table(df)
+
+display_labels = [
+    "total samples",
+    "individual wines",
+    "has repetition",
+    "no repetition",
+    "num. repeats",
+]
+display_summary_df = summary_pivot_df.style.relabel_index(display_labels)
+```
+
+```{python}
+#| fig-cap: 'Grouped bar plot of containing counts of individual samples, repeated samples, unrepeated samples, size of repeat subpopulation and total subpopulation size'
+#| label: fig-detect
+
+summary_fig, summary_ax = plt.subplots(1)
+
+(
+    summary_pivot_df.drop("total", axis=1)
+    .reset_index()
+    .melt(id_vars="statistic", value_name="n")
+).pipe(
+    lambda df: sns.barplot(
+        x="statistic",
+        y="n",
+        hue="detection",
+        data=df,
+        ax=summary_ax,
+        hue_order=["raw", "cuprac"],
+    )
+)
+xticks = summary_ax.set_xticklabels(display_labels)
+summary_ax.tick_params(axis="x", labelrotation=45)
+tile = summary_fig.suptitle("Dataset Breakdown by Individuals and Repetitions")
+# summary_fig.set_figwidth()
+# summary_fig.set_figheight()
+summary_fig.tight_layout()
+```
+
+```{python}
+#| tbl-cap: 'CUPRAC and Raw UV subpopulation counts number of individual samples, members that have repetitions, members that have no repetition, and total number of repetition'
+#| label: tbl-detect
+display(display_summary_df)
+```
+
+There are a total of 167 samples within the dataset, 66 'CUPRAC' and 101 'raw'. Of these, 'CUPRAC' contains 59 individual wines, 7 of which possess at least one repetition, 52 without any repetition, and 14 repeat samples in total. On the other hand, 'Raw' possesses 74 individual wines, 19 samples with repetitions, 55 without and 46 repeats in total. See @tbl-detect and @fig-detect for more detail.
+
+While the overall analysis does not require sample repeats, they are useful for method validation. Within the 'CUPRAC' dataset, the most suitable sample to test reproducibility is '2021 Torbreck Shiraz The Struie' with 2 repeats, and for 'raw' there is '2018 Crawford River Cabenets' with 4 repeats. This selection was based on the observation that heavy red wines have the the highest number of peaks and greatest magnitude, making them ideal for detecting variation across the chromatographic space. The full list of repeated wines can be found in @tbl-repeat_wines.
+
+## Dataset Intersection
+
+Identifying common samples between detection methods is necessary if we are to compare them accurately. Out of 133 wines, only 14 unique wines were detected with 'CUPRAC' and 'raw', as shown in @tbl-both_detect. The majority of these samples were red wines (12), Australian (7), and either Pinot Noir (2) or Shiraz (2).
+
+```{python}
+#| tbl-cap: Wines that were detected under both 'raw' and 'cuprac' configurations
+#| label: tbl-both_detect
+
+both_detect_df = lib_eda.detection_intersection(df)
+# get the ct df to join both_detect_df to get more metadata on the wines
+import duckdb as db
+from wine_analysis_hplc_uv import definitions
+
+con = db.connect(definitions.DB_PATH)
+ct_df = con.sql(f"SELECT * FROM {definitions.CLEAN_CT_TBL_NAME}").df()
+ct_df = con.sql(
+    f"SELECT vintage, name, type, varietal, country FROM {definitions.CLEAN_CT_TBL_NAME}"
+).df()
+ct_df = ct_df.assign(wine=lambda x: x["vintage"] + " " + x["name"]).drop(
+    ["vintage", "name"], axis=1
+)
+
+merge_variety_df = pd.merge(
+    left=both_detect_df, right=ct_df, left_on="wine", right_on="wine"
+).loc[
+    :,
+    [
+        "wine",
+        "type",
+        "varietal",
+        "country",
+        "cuprac",
+        "raw",
+        "total",
+    ],
+]
+merge_variety_df.style.hide()
+```
+
+## Variety
+
+```{python}
+#| output: false
+
+variety_df = (
+    df.set_index(["detection", "varietal"])
+    .loc[:, "wine"]
+    .drop_duplicates()
+    .groupby(["detection", "varietal"])
+    .size()
+    .to_frame("n")
+    .pivot_table(index="varietal", columns="detection", values="n", fill_value=0)
+    .pipe(
+        lambda df: df.assign(total=lambda x: x.sum(axis=1)).sort_values(
+            "total", ascending=False
+        )
+    )
+)
+```
+
+```{python}
+top_10_var_df = (
+    variety_df.reset_index()
+    .drop("total", axis=1)
+    .melt(id_vars="varietal", value_vars=["cuprac", "raw"], value_name="n")
+    .pivot_table(
+        index="varietal",
+        columns="detection",
+        values="n",
+        fill_value=0,
+        margins=True,
+        margins_name="total",
+        aggfunc=sum,
+        sort=True,
+    )
+    .nlargest(columns=["total"], n=10)
+    .drop("total", axis=1)
+    .drop("total")
+    .reset_index()
+    .melt(id_vars="varietal", value_vars=["cuprac", "raw"], value_name="n")
+    .pivot_table(
+        index="varietal",
+        columns="detection",
+        values="n",
+        fill_value=0,
+        margins=True,
+        margins_name="total",
+        aggfunc=sum,
+        sort=True,
+    )
+    .pipe(
+        lambda df: df.assign(istotal=lambda df: df.index == "total")
+        .sort_values(["istotal", "total"], ascending=[True, False])
+        .drop("istotal", axis=1)
+    )
+)
+```
+
+```{python}
+#| fig-cap: Top 10 most frequently occuring varietals across both datasets
+#| label: fig-var-both-methods
+varietal_both_detect_fig, varietal_both_detect_ax = plt.subplots(1)
+
+varietal_both_barplot = (
+    top_10_var_df.drop("total", axis=1)
+    .drop("total")
+    .reset_index()
+    .melt(id_vars="varietal", value_vars=["cuprac", "raw"], value_name="count")
+    .pipe(
+        lambda df: sns.barplot(
+            data=df,
+            x="count",
+            y="varietal",
+            hue="detection",
+            orient="h",
+            hue_order=["raw", "cuprac"],
+        )
+    )
+)
+
+
+suptitle = varietal_both_detect_fig.suptitle("Top 10 Varietals by Frequency", x=0.38)
+varietal_both_detect_fig.tight_layout()
+```
+
+A wide range of varieties are included in the overall dataset, 47 in total, with varying levels of representation of individual wines from each varietal. The CUPRAC dataset consists of 59 unique varietals with varying levels of representation. The most represented is Pinot Noir (7) followed by Chardonnay (6), Shiraz (6), Red Blends (3), and Nebbiolo (3). 6 varietals are represented twice, while 22 only have one representative sample. The Raw UV dataset consists of 34 unique varietals also with varying levels of representation. The most represented varietal was Shiraz (9), followed by Chardonnay (7), Pinot Noir (7), Riesling (5), followed by 6 varietals represented 3 times, 5 represented twice, and 18 represented once. @tbl-top-ten-var contains the top 10 varietals across both datasets, and the full tabulation can be found in @tbl-variety.
+
+## Type
+
+```{python}
+#| output: false
+# type table
+type_order = [
+    "white - sparkling",
+    "rosé - sparkling",
+    "white",
+    "orange",
+    "rosé",
+    "red",
+    "white - sweet/dessert",
+]
+type_df = (
+    df.loc[:, ["detection", "type", "wine"]]
+    .groupby(["detection", "type"])
+    .nunique()
+    .reset_index()
+    .assign(type=lambda df: pd.Categorical(df["type"], categories=type_order))
+    .pivot_table(
+        columns="detection",
+        index="type",
+        values="wine",
+        fill_value=0,
+        margins=True,
+        margins_name="total",
+        aggfunc=sum,
+        sort=True,
+    )
+)
+type_df
+```
+
+```{python}
+#| fig-cap: Grouped bar plot depicting the distribution of wine types
+#| label: fig-type
+type_fig, type_ax = plt.subplots(1)
+type_barplot = (
+    type_df.drop("total")
+    .drop("total", axis=1)
+    .pipe(lambda x: x[(x != 0).all(axis=1)])
+    .reset_index()
+    .melt(value_vars=["cuprac", "raw"], id_vars="type", value_name="n")
+    .replace(
+        {
+            "white - sweet/dessert": "sweet white",
+            "rosé - sparkling": "spk rosé",
+            "white - sparkling": "spk white",
+        }
+    )
+    .pipe(
+        lambda df: sns.barplot(
+            data=df, x="type", y="n", hue="detection", hue_order=["raw", "cuprac"]
+        )
+    )
+)
+
+suptitle = type_fig.suptitle("Distribution of Samples by Wine Type", x=0.38)
+type_fig.tight_layout()
+```
+
+The following wine types are present within the dataset: 'white - sparkling', 'rosé - sparkling', 'white', 'orange', 'rosé', 'red', and 'white - sweet/dessert'. These definitions were taken from [cellartracker](https://www.cellartracker.com/) from which sample metadata was directly sourced.
+
+As depicted in @fig-type red wines dominate both datasets with 35 and 46 for CUPRAC and raw, respectively, followed by whites (15, 19) and rosé (4,3). Refer to @tbl-type for more detail.
+
+## Country
+
+```{python}
+country_df = (
+    df.loc[:, ["country", "wine", "detection"]]
+    .groupby(["detection", "country"])
+    .nunique()
+    .reset_index()
+    .pivot_table(
+        columns="detection",
+        index="country",
+        values="wine",
+        fill_value=0,
+        margins=True,
+        margins_name="total",
+        aggfunc=sum,
+        sort=True,
+    )
+)
+total_country_df = country_df.pipe(
+    lambda df: df.assign(istotal=lambda df: df.index == "total")
+    .sort_values(["istotal", "total"], ascending=[True, False])
+    .drop("istotal", axis=1)
+    .assign(cs=lambda df: df["total"].cumsum())
+    .pipe(lambda df: df.replace(df.at["total", "cs"], df.cs.iloc[-2]))
+    .assign(cs_prop=lambda df: df["cs"] / df.at["total", "total"])
+    .pipe(lambda df: df.replace(df.at["total", "cs_prop"], df.cs_prop.iloc[-2]))
+    .style.format("{:.0%}", subset="cs_prop")
+)
+```
+
+```{python}
+#| fig-cap: Grouped bar plot of counts of samples categorized by wine country of origin for raw and CUPRAC detections.
+#| label: fig-country
+
+country_fig, country_ax = plt.subplots(1)
+
+country_barplot = (
+    country_df.drop("total")
+    .drop("total", axis=1)
+    .pipe(lambda x: x[(x != 0).all(axis=1)])
+    .reset_index()
+    .melt(value_vars=["cuprac", "raw"], id_vars="country", value_name="n")
+    .pipe(
+        lambda df: sns.barplot(
+            data=df,
+            x="country",
+            y="n",
+            hue="detection",
+            hue_order=["raw", "cuprac"],
+            ax=country_ax,
+        )
+    )
+)
+
+suptitle = country_fig.suptitle("Counts of samples by country", x=0.38)
+legend = country_ax.legend(loc="center right")
+country_fig.tight_layout()
+```
+
+The following wine types are present within the dataset: 'white - sparkling', 'rosé - sparkling', 'white', 'orange', 'rosé', 'red', and 'white - sweet/dessert'. These definitions were taken from [cellartracker](https://www.cellartracker.com/) from which sample metadata was directly sourced.
+
+As depicted in @fig-type red wines dominate both datasets with 35 and 46 for CUPRAC and raw, respectively, followed by whites (15, 19) and rosé (4,3). Refer to @tbl-type for more detail.
+
+## Closing Statement
+
+In summary, the dataset is dominated by Australian reds with Shiraz and Pinot Noir as the top contenders, and Chardonany as the primary white varietal. The distribution of categories between the datasets is roughly equal, any variation is in part due to the seasonality of wine consumption and the sample source.
+
+The game plan going forward is as follows:
+
+-   validate each chromatogram in the dataset.
+-   Focusing on red wines, investigate how well each detection method can classify a varietal.
+
+## Appendix
+
+```{python}
+#| tbl-cap: Wines with repeats by detection method
+#| label: tbl-repeat_wines
+(
+    lib_eda.samples_with_repeats(df).sort_values(
+        ["detection", "n"], ascending=[True, False]
+    )
+)
+```
+
+```{python}
+#| tbl-cap: 10 most represented varietals across both data sets
+#| label: tbl-top-ten-var
+top_10_var_df
+```
+
+```{python}
+#| tbl-cap: Counts of sample varietals by detection method sorted by frequency
+#| label: tbl-variety
+# full variety df, too big to place in the body of the text
+(
+    variety_df.reset_index()
+    .pipe(publish_methods.two_grouped_col_df)
+    .style.hide()
+    .format(precision=0)
+)
+```
+
+```{python}
+#| tbl-cap: Individual wines by type per detect method
+#| label: tbl-type
+(
+    type_df.pipe(
+        lambda df: df.assign(istotal=lambda df: df.index == "total")
+        .sort_values(["istotal", "total"], ascending=[True, False])
+        .drop("istotal", axis=1)
+        .assign(cs=lambda df: df["total"].cumsum())
+        .pipe(lambda df: df.replace(df.at["total", "cs"], df.cs.iloc[-2]))
+        .assign(cs_prop=lambda df: df["cs"] / df.at["total", "total"])
+        .pipe(lambda df: df.replace(df.at["total", "cs_prop"], df.cs_prop.iloc[-2]))
+        .style.format("{:.0%}", subset="cs_prop")
+    )
+)
+```
+
+```{python}
+#| tbl-cap: Comparison of country of origin of samples of wine type by detection method
+#| label: tbl-country
+total_country_df
+```
