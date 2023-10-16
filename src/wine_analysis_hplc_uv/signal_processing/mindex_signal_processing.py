@@ -319,28 +319,10 @@ class SignalProcessor:
         return df
 
     def downsample_signal(self, df: pd.DataFrame, new_freq: str) -> pd.DataFrame:
-        df = (
-            df.pipe(self.validate_dataframe)
-            .stack(["samplecode", "wine"])
-            .reset_index()
-            .groupby(["samplecode", "wine"], as_index=False, group_keys=False)
-            .apply(
-                lambda df: df.resample(f"{new_freq}", on="mins").agg(
-                    dict(
-                        samplecode="first",
-                        wine="first",
-                        i="first",
-                        value="mean",
-                    )
-                )  # resample signal to 1 observation every 2 seconds, from 1 every 0.4
-            )
-            .reset_index()
-            .set_index(["samplecode", "wine", "i"])
-            .unstack(["wine", "samplecode"])
-            .reorder_levels(["samplecode", "wine", "vars"], axis=1)
-            .sort_index(axis=1)
-            .pipe(self.validate_dataframe)
-        )
+        """
+        downsample an return tidy frame with a time index to the frequency specifed in `new_freq`
+        """
+        df = df.resample(f"{new_freq}").mean()
         return df
 
     def vars_subplots(self, df: pd.DataFrame) -> pd.DataFrame:
