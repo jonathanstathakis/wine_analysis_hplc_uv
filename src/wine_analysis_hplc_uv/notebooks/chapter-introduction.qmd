@@ -1,0 +1,10 @@
+---
+title: "Untitled"
+format: html
+---
+
+2023-09-26 15:45:00 - This is a wholly undeveloped file at this point, serving as a catch all while I clean up my thesis files.
+
+## HPLC
+
+High Performance Liquid Chromatography is a modern analytical technique that utilizes chemical interactions and high pressures to seperate co-mingled analytes within a solvent by time. It is based on chromatographic principles first invented by Mikhail Tsvet in early 1900s to seperate plant pigments [@guiochon_ChromatographyTodayTomorrow_1993], but HPLC as we know it today evolved from gas chromatography through work performed by Csaba Horvath in 1965 [@horvath_UseLiquidIon_1966, @harris2015]. Contemporary HPLC setups consist of an autosampler, solvent delivery system, high pressure chromatography column, signal detector and computer to control the instrument and process data [@harris2015].
