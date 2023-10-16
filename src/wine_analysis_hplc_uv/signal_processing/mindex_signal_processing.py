@@ -487,20 +487,69 @@ class SignalProcessor:
 
         return out_df
 
-    def most_correlated(self, df: pd.DataFrame) -> str:
+    def most_correlated(self, df: pd.DataFrame, signal_label: str) -> str:
         """
-        Take a tidy format df, identify the most correlated sample in the set and return its samplecode
+        Takes a tidy df of columns ['samplecode','wine','subsignal'], identifies the reference and
+        Returns a tidy df of columns ['role','samplecode','wine','subsignal'] with index 'mins', column sorted, where the reference is labelled in the 'role' column level.
+
+
 
         See [identifying_most_similar_signal](notebooks/identifying_most_similar_signal.ipynb) for more information.
+
+        As of 2023-10-16 this method Assumes a column level order of ['samplecode','wine','subsignal']
+
+        NOTE: as of 2023-10-16 the subsignal assignment as Categorical section of the chain should not be necessary but for some reason the column is cast to object when melting from multiindexed columns.
         """
-        samplecode_idx = (
-            df.corr()
+
+        # Identify the reference samplecode as that which corresponds to the sample with the most correlated signal determined as the signal with the highest mean correlation value in the correlation matrix. Note that this is based on the blinesub subsignal, different results may occur if the raw 'signal' is used.
+
+        ref_samplecode = (
+            df.loc[:, pd.IndexSlice[:, :, signal_label]]
+            .corr()
             .mean()
             .sort_values(ascending=False)
             .loc[lambda df: df == df.max()]
             .index.get_level_values("samplecode")
         )
-        return samplecode_idx
+
+        # add a column level 'role' that distinguishes the determined 'ref' from the 'query' samples. NOTE that this is based on the
+        a = (
+            df
+            # melt to long format while retaining 'mins' index
+            .melt(ignore_index=False)
+            # assign a 'role' ordered categorical column initally all 'query'
+            .assign(
+                role=lambda df: pd.Categorical(
+                    values=["query"] * len(df.index),
+                    categories=["ref", "query"],
+                    ordered=True,
+                )
+            )
+            # where samplecode matches 'ref_samplecode', replace 'query' with 'ref'
+            .assign(
+                role=lambda df: df["role"].where(
+                    ~(df.samplecode == ref_samplecode.values[0]), "ref"
+                )
+            )
+            # TEMPORARY FIX: reassign subsignal as an ordered categorical column
+            .assign(
+                subsignal=lambda df: pd.Categorical(
+                    df.subsignal,
+                    categories=["signal", "bline", signal_label],
+                    ordered=True,
+                )
+            )
+            # reset index to prepare for pivot
+            .reset_index()
+            # pivot to tidy format with role as top level
+            .pivot(
+                index="mins",
+                columns=["role", "samplecode", "wine", "subsignal"],
+                values="value",
+            ).sort_index(axis=1)
+        )
+
+        return a
 
     def unique_wine_label(self, df: pd.DataFrame) -> pd.DataFrame:
         """
