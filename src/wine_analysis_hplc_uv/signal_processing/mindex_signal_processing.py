@@ -452,21 +452,30 @@ class SignalProcessor:
             .groupby(["samplecode"], group_keys=False)
             # apply the predefined asls baseline fitting algo to each group
             .apply(lambda df: aslsblinefunc(df))
-            # rename 'value' to 'signal' to differentiate it from the fitted baseline and baseline subtracted signal column
+            # rename 'value' to 'signal' to differentiate it from the fitted baseline
+            # and baseline subtracted signal column. The idea being that the raw signal
+            # is a superset of other signal sets, the noise set, the true signal set,
+            # etc.
             .rename(mapper={"value": "signal"}, axis=1)
-            # melt the frame while preserving the index to merge the 'signal', 'bline' and 'blinesub' column values to one column with a label column in order to reassign the labels as an ordered categorical index with name 'subsignal'
+            # melt the frame while preserving the index to merge the 'signal', 'bline'
+            # and 'blinesub' column values to one column with a label column in order
+            # to reassign the labels as an ordered categorical index with name
+            # 'subsignal'
             .melt(ignore_index=False, var_name="subsignal")
-            # reassign the signal label column to the frame as an ordered categorical index
+            # reassign the signal label column to the frame as an ordered categorical
+            # index
             .assign(
-                subsignal=lambda df: pd.CategoricalIndex(
+                subsignal=lambda df: pd.Categorical(
                     df.subsignal,
                     categories=["signal", "bline", "blinesub"],
                     ordered=True,
                 )
             )
-            # reset the three level multiindex index to prepare for pivoting to tidy form
+            # reset the three level multiindex index to prepare for pivoting to tidy
+            # form
             .reset_index()
-            # pivot from long to tidy with column heirarchy 'samplecode','wine','subsignal', index of 'mins'
+            # pivot from long to tidy with column heirarchy 'samplecode','wine',
+            # 'subsignal', index of 'mins'
             .pivot(
                 columns=["samplecode", "wine", "subsignal"],
                 index="mins",
