@@ -610,11 +610,11 @@ class SignalProcessor:
         idx = pd.IndexSlice
         # subset the frame by 'subsignal' to get the bline_sub of each sample
 
-        def align_query_to_ref(query, ref):
+        def align_query_to_ref(query, ref, ax=None):
             # calculate the warping path to align x to y
-            dtw_obj = dtw(x=query.value, y=ref, window_type="sakoechiba", window_size=5)
-
-            dtw_obj.plot_path()
+            dtw_obj = dtw(
+                x=query.value, y=ref, window_type="sakoechiba", window_size=10
+            )
 
             # subset signal by warping path
             aligned_query = query.iloc[dtw_obj.get_warping_path()]
@@ -632,7 +632,6 @@ class SignalProcessor:
             )
 
             # relabel 'subsignal' as 'aligned'
-
             aligned_query = aligned_query.assign(subsignal="aligned")
 
             return aligned_query
