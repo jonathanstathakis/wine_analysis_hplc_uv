@@ -127,6 +127,8 @@ scipy = "^1.11.2"
 dtwparallel = "^0.9.39"
 dtwalign = "^0.1.1"
 xgboost = "^2.0.0"
+patchworklib = "^0.6.2"
+plotnine = "^0.12.3"
 
 [tool.poetry.group.dev.dependencies]
 jupyter = "^1.0.0"
