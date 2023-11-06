@@ -45,3 +45,6 @@ XPRO_YPRO_DOWNSAMPLED_PARQ_PATH = "/Users/jonathan/mres_thesis/wine_analysis_hpl
 # red wine cuprac 450nm processed data. Time standardized, cleaned of dud samples, baseline corrected and DTW aligned.
 
 RW_CUP_450_PROCESSED = "/Users/jonathan/mres_thesis/wine_analysis_hplc_uv/src/wine_analysis_hplc_uv/notebooks/rw_cup_450_processed.parquet"
+
+# tidy format dset of raw detected samples for MCR-ALS
+RAW3DDSET = "/Users/jonathan/mres_thesis/wine_analysis_hplc_uv/src/wine_analysis_hplc_uv/notebooks/tidy_3d_dset_raw.parquet"

@@ -4443,4 +4443,42 @@ Landmarks:
 
 ![Wine Database Schema](../../../../../001_obsidian_vault/Excalidraw/wine_database_schema.excalidraw.png)
 
+## 2023-10-24
+
+DTW has proved to be somewhat of a red herring, as it turns out that to achieve correct alignment I would need to manually define penalty arrays at every index for every alignment, therefore automation is no longer possible. The next option is to investigate MCR-ALS, which is looking hopeful, however producing a test dataset is proving troublesome, as I need to extract every wavelength from the database. Following the `get_wine_data`,`pivot_data` approach gets the data into memory (after 45mins) but then the python kernel is running out of memory when attempting to pivot to the format required. Attempting the same operation in DuckDB is also running out of memory. Current solution has been to modify the configuration settings following this page:
+
+[DuckDB Configuration](https://duckdb.org/docs/sql/configuration.html)
+
+and
+
+[pivot consume a lot of memory #9119](https://github.com/duckdb/duckdb/issues/9119)
+
+But am still running into OOM.
+
+2023-10-24 10:59:00
+
+reducing it to just the reds is still causing OOM. Time to look into chunking methods.
+
+Notes:
+
+duckdb:
+    - DuckDB has an 'EXCLUDE' expression to negate selection of the specified column.
+    - use WITH to create CTEs to avoid the lag due to writing to file
+    - the actual writing of the temporary tables dramatically slows query executions. Avoid where possible.
+    - sql queries can be stored as views in order to avoid writing a table to disk
+    - Views are executed each time they are referenced, in contrast to temporary tables which exist until the end of the session
+    - using numerical values as column names is painful.
+    - reference numerical columns as follows: tbl."<num>" i.e. tbl1."190".
+
+pandas:
+    - use `data.loc[lambda df: df.isna().any(axis=1)]` to see rows containing NA values
+
+2023-10-24 13:52:48
+
+Modifying the build library pipe to avoid the melt in the first place has remedied the problem, meaning that what was a 1hr operation to pivot back from long has been reduced from a total of 4.7 seconds. Then writing to parquet takes all of 3 seconds then reading back is 0.5 seconds.
+
+
+
 <!-- end_file -->
+
+

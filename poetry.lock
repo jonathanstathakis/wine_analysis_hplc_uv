@@ -228,6 +228,17 @@ files = [
 ]
 
 [[package]]
+name = "backoff"
+version = "2.2.1"
+description = "Function decoration for backoff and retry"
+optional = false
+python-versions = ">=3.7,<4.0"
+files = [
+    {file = "backoff-2.2.1-py3-none-any.whl", hash = "sha256:63579f9a0628e06278f7e47b7d7d5b6ce20dc65c5e96a6f3ca99a6adca0396e8"},
+    {file = "backoff-2.2.1.tar.gz", hash = "sha256:03f829f5bb1923180821643f8753b0502c3b682293992485b0eef2807afa5cba"},
+]
+
+[[package]]
 name = "backports-functools-lru-cache"
 version = "1.6.6"
 description = "Backport of functools.lru_cache"
@@ -1504,6 +1515,43 @@ google-auth = ">=1.12.0"
 google-auth-oauthlib = ">=0.4.1"
 
 [[package]]
+name = "h5py"
+version = "3.10.0"
+description = "Read and write HDF5 files from Python"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "h5py-3.10.0-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:b963fb772964fc1d1563c57e4e2e874022ce11f75ddc6df1a626f42bd49ab99f"},
+    {file = "h5py-3.10.0-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:012ab448590e3c4f5a8dd0f3533255bc57f80629bf7c5054cf4c87b30085063c"},
+    {file = "h5py-3.10.0-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:781a24263c1270a62cd67be59f293e62b76acfcc207afa6384961762bb88ea03"},
+    {file = "h5py-3.10.0-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:f42e6c30698b520f0295d70157c4e202a9e402406f50dc08f5a7bc416b24e52d"},
+    {file = "h5py-3.10.0-cp310-cp310-win_amd64.whl", hash = "sha256:93dd840bd675787fc0b016f7a05fc6efe37312a08849d9dd4053fd0377b1357f"},
+    {file = "h5py-3.10.0-cp311-cp311-macosx_10_9_x86_64.whl", hash = "sha256:2381e98af081b6df7f6db300cd88f88e740649d77736e4b53db522d8874bf2dc"},
+    {file = "h5py-3.10.0-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:667fe23ab33d5a8a6b77970b229e14ae3bb84e4ea3382cc08567a02e1499eedd"},
+    {file = "h5py-3.10.0-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:90286b79abd085e4e65e07c1bd7ee65a0f15818ea107f44b175d2dfe1a4674b7"},
+    {file = "h5py-3.10.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:6c013d2e79c00f28ffd0cc24e68665ea03ae9069e167087b2adb5727d2736a52"},
+    {file = "h5py-3.10.0-cp311-cp311-win_amd64.whl", hash = "sha256:92273ce69ae4983dadb898fd4d3bea5eb90820df953b401282ee69ad648df684"},
+    {file = "h5py-3.10.0-cp312-cp312-macosx_10_9_x86_64.whl", hash = "sha256:3c97d03f87f215e7759a354460fb4b0d0f27001450b18b23e556e7856a0b21c3"},
+    {file = "h5py-3.10.0-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:86df4c2de68257b8539a18646ceccdcf2c1ce6b1768ada16c8dcfb489eafae20"},
+    {file = "h5py-3.10.0-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:ba9ab36be991119a3ff32d0c7cbe5faf9b8d2375b5278b2aea64effbeba66039"},
+    {file = "h5py-3.10.0-cp312-cp312-win_amd64.whl", hash = "sha256:2c8e4fda19eb769e9a678592e67eaec3a2f069f7570c82d2da909c077aa94339"},
+    {file = "h5py-3.10.0-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:492305a074327e8d2513011fa9fffeb54ecb28a04ca4c4227d7e1e9616d35641"},
+    {file = "h5py-3.10.0-cp38-cp38-macosx_11_0_arm64.whl", hash = "sha256:9450464b458cca2c86252b624279115dcaa7260a40d3cb1594bf2b410a2bd1a3"},
+    {file = "h5py-3.10.0-cp38-cp38-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:fd6f6d1384a9f491732cee233b99cd4bfd6e838a8815cc86722f9d2ee64032af"},
+    {file = "h5py-3.10.0-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:3074ec45d3dc6e178c6f96834cf8108bf4a60ccb5ab044e16909580352010a97"},
+    {file = "h5py-3.10.0-cp38-cp38-win_amd64.whl", hash = "sha256:212bb997a91e6a895ce5e2f365ba764debeaef5d2dca5c6fb7098d66607adf99"},
+    {file = "h5py-3.10.0-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:5dfc65ac21fa2f630323c92453cadbe8d4f504726ec42f6a56cf80c2f90d6c52"},
+    {file = "h5py-3.10.0-cp39-cp39-macosx_11_0_arm64.whl", hash = "sha256:d4682b94fd36ab217352be438abd44c8f357c5449b8995e63886b431d260f3d3"},
+    {file = "h5py-3.10.0-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:aece0e2e1ed2aab076c41802e50a0c3e5ef8816d60ece39107d68717d4559824"},
+    {file = "h5py-3.10.0-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:43a61b2c2ad65b1fabc28802d133eed34debcc2c8b420cb213d3d4ef4d3e2229"},
+    {file = "h5py-3.10.0-cp39-cp39-win_amd64.whl", hash = "sha256:ae2f0201c950059676455daf92700eeb57dcf5caaf71b9e1328e6e6593601770"},
+    {file = "h5py-3.10.0.tar.gz", hash = "sha256:d93adc48ceeb33347eb24a634fb787efc7ae4644e6ea4ba733d099605045c049"},
+]
+
+[package.dependencies]
+numpy = ">=1.17.3"
+
+[[package]]
 name = "html5lib"
 version = "1.1"
 description = "HTML parser based on the WHATWG HTML specification"
@@ -1831,6 +1879,46 @@ webcolors = {version = ">=1.11", optional = true, markers = "extra == \"format-n
 [package.extras]
 format = ["fqdn", "idna", "isoduration", "jsonpointer (>1.13)", "rfc3339-validator", "rfc3987", "uri-template", "webcolors (>=1.11)"]
 format-nongpl = ["fqdn", "idna", "isoduration", "jsonpointer (>1.13)", "rfc3339-validator", "rfc3986-validator (>0.1.0)", "uri-template", "webcolors (>=1.11)"]
+
+[[package]]
+name = "jupysql"
+version = "0.10.2"
+description = "Better SQL in Jupyter"
+optional = false
+python-versions = "*"
+files = [
+    {file = "jupysql-0.10.2-py3-none-any.whl", hash = "sha256:28d35d1145fefb208ed4098a7a582690a6f893d3b1f179077656375e8c7ae71a"},
+    {file = "jupysql-0.10.2.tar.gz", hash = "sha256:8dd9de87534581460df434d980798a6bbc0dbb338187fee7b19586f523f055f8"},
+]
+
+[package.dependencies]
+ipython = "*"
+ipython-genutils = ">=0.1.0"
+jinja2 = "*"
+jupysql-plugin = "*"
+ploomber-core = ">=0.2.7"
+prettytable = "*"
+sqlalchemy = "*"
+sqlglot = ">=11.3.7"
+sqlparse = "*"
+
+[package.extras]
+dev = ["black", "duckdb", "duckdb-engine", "flake8", "invoke", "ipywidgets", "js2py", "jupyter-server", "matplotlib (==3.7.2)", "pandas (==2.0.3)", "pkgmt", "polars (==0.17.2)", "psutil", "pyarrow", "pyodbc", "pytest", "twine"]
+integration = ["black", "clickhouse-sqlalchemy", "dockerctx", "duckdb", "duckdb-engine", "flake8", "invoke", "ipywidgets", "js2py", "jupyter-server", "matplotlib (==3.7.2)", "oracledb", "pandas (==2.0.3)", "pgspecial (==2.0.1)", "pkgmt", "polars (==0.17.2)", "psutil", "psycopg2-binary", "pyarrow", "pymysql", "pyodbc", "pytest", "python-tds", "redshift-connector", "snowflake-sqlalchemy", "sqlalchemy-pytds", "sqlalchemy-redshift", "twine"]
+
+[[package]]
+name = "jupysql-plugin"
+version = "0.2.6"
+description = "Jupyterlab extension for JupySQL"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "jupysql_plugin-0.2.6-py3-none-any.whl", hash = "sha256:fb10e2893ab0f2d07d2799f9009f309a521907f3758a3bb779a23afd05b8b015"},
+    {file = "jupysql_plugin-0.2.6.tar.gz", hash = "sha256:d3504e7ec62c1ad97ea95aa77dcd9e08496b682e8ebdbb994ad55ffdaba63e7a"},
+]
+
+[package.dependencies]
+ploomber-core = "*"
 
 [[package]]
 name = "jupyter"
@@ -2771,6 +2859,17 @@ lint = ["black (>=23.1.0)", "ruff"]
 test = ["pytest-cov"]
 
 [[package]]
+name = "monotonic"
+version = "1.6"
+description = "An implementation of time.monotonic() for Python 2 & < 3.3"
+optional = false
+python-versions = "*"
+files = [
+    {file = "monotonic-1.6-py2.py3-none-any.whl", hash = "sha256:68687e19a14f11f26d140dd5c86f3dba4bf5df58003000ed467e0e2a69bca96c"},
+    {file = "monotonic-1.6.tar.gz", hash = "sha256:3a55207bcfed53ddd5c5bae174524062935efed17792e9de2ad0205ce9ad63f7"},
+]
+
+[[package]]
 name = "multimethod"
 version = "1.9.1"
 description = "Multiple argument dispatching."
@@ -3076,6 +3175,61 @@ files = [
 rsa = ["cryptography (>=3.0.0)"]
 signals = ["blinker (>=1.4.0)"]
 signedtoken = ["cryptography (>=3.0.0)", "pyjwt (>=2.0.0,<3)"]
+
+[[package]]
+name = "octavvs"
+version = "0.1.23"
+description = ""
+optional = false
+python-versions = ">=3.6"
+files = []
+develop = true
+
+[package.dependencies]
+dill = "*"
+matplotlib = "*"
+numpy = "*"
+opencv-python = "*"
+pandas = "*"
+pillow = "*"
+pymatreader = "*"
+pyshortcuts = "*"
+scikit-learn = "*"
+scipy = "*"
+statsmodels = "*"
+threadpoolctl = ">=3.1.0"
+
+[package.source]
+type = "git"
+url = "https://github.com/jonathanstathakis/octavvs.git"
+reference = "HEAD"
+resolved_reference = "1d4769e11ffb1f0327ecce3048ec7fad48936828"
+
+[[package]]
+name = "opencv-python"
+version = "4.8.1.78"
+description = "Wrapper package for OpenCV python bindings."
+optional = false
+python-versions = ">=3.6"
+files = [
+    {file = "opencv-python-4.8.1.78.tar.gz", hash = "sha256:cc7adbbcd1112877a39274106cb2752e04984bc01a031162952e97450d6117f6"},
+    {file = "opencv_python-4.8.1.78-cp37-abi3-macosx_10_16_x86_64.whl", hash = "sha256:91d5f6f5209dc2635d496f6b8ca6573ecdad051a09e6b5de4c399b8e673c60da"},
+    {file = "opencv_python-4.8.1.78-cp37-abi3-macosx_11_0_arm64.whl", hash = "sha256:bc31f47e05447da8b3089faa0a07ffe80e114c91ce0b171e6424f9badbd1c5cd"},
+    {file = "opencv_python-4.8.1.78-cp37-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:9814beca408d3a0eca1bae7e3e5be68b07c17ecceb392b94170881216e09b319"},
+    {file = "opencv_python-4.8.1.78-cp37-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:c4c406bdb41eb21ea51b4e90dfbc989c002786c3f601c236a99c59a54670a394"},
+    {file = "opencv_python-4.8.1.78-cp37-abi3-win32.whl", hash = "sha256:a7aac3900fbacf55b551e7b53626c3dad4c71ce85643645c43e91fcb19045e47"},
+    {file = "opencv_python-4.8.1.78-cp37-abi3-win_amd64.whl", hash = "sha256:b983197f97cfa6fcb74e1da1802c7497a6f94ed561aba6980f1f33123f904956"},
+]
+
+[package.dependencies]
+numpy = [
+    {version = ">=1.21.2", markers = "python_version >= \"3.10\""},
+    {version = ">=1.21.4", markers = "python_version >= \"3.10\" and platform_system == \"Darwin\""},
+    {version = ">=1.23.5", markers = "python_version >= \"3.11\""},
+    {version = ">=1.19.3", markers = "python_version >= \"3.6\" and platform_system == \"Linux\" and platform_machine == \"aarch64\" or python_version >= \"3.9\""},
+    {version = ">=1.17.0", markers = "python_version >= \"3.7\""},
+    {version = ">=1.17.3", markers = "python_version >= \"3.8\""},
+]
 
 [[package]]
 name = "openpyxl"
@@ -3512,6 +3666,25 @@ docs = ["furo (>=2023.5.20)", "proselint (>=0.13)", "sphinx (>=7.0.1)", "sphinx-
 test = ["appdirs (==1.4.4)", "covdefaults (>=2.3)", "pytest (>=7.3.1)", "pytest-cov (>=4.1)", "pytest-mock (>=3.10)"]
 
 [[package]]
+name = "ploomber-core"
+version = "0.2.14"
+description = ""
+optional = false
+python-versions = "*"
+files = [
+    {file = "ploomber-core-0.2.14.tar.gz", hash = "sha256:ae77699b85faa0d51ec2f648ef80f09e9607eab2a45097c68722b1026ccc085f"},
+    {file = "ploomber_core-0.2.14-py3-none-any.whl", hash = "sha256:807d2f7f09bbfd4b696acba0dcc730cec9fa4d195a31a7b2cf03dc6b79dfa010"},
+]
+
+[package.dependencies]
+click = "*"
+posthog = "*"
+pyyaml = "*"
+
+[package.extras]
+dev = ["flake8", "invoke", "pkgmt", "pytest", "pywin32", "twine"]
+
+[[package]]
 name = "plotly"
 version = "5.15.0"
 description = "An open-source, interactive data visualization library for Python"
@@ -3604,6 +3777,29 @@ xlsx2csv = ["xlsx2csv (>=0.8.0)"]
 xlsxwriter = ["xlsxwriter"]
 
 [[package]]
+name = "posthog"
+version = "3.0.2"
+description = "Integrate PostHog into any python application."
+optional = false
+python-versions = "*"
+files = [
+    {file = "posthog-3.0.2-py2.py3-none-any.whl", hash = "sha256:a8c0af6f2401fbe50f90e68c4143d0824b54e872de036b1c2f23b5abb39d88ce"},
+    {file = "posthog-3.0.2.tar.gz", hash = "sha256:701fba6e446a4de687c6e861b587e7b7741955ad624bf34fe013c06a0fec6fb3"},
+]
+
+[package.dependencies]
+backoff = ">=1.10.0"
+monotonic = ">=1.5"
+python-dateutil = ">2.1"
+requests = ">=2.7,<3.0"
+six = ">=1.5"
+
+[package.extras]
+dev = ["black", "flake8", "flake8-print", "isort", "pre-commit"]
+sentry = ["django", "sentry-sdk"]
+test = ["coverage", "flake8", "freezegun (==0.3.15)", "mock (>=2.0.0)", "pylint", "pytest"]
+
+[[package]]
 name = "pre-commit"
 version = "3.3.3"
 description = "A framework for managing and maintaining multi-language pre-commit hooks."
@@ -3620,6 +3816,23 @@ identify = ">=1.0.0"
 nodeenv = ">=0.11.1"
 pyyaml = ">=5.1"
 virtualenv = ">=20.10.0"
+
+[[package]]
+name = "prettytable"
+version = "3.9.0"
+description = "A simple Python library for easily displaying tabular data in a visually appealing ASCII table format"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "prettytable-3.9.0-py3-none-any.whl", hash = "sha256:a71292ab7769a5de274b146b276ce938786f56c31cf7cea88b6f3775d82fe8c8"},
+    {file = "prettytable-3.9.0.tar.gz", hash = "sha256:f4ed94803c23073a90620b201965e5dc0bccf1760b7a7eaf3158cab8aaffdf34"},
+]
+
+[package.dependencies]
+wcwidth = "*"
+
+[package.extras]
+tests = ["pytest", "pytest-cov", "pytest-lazy-fixture"]
 
 [[package]]
 name = "prometheus-client"
@@ -3730,6 +3943,21 @@ files = [
 
 [package.extras]
 tests = ["pytest"]
+
+[[package]]
+name = "pyampd"
+version = "0.0.1"
+description = "Peak detection using AMPD and ASS-AMPD algorithms"
+optional = false
+python-versions = "*"
+files = [
+    {file = "pyampd-0.0.1-py2.py3-none-any.whl", hash = "sha256:d923a4372308d447b98cd80f935a059e29323777dd26c0ac131945ad84f5f89c"},
+    {file = "pyampd-0.0.1.tar.gz", hash = "sha256:e333d00b61d2844b0ed0383b010394e0a0cb384a036dd83960cdc647cf71a755"},
+]
+
+[package.dependencies]
+numpy = "*"
+scipy = "*"
 
 [[package]]
 name = "pyarrow"
@@ -3989,6 +4217,23 @@ uritools = ">=3.0.1"
 async-http = ["aiohttp (>=3.8.0,<3.9.0)"]
 mypy = ["pyhanko-certvalidator[testing]", "types-requests"]
 testing = ["aiohttp (>=3.8.0,<3.9.0)", "freezegun (>=1.1.0)", "pyhanko-certvalidator[async-http]", "pytest (>=6.1.1)", "pytest-aiohttp (>=1.0.4,<1.1.0)", "pytest-cov (>=4.0.0,<4.1.0)"]
+
+[[package]]
+name = "pymatreader"
+version = "0.0.32"
+description = "Convenient reader for Matlab mat files"
+optional = false
+python-versions = "*"
+files = [
+    {file = "pymatreader-0.0.32-py3-none-any.whl", hash = "sha256:30fbe85ef919bcd7707fa9b7dfaf90f2d26d59ff1de84ab425a1a0a7e85a6f8a"},
+    {file = "pymatreader-0.0.32.tar.gz", hash = "sha256:34a5b4812635c98d3e5776fc21cd7f85b045784539363674d178dfb1158a617f"},
+]
+
+[package.dependencies]
+h5py = "*"
+numpy = "*"
+scipy = "!=1.7.0"
+xmltodict = "*"
 
 [[package]]
 name = "pympler"
@@ -4298,6 +4543,20 @@ files = [
     {file = "pyrsistent-0.19.3-py3-none-any.whl", hash = "sha256:ccf0d6bd208f8111179f0c26fdf84ed7c3891982f2edaeae7422575f47e66b64"},
     {file = "pyrsistent-0.19.3.tar.gz", hash = "sha256:1a2994773706bbb4995c31a97bc94f1418314923bd1048c6d964837040376440"},
 ]
+
+[[package]]
+name = "pyshortcuts"
+version = "1.9.0"
+description = "Create desktop and Start Menu shortcuts for python scripts"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "pyshortcuts-1.9.0-py3-none-any.whl", hash = "sha256:54d12ed8cd29bf83ac15153ce882a77072f2032b5f979474c519a2bac5af849d"},
+    {file = "pyshortcuts-1.9.0.tar.gz", hash = "sha256:016e89111337f74ce1ba3f4b79b295a643bc70b3e63ce4600247aa4bafa06877"},
+]
+
+[package.dependencies]
+pywin32 = {version = "*", markers = "platform_system == \"Windows\""}
 
 [[package]]
 name = "pytest"
@@ -5209,6 +5468,36 @@ pymysql = ["pymysql"]
 sqlcipher = ["sqlcipher3-binary"]
 
 [[package]]
+name = "sqlglot"
+version = "18.16.1"
+description = "An easily customizable SQL parser and transpiler"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "sqlglot-18.16.1-py3-none-any.whl", hash = "sha256:62765d8eb0731a6dd1170fab6763851eceef69f8bb174b4bb242b23f99dd8b32"},
+    {file = "sqlglot-18.16.1.tar.gz", hash = "sha256:d24682c07387884c480d668ddd14d33ca03805cfe138800a2c34fc092ba174dd"},
+]
+
+[package.extras]
+dev = ["autoflake", "black", "duckdb (>=0.6)", "isort", "mypy (>=0.990)", "pandas", "pdoc", "pre-commit", "pyspark", "python-dateutil", "types-python-dateutil"]
+
+[[package]]
+name = "sqlparse"
+version = "0.4.4"
+description = "A non-validating SQL parser."
+optional = false
+python-versions = ">=3.5"
+files = [
+    {file = "sqlparse-0.4.4-py3-none-any.whl", hash = "sha256:5430a4fe2ac7d0f93e66f1efc6e1338a41884b7ddf2a350cedd20ccc4d9d28f3"},
+    {file = "sqlparse-0.4.4.tar.gz", hash = "sha256:d446183e84b8349fa3061f0fe7f06ca94ba65b426946ffebe6e3e8295332420c"},
+]
+
+[package.extras]
+dev = ["build", "flake8"]
+doc = ["sphinx"]
+test = ["pytest", "pytest-cov"]
+
+[[package]]
 name = "stack-data"
 version = "0.6.2"
 description = "Extract data from python stack frames and tracebacks for informative displays"
@@ -5997,6 +6286,17 @@ reportlab = ">=3.5.53,<4"
 svglib = ">=1.2.1"
 
 [[package]]
+name = "xmltodict"
+version = "0.13.0"
+description = "Makes working with XML feel like you are working with JSON"
+optional = false
+python-versions = ">=3.4"
+files = [
+    {file = "xmltodict-0.13.0-py2.py3-none-any.whl", hash = "sha256:aa89e8fd76320154a40d19a0df04a4695fb9dc5ba977cbb68ab3e4eb225e7852"},
+    {file = "xmltodict-0.13.0.tar.gz", hash = "sha256:341595a488e3e01a85a9d8911d8912fd922ede5fecc4dce437eb4b6c8d037e56"},
+]
+
+[[package]]
 name = "xyzservices"
 version = "2023.7.0"
 description = "Source of XYZ tiles providers"
@@ -6113,4 +6413,4 @@ test = ["pytest"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.11,<3.12"
-content-hash = "66d656fd38c8055a06cc9d4fb29d8841edcc7135dbf7e6f02f6286ff5586d2a2"
+content-hash = "11668557c48a7a670015e731142017517c6e7744b9e3e658e36a05a0314b0c8f"

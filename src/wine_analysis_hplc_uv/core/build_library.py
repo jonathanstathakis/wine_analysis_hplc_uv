@@ -122,7 +122,7 @@ def build_db_library(
 
 def main():
     data_lib_path = definitions.LIB_DIR
-    db_filepath = definitions.DB_PATH
+    db_filepath = "/Users/jonathan/mres_thesis/wine_analysis_hplc_uv/src/wine_analysis_hplc_uv/notebooks/testdb.db"
 
     con = db.connect(db_filepath)
     build_db_library(

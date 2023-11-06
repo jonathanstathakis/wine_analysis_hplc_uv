@@ -83,8 +83,9 @@ def get_wine_data(
     # join st to ct
     con.execute(
         f"""--sql
-        CREATE OR REPLACE TEMPORARY TABLE wine_data AS
-        SELECT st.detection,
+        CREATE OR REPLACE VIEW wine_data AS
+        SELECT 
+            st.detection,
             st.samplecode,
             ct.wine,
             ct.color,
