@@ -11,6 +11,7 @@ import pandas as pd
 import duckdb as db
 from wine_analysis_hplc_uv.chemstation import read_single_file
 import logging
+from wine_analysis_hplc_uv.chemstation.chemstationprocessor import ChemstationProcessor
 
 logger = logging.getLogger(__name__)
 
@@ -37,6 +38,7 @@ def test_metadata_df(chemstationprocessor):
 
 def test_data_df(chemstationprocessor) -> None:
     # df_methods.describe_df(df=ch.data_df)
+
     groups = chemstationprocessor.data_df.groupby("id")
     group_shapes = [(name, group.shape) for name, group in groups]
 
@@ -73,6 +75,11 @@ def test_data_to_db(chemstationprocessor):
     pd.testing.assert_frame_equal(
         chemstationprocessor.data_df, db_data_df, check_dtype=False
     )
+
+
+def test_chemstationProcessor(datapaths):
+    logging.debug(datapaths.sampleset)
+    assert ChemstationProcessor(datapaths.sampleset)
 
 
 # 2023-08-16 14:23:15 currently broken as have moved dup test method somewhere else, need to fix call
