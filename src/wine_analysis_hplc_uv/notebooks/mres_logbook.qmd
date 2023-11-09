@@ -4477,7 +4477,17 @@ pandas:
 
 Modifying the build library pipe to avoid the melt in the first place has remedied the problem, meaning that what was a 1hr operation to pivot back from long has been reduced from a total of 4.7 seconds. Then writing to parquet takes all of 3 seconds then reading back is 0.5 seconds.
 
+2023-11-07 19:40:37:
 
+Results are in! The raw red dataset - Shiraz, Pinot Noir and Bordeaux Blends has resulted in a 83.3% accuracy. This setup has a PCA dim red. followed by modeling with XGBoost, just default settings for now.
+
+Now I will produce a full dataset following the same pipeline
+
+Now, what is that?
+
+2023-11-09 12:15:52:
+
+Am working on OOP data processing pipeline to feed into XGBoost. While working on this I have found that sample 98, '2020 barone ricasoli chianti classico rocca di montegrossi' appears to have been recorded at double the sampling rate of the others, 15600 observations vs 7800. Now im sure this is somehow a processing error upstream but i dont have time to worry about one sample, so we'll just remove it and pin it as a job for later.
 
 <!-- end_file -->
 
