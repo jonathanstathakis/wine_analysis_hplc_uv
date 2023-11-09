@@ -19,6 +19,9 @@ def query_db(db_path: str, tbl_name: str):
 
 
 def st_ct_anti_join(con):
+    """
+    Anti joins return the rows of the first table where a match CANNOT be found in the second.
+    """
     con.sql(
         """--sql
             SELECT
