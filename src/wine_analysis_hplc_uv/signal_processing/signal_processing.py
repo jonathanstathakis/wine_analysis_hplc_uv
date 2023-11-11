@@ -1,3 +1,9 @@
+import pandas as pd
+from scipy import signal
+from sklearn import preprocessing
+import pybaselines
+
+
 class Preprocessing:
     def _smooth(
         self,
@@ -17,7 +23,7 @@ class Preprocessing:
         savgol_kws: refer to scipy.signal.savgol_filter
         """
         smoothed_col = df.groupby(grouper)[col].transform(
-            lambda x: pd.Series(savgol_filter(x, **savgol_kws), index=x.index)
+            lambda x: pd.Series(signal.savgol_filter(x, **savgol_kws), index=x.index)
         )
 
         return smoothed_col
@@ -44,7 +50,7 @@ class Preprocessing:
             **dict(
                 bline=lambda df: df.groupby(grouper)[col].transform(
                     lambda x: pd.Series(
-                        Baseline(x.index).asls(x, **asls_kws)[0],
+                        pybaselines.Baseline(x.index).asls(x, **asls_kws)[0],
                         index=x.index,
                     ).where(lambda x: x > 0, 0)
                 )
@@ -70,7 +76,7 @@ class Preprocessing:
     def scale_and_center(self, df, col: str):
         # scale and center
 
-        scaler = StandardScaler()
+        scaler = preprocessing.StandardScaler()
 
         df = df.assign(
             scale_center=lambda df: scaler.fit_transform(df[col].values.reshape(-1, 1))
