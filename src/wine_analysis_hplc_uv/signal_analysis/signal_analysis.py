@@ -1,3 +1,6 @@
+from scipy import signal
+
+
 class SignalAnalyzer:
     def detect_peaks(
         self,
