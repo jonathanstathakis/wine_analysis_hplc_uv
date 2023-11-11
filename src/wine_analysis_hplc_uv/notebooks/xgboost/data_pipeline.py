@@ -14,8 +14,17 @@ from wine_analysis_hplc_uv.notebooks.xgboost import dataextract
 from wine_analysis_hplc_uv import definitions
 import logging
 
+# logger.setLevel("DEBUG")
+logger = logging.basicConfig(level="DEBUG")
 logger = logging.getLogger(__name__)
-logger.setLevel("DEBUG")
+formatter = logging.Formatter(
+    "%(asctime)s %(name)s: %(message)s", datefmt="%m/%d/%Y %I:%M:%S %p"
+)
+stream_handler = logging.StreamHandler()
+stream_handler.setFormatter(formatter)
+
+# Add handler to logger
+logger.addHandler(stream_handler)
 
 
 class DataFrameValidator:
@@ -79,6 +88,7 @@ class DataframeAdjuster(DataFrameValidator):
         return out_df
 
     def pivot_df(self, df: pd.DataFrame, pivot_kwgs: dict = dict()):
+        logging.info(f"pivoting df with {pivot_kwgs}..")
         out_df = df.pivot_table(**pivot_kwgs).sort_index(axis=1)
 
         return out_df
@@ -232,18 +242,21 @@ class DataPipeline(
             .pipe(func=self.melt_df, melt_kwgs=melt_kwgs)
             .pipe(func=self.validate_dataframe)
             .pipe(func=self.smooth_signals, **smooth_kwgs)
-            # .pipe(func=self.validate_dataframe)
-            # .pipe(self.subtract_baseline, **bline_sub_kwgs)
-            # .pipe(func=self.validate_dataframe)
-            # .pipe(self.pivot_df, pivot_kwgs)
-            # .pipe(func=self.validate_dataframe)
-            # .pipe(self.output_processed_data, outpath)
+            .pipe(func=self.validate_dataframe)
+            .pipe(self.subtract_baseline, **bline_sub_kwgs)
+            .pipe(func=self.validate_dataframe)
+            .pipe(self.pivot_df, pivot_kwgs)
+            .pipe(func=self.validate_dataframe)
+            .pipe(self.output_processed_data, outpath)
         )
 
-        display(self.raw_data_)
+        display(self.processed_df)
 
     def output_processed_data(self, df: pd.DataFrame, outpath: str):
+        logging.info(f"output to {outpath}")
+
         df.to_parquet(outpath)
+
         return None
 
 
@@ -293,11 +306,11 @@ def main():
             append=append,
         ),
         pivot_kwgs=dict(
-            columns=["varietal", "code_wine", "id", "wavelength"],
+            columns=["detection", "color", "varietal", "id", "code_wine"],
             index="mins",
             values="bcorr",
         ),
-        outpath="/Users/jonathan/mres_thesis/wine_analysis_hplc_uv/src/wine_analysis_hplc_uv/notebooks/2023-11-05.xgboost/2023-11-09_test.parquet",
+        outpath="/Users/jonathan/mres_thesis/wine_analysis_hplc_uv/src/wine_analysis_hplc_uv/notebooks/xgboost/2023-11-09_test.parquet",
     )
 
 

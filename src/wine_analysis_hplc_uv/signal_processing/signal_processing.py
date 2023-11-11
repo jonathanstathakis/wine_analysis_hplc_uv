@@ -54,6 +54,10 @@ class Preprocessing:
         baseline_corrected_name - the name of the newly created column
         """
 
+        logger.info(
+            f"Subtracting baseline from {col} of df grouped by {grouper} with {asls_kws}.."
+        )
+
         out_df = df.assign(
             **dict(
                 bline=lambda df: df.groupby(grouper)[col].transform(
