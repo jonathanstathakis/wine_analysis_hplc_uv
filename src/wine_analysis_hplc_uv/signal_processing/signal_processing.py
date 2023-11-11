@@ -2,6 +2,9 @@ import pandas as pd
 from scipy import signal
 from sklearn import preprocessing
 import pybaselines
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class Preprocessing:
@@ -22,6 +25,11 @@ class Preprocessing:
         smoothed_colname: name of the output column
         savgol_kws: refer to scipy.signal.savgol_filter
         """
+
+        logger.info(
+            f"Smoothing {col} in supplied df grouped by {grouper} with {savgol_kws}.."
+        )
+
         smoothed_col = df.groupby(grouper)[col].transform(
             lambda x: pd.Series(signal.savgol_filter(x, **savgol_kws), index=x.index)
         )

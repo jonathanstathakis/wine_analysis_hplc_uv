@@ -70,6 +70,8 @@ class DataframeAdjuster(DataFrameValidator):
         wrapper for pandas melt
         """
 
+        logger.info(f"Melting df with {melt_kwgs}..")
+
         out_df = df.melt(**melt_kwgs).loc[
             :, lambda df: df.columns.drop("mins").insert(-1, "mins").tolist()
         ]
@@ -150,6 +152,8 @@ class SignalProcessor(signal_processing.Preprocessing):
         append: if True, adds the smoothed column at the end of the df as 'smoothed', else replaces the target_col with the smoothed col.
         """
 
+        logger.info(f"Smoothing signal with {smooth_kwgs}..")
+
         if append:
             out_df = df.assign(smoothed=lambda df: df.pipe(self._smooth, **smooth_kwgs))
 
@@ -224,10 +228,10 @@ class DataPipeline(
 
         self.processed_df = (
             self.raw_data_.pipe(func=self.resample_df, **resample_kwgs)
-            # .pipe(func=self.validate_dataframe)
-            # .pipe(func=self.melt_df, melt_kwgs=melt_kwgs)
-            # .pipe(func=self.validate_dataframe)
-            # .pipe(func=self.smooth_signals, **smooth_kwgs)
+            .pipe(func=self.validate_dataframe)
+            .pipe(func=self.melt_df, melt_kwgs=melt_kwgs)
+            .pipe(func=self.validate_dataframe)
+            .pipe(func=self.smooth_signals, **smooth_kwgs)
             # .pipe(func=self.validate_dataframe)
             # .pipe(self.subtract_baseline, **bline_sub_kwgs)
             # .pipe(func=self.validate_dataframe)
@@ -269,7 +273,7 @@ def main():
             resample_freqstr="2S",
         ),
         melt_kwgs=dict(
-            id_vars=["varietal", "id", "code_wine", "mins"],
+            id_vars=["detection", "color", "varietal", "id", "code_wine", "mins"],
             value_name="signal",
             var_name="wavelength",
         ),
