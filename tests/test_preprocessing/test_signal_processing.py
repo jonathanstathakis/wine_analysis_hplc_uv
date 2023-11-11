@@ -20,7 +20,7 @@ from pybaselines import Baseline
 import matplotlib.pyplot as plt
 import logging
 from . import preprocessing_test_dataset
-from wine_analysis_hplc_uv.signal_processing.mindex_signal_processing import (
+from wine_analysis_hplc_uv.old_signal_processing.mindex_signal_processing import (
     SignalProcessor,
 )
 
