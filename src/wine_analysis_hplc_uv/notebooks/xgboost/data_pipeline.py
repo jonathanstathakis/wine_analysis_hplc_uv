@@ -12,6 +12,10 @@ import matplotlib.pyplot as plt
 from wine_analysis_hplc_uv.signal_processing import signal_processing
 from wine_analysis_hplc_uv.notebooks.xgboost import dataextract
 from wine_analysis_hplc_uv import definitions
+import logging
+
+logger = logging.getLogger(__name__)
+logger.setLevel("DEBUG")
 
 
 class DataFrameValidator:
@@ -99,46 +103,41 @@ class TimeResampler:
         resample_freqstr: frequency string corresponding to the destination sampling frequency.
         """
 
-        out_df = (
-            df.pipe(
-                lambda df: df
-                if display(
-                    df.groupby(grouper)
-                    .count()
-                    .iloc[:, 0]
-                    .loc[lambda x: x > 7800]
-                    #    .describe()
-                )
-                else df
-            )
-            .pipe(
-                lambda df: df.assign(
-                    **{
-                        time_col: lambda x: x.groupby(grouper)[time_col].transform(
-                            lambda x: pd.timedelta_range(
-                                start=0, periods=len(x), freq=original_freqstr
-                            ).total_seconds()
-                            / 60
-                        )
-                    }
-                )
-            )
-            .pipe(
-                lambda df: df.assign(
-                    **{time_col: pd.TimedeltaIndex(data=df.loc[:, time_col], unit="m")}
-                )
-                .set_index(time_col)
-                .groupby(grouper, as_index=False, group_keys=False)
-                .apply(lambda grp: grp.resample(resample_freqstr).interpolate().ffill())
-                .set_index(grouper, append=True)
-                .reset_index("mins")
-                .reset_index()
-                .assign(
-                    **{time_col: lambda df: df.loc[:, time_col].dt.total_seconds() / 60}
-                )
+        logger.info(
+            f"resampling to {original_freqstr} to remove irregularities between samples.."
+        )
+
+        time_normalized_df = df.pipe(
+            lambda df: df.assign(
+                **{
+                    time_col: lambda x: x.groupby(grouper)[time_col].transform(
+                        lambda x: pd.timedelta_range(
+                            start=0, periods=len(x), freq=original_freqstr
+                        ).total_seconds()
+                        / 60
+                    )
+                }
             )
         )
-        return out_df
+
+        logger.info(f"Resampling to {resample_freqstr}..")
+
+        resampled_df = time_normalized_df.pipe(
+            lambda df: df.assign(
+                **{time_col: pd.TimedeltaIndex(data=df.loc[:, time_col], unit="m")}
+            )
+            .set_index(time_col)
+            .groupby(grouper, as_index=False, group_keys=False)
+            .apply(lambda grp: grp.resample(resample_freqstr).interpolate().ffill())
+            .set_index(grouper, append=True)
+            .reset_index("mins")
+            .reset_index()
+            .assign(
+                **{time_col: lambda df: df.loc[:, time_col].dt.total_seconds() / 60}
+            )
+        )
+
+        return resampled_df
 
 
 class SignalProcessor(signal_processing.Preprocessing):
@@ -224,8 +223,7 @@ class DataPipeline(
         self.raw_data_ = self.get_tbl_as_df()
 
         self.processed_df = (
-            self.raw_data_
-            # .pipe(func=self.resample_df, **resample_kwgs)
+            self.raw_data_.pipe(func=self.resample_df, **resample_kwgs)
             # .pipe(func=self.validate_dataframe)
             # .pipe(func=self.melt_df, melt_kwgs=melt_kwgs)
             # .pipe(func=self.validate_dataframe)
@@ -261,17 +259,17 @@ def main():
             drop_cols=["detection", "color"],
         ),
         outlier_kwgs=dict(
-            label_col="samplecode_wine",
+            label_col="code_wine",
             outlier_label=["72", "115", "a0301", "99", "98"],
         ),
         resample_kwgs=dict(
-            grouper=["id", "samplecode_wine"],
+            grouper=["id", "code_wine"],
             time_col="mins",
             original_freqstr="0.4S",
             resample_freqstr="2S",
         ),
         melt_kwgs=dict(
-            id_vars=["varietal", "id", "samplecode_wine", "mins"],
+            id_vars=["varietal", "id", "code_wine", "mins"],
             value_name="signal",
             var_name="wavelength",
         ),
@@ -291,7 +289,7 @@ def main():
             append=append,
         ),
         pivot_kwgs=dict(
-            columns=["varietal", "samplecode_wine", "id", "wavelength"],
+            columns=["varietal", "code_wine", "id", "wavelength"],
             index="mins",
             values="bcorr",
         ),
