@@ -14,7 +14,7 @@ from wine_analysis_hplc_uv import definitions
 import seaborn as sns
 import seaborn.objects as so
 from wine_analysis_hplc_uv.notebooks.dtw_methods import DTWNotebookMethods
-from wine_analysis_hplc_uv.signal_processing.mindex_signal_processing import (
+from wine_analysis_hplc_uv.old_signal_processing.mindex_signal_processing import (
     SignalProcessor,
 )
 import seaborn as sns

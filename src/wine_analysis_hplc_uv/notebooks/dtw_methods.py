@@ -3,7 +3,7 @@ import seaborn as sns
 from dtwalign import dtw
 from IPython.display import display
 from pybaselines import Baseline
-from wine_analysis_hplc_uv.signal_processing.mindex_signal_processing import (
+from wine_analysis_hplc_uv.old_signal_processing.mindex_signal_processing import (
     SignalProcessor,
 )
 
