@@ -46,20 +46,19 @@ def uv_extractor_pool(
                 assert label in data_df.columns, data_df.columns
 
             logging.debug(f"\n{data_df.columns}")
-            # data_df = data_df.melt(
-            #     id_vars=["id", "mins"],
-            #     var_name="wavelength",
-            #     value_name="value",
-            # )
 
-            # .pivot_table(index=['id','mins'],columns=[''])
-            # TODO: 2023-06-13 15:34:45 -
-            # need to build in a method of handling files that fail to
-            # parse so that they are still present in the resulting db table.
-            # To do this, will need to id the empty dfs, add the missing
-            # colnames with empty values so they will melt too.
-
-            # data_df["wavelength"] = pd.to_numeric(data_df["wavelength"])
+            data_df = (
+                data_df.melt(
+                    id_vars=["mins", "id"],
+                    var_name="wavelength",
+                    value_name="absorbance",
+                )
+                .assign(wavelength=lambda df: "nm_" + df.wavelength)
+                .pivot_table(
+                    columns=["wavelength"], values="absorbance", index=["id", "mins"]
+                )
+                .reset_index()
+            )
 
             return data_df
 
