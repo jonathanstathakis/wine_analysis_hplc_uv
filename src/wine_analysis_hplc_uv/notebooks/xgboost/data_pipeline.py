@@ -9,11 +9,9 @@ import pandas as pd
 import numpy as np
 from wine_analysis_hplc_uv.notebooks.mcr import mcr_methods
 import matplotlib.pyplot as plt
-
-
-class PCA_Analysis(mcr_methods.Preprocessing, mcr_methods.PCA, mcr_methods.Signal_Anal):
-    def __init__(self):
-        return None
+from wine_analysis_hplc_uv.signal_processing import signal_processing
+from wine_analysis_hplc_uv.notebooks.xgboost import dataextract
+from wine_analysis_hplc_uv import definitions
 
 
 class DataFrameValidator:
@@ -59,37 +57,6 @@ class SliceSelection:
 
 
 class DataframeAdjuster(DataFrameValidator):
-    def adjust_df(
-        self,
-        df: pd.DataFrame,
-        left_colname: str,
-        right_colname: str,
-        drop_cols: str | list,
-    ) -> pd.DataFrame:
-        """
-        Concatenate label columns to reduce total number of columns, (at this point, supposed to be 'samplecode' + 'wine') and remove unneeded columns
-        """
-
-        return (
-            df.pipe(self.concat_code_wine, left_colname, right_colname)
-            .pipe(self.validate_dataframe)
-            .pipe(self.drop_unnecessary_cols, drop_cols)
-        )
-
-    def concat_code_wine(self, df: pd.DataFrame, left_colname: str, right_colname: str):
-        df.insert(
-            loc=0,
-            column=f"{left_colname}_{right_colname}",
-            value=df[left_colname] + "_" + df[right_colname],
-        )
-
-        df = df.drop([left_colname, right_colname], axis=1)
-
-        return df
-
-    def drop_unnecessary_cols(self, df: pd.DataFrame, drop_cols: str | list[str]):
-        return df.drop(drop_cols, axis=1)
-
     def melt_df(
         self,
         df: pd.DataFrame,
@@ -174,7 +141,7 @@ class TimeResampler:
         return out_df
 
 
-class SignalProcessor(PCA_Analysis):
+class SignalProcessor(signal_processing.Preprocessing):
     def smooth_signals(
         self, df: pd.DataFrame, smooth_kwgs: dict() = dict(), append: bool = True
     ):
@@ -226,10 +193,16 @@ class SignalProcessor(PCA_Analysis):
         return out_df
 
 
-class DataPipeline(SliceSelection, DataframeAdjuster, TimeResampler, SignalProcessor):
+class DataPipeline(
+    dataextract.DataExtractor,
+    SliceSelection,
+    DataframeAdjuster,
+    TimeResampler,
+    SignalProcessor,
+):
     def __init__(
         self,
-        in_filepath: str,
+        db_path: str,
         outpath: str,
         select_group_kwgs: dict = dict(),
         adjuster_kwgs: dict = dict(),
@@ -240,33 +213,32 @@ class DataPipeline(SliceSelection, DataframeAdjuster, TimeResampler, SignalProce
         bline_sub_kwgs: dict = dict(),
         pivot_kwgs: dict = dict(),
     ):
-        self.in_filepath_ = in_filepath
+        dataextract.DataExtractor.__init__(self, db_path=db_path)
 
-        self.raw_data_ = self.load_raw_data(filepath=self.in_filepath_)
-
-        self.processed_df = (
-            self.raw_data_.pipe(func=self.validate_dataframe)
-            .pipe(func=self.select_group, **select_group_kwgs)
-            .pipe(func=self.validate_dataframe)
-            .pipe(func=self.adjust_df, **adjuster_kwgs)
-            .pipe(func=self.validate_dataframe)
-            .pipe(self.remove_outliers, **outlier_kwgs)
-            .pipe(func=self.validate_dataframe)
-            .pipe(func=self.resample_df, **resample_kwgs)
-            .pipe(func=self.validate_dataframe)
-            .pipe(func=self.melt_df, melt_kwgs=melt_kwgs)
-            .pipe(func=self.validate_dataframe)
-            .pipe(func=self.smooth_signals, **smooth_kwgs)
-            .pipe(func=self.validate_dataframe)
-            .pipe(self.subtract_baseline, **bline_sub_kwgs)
-            .pipe(func=self.validate_dataframe)
-            .pipe(self.pivot_df, pivot_kwgs)
-            .pipe(func=self.validate_dataframe)
-            .pipe(self.output_processed_data, outpath)
+        self.create_subset_table(
+            detection=("raw",),
+            exclude_samplecodes=(["72", "115", "a0301", "99", "98"]),
+            wavelengths=(256),
         )
 
-    def load_raw_data(self, filepath: str):
-        return pd.read_parquet(path=filepath)
+        self.raw_data_ = self.get_tbl_as_df()
+
+        self.processed_df = (
+            self.raw_data_
+            # .pipe(func=self.resample_df, **resample_kwgs)
+            # .pipe(func=self.validate_dataframe)
+            # .pipe(func=self.melt_df, melt_kwgs=melt_kwgs)
+            # .pipe(func=self.validate_dataframe)
+            # .pipe(func=self.smooth_signals, **smooth_kwgs)
+            # .pipe(func=self.validate_dataframe)
+            # .pipe(self.subtract_baseline, **bline_sub_kwgs)
+            # .pipe(func=self.validate_dataframe)
+            # .pipe(self.pivot_df, pivot_kwgs)
+            # .pipe(func=self.validate_dataframe)
+            # .pipe(self.output_processed_data, outpath)
+        )
+
+        display(self.raw_data_)
 
     def output_processed_data(self, df: pd.DataFrame, outpath: str):
         df.to_parquet(outpath)
@@ -278,7 +250,7 @@ def main():
 
     append = True
     dp = DataPipeline(
-        in_filepath=in_filepath,
+        db_path=definitions.DB_PATH,
         select_group_kwgs=dict(
             var="color",
             value="red",
