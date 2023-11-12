@@ -108,12 +108,6 @@ class DataExtractor:
             },
         )
 
-        self.con_.sql(
-            f"""--sql
-        SELECT * FROM {self.table_name_}
-        """
-        )
-
     def get_tbl_as_df(self):
         return self.con_.sql(
             f"""--sql

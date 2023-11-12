@@ -79,19 +79,23 @@ For sets with class imbalance it is recommended to use 'micro' scores
 
 # initialization
 
+from wine_analysis_hplc_uv import definitions
+from wine_analysis_hplc_uv.notebooks.xgboost_modeling import data_pipeline
+
+from IPython.display import display
+
 import os
+
 import pandas as pd
 import numpy as np
-import seaborn.objects as so
+
 import seaborn as sns
+import seaborn.objects as so
 import matplotlib as mpl
 import matplotlib.pyplot as plt
-from sklearn import decomposition
-from IPython.display import display
-import pandas as pd
-import numpy as np
-import seaborn as sns
+
 import matplotlib.pyplot as plt
+
 from xgboost import XGBClassifier
 from xgboost import plot_tree
 
@@ -100,77 +104,187 @@ from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import Pipeline
 from sklearn.model_selection import GridSearchCV
-
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import classification_report, confusion_matrix
 from sklearn.model_selection import cross_validate
 from sklearn.model_selection import cross_val_predict
+from sklearn import decomposition
+
+from wine_analysis_hplc_uv.notebooks.xgboost_modeling import data_pipeline
 
 plt.style.use("ggplot")
 
-label_cols = ["varietal", "code_wine", "id"]
+import logging
+
+logging_level = logging.INFO
+logger = logging.getLogger()
+logger.setLevel(logging_level)
+
+formatter = logging.Formatter(
+    "%(asctime)s %(name)s: %(message)s", datefmt="%m/%d/%Y %I:%M:%S %p"
+)
+stream_handler = logging.StreamHandler()
+stream_handler.setFormatter(formatter)
+
+# Add handler to logger
+logger.addHandler(stream_handler)
 
 
 class MyData:
-    def __init__(self):
-        self.target_col = "varietal"
-        self.label_cols = ["varietal", "code_wine", "id"]
-        self.cols_to_drop = ["id", "code_wine"]
+    def load_dset(
+        self, target_col: str, label_cols: str | list, drop_cols=str | list
+    ) -> tuple[pd.DataFrame, pd.DataFrame]:
+        """
+        Load the data into the class object and prepare it for modeling, splitting the labels and features
+        """
+
+        logger.info("Loading dataset..")
+
+        self.target_col = target_col
+        self.label_cols = label_cols
+        self.drop_cols = drop_cols
 
         self.data = self.get_dset()
         self.x, self.y = self.prep_for_model()
 
     def get_dset(self):
-        path = os.path.join(
-            "/Users/jonathan/mres_thesis/wine_analysis_hplc_uv/src/wine_analysis_hplc_uv/notebooks/pca-xgboost/pca_dset.parquet"
+        append = True
+        dp = data_pipeline.DataPipeline(
+            db_path=definitions.DB_PATH,
         )
 
-        data = pd.read_parquet(path)
-        data = data.T.reset_index()
+        dp.create_subset_table(
+            detection=("raw",),
+            exclude_samplecodes=(["72", "115", "a0301", "99", "98"]),
+            wavelengths=(256),
+            color=("red",),
+        )
 
-        return data
+        dp.process_frame(
+            resample_kwgs=dict(
+                grouper=["id", "code_wine"],
+                time_col="mins",
+                original_freqstr="0.4S",
+                resample_freqstr="2S",
+            ),
+            melt_kwgs=dict(
+                id_vars=["detection", "color", "varietal", "id", "code_wine", "mins"],
+                value_name="signal",
+                var_name="wavelength",
+            ),
+            smooth_kwgs=dict(
+                smooth_kwgs=dict(
+                    grouper=["id", "wavelength"],
+                    col="signal",
+                ),
+                append=append,
+            ),
+            bline_sub_kwgs=dict(
+                prepro_bline_sub_kwgs=dict(
+                    grouper=["id", "wavelength"],
+                    col="smoothed",
+                    asls_kws=dict(max_iter=100, tol=1e-3, lam=1e5),
+                ),
+                append=append,
+            ),
+            pivot_kwgs=dict(
+                columns=["detection", "color", "varietal", "id", "code_wine"],
+                index="mins",
+                values="bcorr",
+            ),
+        )
+
+        return dp.processed_df.T.reset_index()
 
     def enlarge_dataset(self, multiplier: int = 1):
         """
         Artifically increasing the size of the dataset to see if that affects model as of
         2023-11-06 13:15:22 I am getting the same predictions every run
         """
-        display(self.data.shape)
 
-        for i in range(1, multiplier):
-            self.data = pd.concat([self.data, self.data])
-            display(self.data.shape)
+        if not isinstance(multiplier, (int, float)):
+            raise ValueError(
+                f"multiplier must be int or float, got {type(multiplier)}.."
+            )
+
+        if multiplier > 1:
+            logger.info(
+                f"Enlarging dataset through duplication by a factor of {multiplier}.."
+            )
+
+            for i in range(1, multiplier):
+                self.data = pd.concat([self.data, self.data])
+                logger.info(
+                    f" Iteration {i} resulted in a dataset of size: {self.data.shape}.."
+                )
+
+        return self.data
 
     def select_dataset_size(self, min_num_samples: int = 6):
         """
         Subset the dataset size based on how many samples in a given class
+
+        Note: selects for pinot noir and shiraz varietals only, both with 11 members currently 2023-11-06.
         """
-        var_labels = (
-            self.data.varietal.value_counts().loc[lambda x: x >= min_num_samples].index
+
+        logger.info(
+            f"Selecting classes in {self.target_col} that have size greater or equal to {min_num_samples}.."
         )
 
-        self.data = self.data.loc[lambda df: df.varietal.isin(var_labels)]
+        classes = (
+            self.data[self.target_col]
+            .value_counts()
+            .loc[lambda x: x >= min_num_samples]
+        )
+
+        class_labels = classes.index
+
+        logger.info(f"classes selected as follows:\n{classes}")
+
+        self.data = self.data.loc[lambda df: df[self.target_col].isin(class_labels)]
+
+        return self.data
 
     def prep_for_model(self, enlarge_kwargs: dict = dict()):
-        # selects for pinot noir and shiraz varietals only, both with 11 members currently 2023-11-06.
+        # drop NA's
+        # 2023-11-13 - the NAs are due to differing runtimes. At this point in the program the data is row-wise labels, columnwise mins/features, thus NA patterns are column-based, not all samples will have the same number of columns
 
-        self.select_dataset_size()
+        logger.info("checking if df has any NA:")
 
-        display(self.data.varietal.value_counts())
-        # display(self.data.varietal.value_counts().shape)
+        na_count = self.data.isna().sum().sum()
 
-        self.enlarge_dataset(**enlarge_kwargs)
+        if na_count > 0:
+            logger.info(
+                f"input df has {na_count} NA values, which are incompatible with modeling. All columns with NA will be dropped.."
+            )
 
-        # plots the signals
-        # display(data.drop(['varietal','code_wine','id'], axis=1).T.plot(legend=False))
+            df_shape = self.data.shape
 
-        x = self.data.drop([self.target_col] + self.cols_to_drop, axis=1)
+            self.data = self.data.dropna(axis=1)
 
-        y = self.data.loc[:, self.target_col]
+            new_df_shape = self.data.shape
 
-        return x, y
+            logger.info(
+                f"Through dropping of columns containing NA, shape has gone from {df_shape} to {new_df_shape}"
+            )
+
+        self.data = self.select_dataset_size()
+
+        self.data = self.enlarge_dataset(**enlarge_kwargs)
+
+        logger.info(
+            f"constructing feature matrix 'x' by removing {[self.target_col]+self.drop_cols} from input frame.."
+        )
+        self.x = self.data.drop([self.target_col] + self.drop_cols, axis=1)
+
+        logger.info(
+            f"constructing label matrix 'y' by selecting {self.target_col} from input frame.."
+        )
+        self.y = self.data.loc[:, self.target_col]
+
+        return self.x, self.y
 
 
 class TestData:
@@ -260,6 +374,7 @@ class XGBoostModeling(PCA_Transformation):
 
         self.init_pipe(self.clf)
 
+        print(self.x_train.head())
         self.fit_model = self.pipeline.fit(self.x_train, self.y_train)
 
         print(self.fit_model)
@@ -384,8 +499,7 @@ class XGBoostModeling(PCA_Transformation):
 
 
 class MyModel(MyData, XGBoostModeling):
-    def __init__(self):
-        MyData.__init__(self)
+    pass
 
 
 class testModel(TestData, XGBoostModeling):
@@ -452,8 +566,20 @@ def main():
     )
 
     m = MyModel()
+
+    m.load_dset(
+        target_col="varietal",
+        label_cols=["varietal", "code_wine", "id"],
+        drop_cols=[
+            "color",
+            "detection",
+            "id",
+            "code_wine",
+        ],
+    )
+
     # # m.prep_for_model(enlarge_kwargs=dict(multiplier=4))
-    m.prep_for_model()
+
     # # m.grid_search(
     #     # get_grid_params()
     #     # )
