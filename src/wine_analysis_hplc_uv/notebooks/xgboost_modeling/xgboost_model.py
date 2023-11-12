@@ -74,7 +74,12 @@ Before looking into strategies to handle this, apply PCA to get the first x comp
 
 For sets with class imbalance it is recommended to use 'micro' scores        
 
-2023-11-07 10:00:04 - Ok, I have established methods of producing a easy-to-read pandas dataframe confusion matrix and classification report, and plot of the tree. 
+2023-11-07 10:00:04 - Ok, I have established methods of producing a easy-to-read pandas dataframe confusion matrix and classification report, and plot of the tree.
+
+2023-11-13 09:22:38 - multiclass confusion matrix displays the expected values as columns and predicted values as rows. The values are the number of samples in that location, Where the diagonal is TP <https://www.v7labs.com/blog/confusion-matrix-guide#confusion-matrix-for-multiple-classes>
+
+
+
 """
 
 # initialization
@@ -133,7 +138,7 @@ logger.addHandler(stream_handler)
 
 
 class MyData:
-    def load_dset(
+    def __init__(
         self, target_col: str, label_cols: str | list, drop_cols=str | list
     ) -> tuple[pd.DataFrame, pd.DataFrame]:
         """
@@ -146,10 +151,10 @@ class MyData:
         self.label_cols = label_cols
         self.drop_cols = drop_cols
 
-        self.data = self.get_dset()
-        self.x, self.y = self.prep_for_model()
-
     def get_dset(self):
+        """
+        Get the dataset through the DataPipeline class as a sql query, return the transposed form with samples as rows and labels + observations as columns, with a reset index
+        """
         append = True
         dp = data_pipeline.DataPipeline(
             db_path=definitions.DB_PATH,
@@ -195,8 +200,48 @@ class MyData:
                 values="bcorr",
             ),
         )
+        self.data = dp.processed_df.T.reset_index()
 
-        return dp.processed_df.T.reset_index()
+        return self.data
+
+    def prep_for_model(self, enlarge_kwargs: dict = dict()):
+        # drop NA's
+        # 2023-11-13 - the NAs are due to differing runtimes. At this point in the program the data is row-wise labels, columnwise mins/features, thus NA patterns are column-based, not all samples will have the same number of columns
+
+        logger.info("checking if df has any NA:")
+
+        na_count = self.data.isna().sum().sum()
+
+        if na_count > 0:
+            logger.info(
+                f"input df has {na_count} NA values, which are incompatible with modeling. All columns with NA will be dropped.."
+            )
+
+            df_shape = self.data.shape
+
+            self.data = self.data.dropna(axis=1)
+
+            new_df_shape = self.data.shape
+
+            logger.info(
+                f"Through dropping of columns containing NA, shape has gone from {df_shape} to {new_df_shape}"
+            )
+
+        self.data = self.select_dataset_size()
+
+        self.data = self.enlarge_dataset(**enlarge_kwargs)
+
+        logger.info(
+            f"constructing feature matrix 'x' by removing {[self.target_col]+self.drop_cols} from input frame.."
+        )
+        self.x = self.data.drop([self.target_col] + self.drop_cols, axis=1)
+
+        logger.info(
+            f"constructing label matrix 'y' by selecting {self.target_col} from input frame.."
+        )
+        self.y = self.data.loc[:, self.target_col]
+
+        return self.x, self.y
 
     def enlarge_dataset(self, multiplier: int = 1):
         """
@@ -246,45 +291,6 @@ class MyData:
         self.data = self.data.loc[lambda df: df[self.target_col].isin(class_labels)]
 
         return self.data
-
-    def prep_for_model(self, enlarge_kwargs: dict = dict()):
-        # drop NA's
-        # 2023-11-13 - the NAs are due to differing runtimes. At this point in the program the data is row-wise labels, columnwise mins/features, thus NA patterns are column-based, not all samples will have the same number of columns
-
-        logger.info("checking if df has any NA:")
-
-        na_count = self.data.isna().sum().sum()
-
-        if na_count > 0:
-            logger.info(
-                f"input df has {na_count} NA values, which are incompatible with modeling. All columns with NA will be dropped.."
-            )
-
-            df_shape = self.data.shape
-
-            self.data = self.data.dropna(axis=1)
-
-            new_df_shape = self.data.shape
-
-            logger.info(
-                f"Through dropping of columns containing NA, shape has gone from {df_shape} to {new_df_shape}"
-            )
-
-        self.data = self.select_dataset_size()
-
-        self.data = self.enlarge_dataset(**enlarge_kwargs)
-
-        logger.info(
-            f"constructing feature matrix 'x' by removing {[self.target_col]+self.drop_cols} from input frame.."
-        )
-        self.x = self.data.drop([self.target_col] + self.drop_cols, axis=1)
-
-        logger.info(
-            f"constructing label matrix 'y' by selecting {self.target_col} from input frame.."
-        )
-        self.y = self.data.loc[:, self.target_col]
-
-        return self.x, self.y
 
 
 class TestData:
@@ -355,6 +361,8 @@ class XGBoostModeling(PCA_Transformation):
         Initialize the Pipeline object
         """
 
+        logger.info("Initializing sklearn Pipeline..")
+
         self.pipeline = Pipeline(
             [("scaling", StandardScaler()), ("reduce_dim", PCA()), ("xgb", clf)]
         )
@@ -366,6 +374,8 @@ class XGBoostModeling(PCA_Transformation):
         produce a single model
         """
 
+        logger.info("Creating a single model..")
+
         self.encode_data()
 
         self.split_data()
@@ -374,19 +384,17 @@ class XGBoostModeling(PCA_Transformation):
 
         self.init_pipe(self.clf)
 
-        print(self.x_train.head())
+        logger.info("Fitting model..")
+
         self.fit_model = self.pipeline.fit(self.x_train, self.y_train)
 
-        print(self.fit_model)
+        logger.info(
+            "Predicting x_test with fit model, storing results in self.y_pred.."
+        )
 
         self.y_pred = self.fit_model.predict(self.x_test)
 
-        """
-        multiclass confusion matrix displays the expected values as columns and 
-        predicted values as rows. The values are the number of samples in that location,
-        Where the diagonal is TP <https://www.v7labs.com/blog/confusion-matrix-guide#confusion-matrix-for-multiple-classes>
-        """
-
+    def display_results(self):
         display(
             pd.DataFrame(
                 confusion_matrix(
@@ -475,10 +483,13 @@ class XGBoostModeling(PCA_Transformation):
         )
 
     def encode_data(self):
+        logging.info("encoding y labels..")
+
         self.le = LabelEncoder()
         self.y = self.le.fit_transform(self.y)
 
     def split_data(self):
+        logger.info("splitting the x and y into test and training sets..")
         self.x_train, self.x_test, self.y_train, self.y_test = train_test_split(
             self.x, self.y, test_size=0.2, random_state=42
         )
@@ -494,109 +505,19 @@ class XGBoostModeling(PCA_Transformation):
         Link to docs: <https://xgboost.readthedocs.io/en/stable/python/python_api.html#xgboost.XGBClassifier>
         """
 
+        logger.info("Instantiating XGBClassifier..")
+
         # instantiate the classifier. Scikit-Learn API using inputted params
         self.clf = XGBClassifier(**params)
 
 
 class MyModel(MyData, XGBoostModeling):
-    pass
+    def __init__(self, target_col: str, label_cols=list, drop_cols=list):
+        MyData.__init__(
+            self, target_col=target_col, label_cols=label_cols, drop_cols=drop_cols
+        )
 
 
 class testModel(TestData, XGBoostModeling):
     def __init__(self):
         TestData.__init__(self)
-
-
-def get_grid_params():
-    """
-    The following is a description of hyperparameter options relevant to XGBoost multiclass classification <https://www.kaggle.com/code/prashant111/a-guide-on-xgboost-hyperparameters-tuning>
-    """
-    return dict(
-        # choose the booster
-        xgb__booster=["dart"],
-        # the following are tree booster params
-        # eta [default=0.3, alias=learning_rate]
-        # range 0-1
-        # typical values 0.01-0.2
-        # same as learning rate. Decrease reduces
-        # overfitting
-        xgb__eta=[0.01, 0.05, 1, 1.5, 2, 2.5, 3],
-        # gamma [default=0, alias: min_split_loss]
-        # specifies minimum loss reduction to initiate a split. Larger means more conservative
-        # range: [0,inf]
-        # typical vals: missing
-        xgb__gamma=[0, 0.5, 2, 10],
-        # max_depth: [default=6]
-        # maximum depth of a tree
-        # deeper trees more overfit
-        # range [0,inf]
-        # typical vals: 3-10
-        xgb__max_depth=[2, 5, 7, 10],
-        # min_child_weight: [defualt=1]
-        # minimum sum of weights required in a child
-        # higher values promote underfitting
-        # range: [0,inf]
-        # typical vals: missing
-        xgb__min_child_weight=[0, 0.01, 0.5, 1, 2],
-        # scale_pos_weight
-        # controls balance of positive and negative weights, useful for imbalanced classes
-        # >0 should be used in cases of high imbalance to produce faster convergence
-        # typical val: sum(negative instances)/sum(positive instances)
-        # xgb__scale_pos_weight=[0,0.2,0.5,0.7,1]
-    )
-
-
-def main():
-    # declare parameters
-    xgb_clf_params = dict(
-        objective="multi:softprob",
-        max_depth=3,
-        alpha=10,
-        gamma=10,
-        eta=10,
-        learning_rate=1,
-        n_estimators=100,
-        reg_alpha=10,
-        # reg_lambda=10,
-        tree_method="auto",
-        random_state=42,
-        verbosity=3,
-        # optional parameter to control how impure a node should be to initiate a split. see <https://stats.stackexchange.com/questions/317073/explanation-of-min-child-weight-in-xgboost-algorithm#:~:text=The%20definition%20of%20the%20min_child_weight,will%20give%20up%20further%20partitioning.>
-        # min_child_weight=0.01,
-    )
-
-    m = MyModel()
-
-    m.load_dset(
-        target_col="varietal",
-        label_cols=["varietal", "code_wine", "id"],
-        drop_cols=[
-            "color",
-            "detection",
-            "id",
-            "code_wine",
-        ],
-    )
-
-    # # m.prep_for_model(enlarge_kwargs=dict(multiplier=4))
-
-    # # m.grid_search(
-    #     # get_grid_params()
-    #     # )
-    # # m.cv()
-    m.model(
-        # xgb_params=xgb_clf_params
-    )
-
-    # t = testModel()
-    # t.prep_for_model()
-    # t.init_clf(cv_params)
-    # t.cv()
-
-    # t.model(
-    # xgb_params=xgb_clf_params
-    # )
-
-
-if __name__ == "__main__":
-    main()
