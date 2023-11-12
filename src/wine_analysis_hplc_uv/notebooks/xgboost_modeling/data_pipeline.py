@@ -10,21 +10,11 @@ import numpy as np
 from wine_analysis_hplc_uv.notebooks.mcr import mcr_methods
 import matplotlib.pyplot as plt
 from wine_analysis_hplc_uv.signal_processing import signal_processing
-from wine_analysis_hplc_uv.notebooks.xgboost import dataextract
+from wine_analysis_hplc_uv.notebooks.xgboost_modeling import dataextract
 from wine_analysis_hplc_uv import definitions
 import logging
 
-# logger.setLevel("DEBUG")
-logger = logging.basicConfig(level="DEBUG")
 logger = logging.getLogger(__name__)
-formatter = logging.Formatter(
-    "%(asctime)s %(name)s: %(message)s", datefmt="%m/%d/%Y %I:%M:%S %p"
-)
-stream_handler = logging.StreamHandler()
-stream_handler.setFormatter(formatter)
-
-# Add handler to logger
-logger.addHandler(stream_handler)
 
 
 class DataFrameValidator:
@@ -32,41 +22,6 @@ class DataFrameValidator:
         assert isinstance(df, pd.DataFrame)
         assert not df.empty
         return df
-
-
-class SliceSelection:
-    def select_group(
-        self, df: pd.DataFrame, var: str, value: str | int | float
-    ) -> pd.DataFrame:
-        """
-        select a subset of the input dataset by specified 'values' in a specified 'variable' column
-        """
-        return df.loc[lambda df: df[var] == value].reset_index(drop=True)
-
-    def remove_outliers(
-        self, df: pd.DataFrame, label_col: str, outlier_label: str | list[str] = []
-    ) -> pd.DataFrame:
-        """
-        Remove identified outlier samples
-        """
-
-        assert (
-            label_col in df.columns
-        ), f"{label_col} is not in df columns. df columns:\n{df.columns}"
-
-        if isinstance(outlier_label, list):
-            for label in outlier_label:
-                out_df = df.loc[lambda df: ~(df[label_col].str.contains(label))]
-
-        else:
-            out_df = df.loc[lambda df: ~(df[label_col].str.contains(outlier_label))]
-
-        # check if the samples have been removed
-
-        for label in outlier_label:
-            assert ~df[label_col].str.contains(label).all()
-
-        return out_df
 
 
 class DataframeAdjuster(DataFrameValidator):
@@ -208,7 +163,6 @@ class SignalProcessor(signal_processing.Preprocessing):
 
 class DataPipeline(
     dataextract.DataExtractor,
-    SliceSelection,
     DataframeAdjuster,
     TimeResampler,
     SignalProcessor,
@@ -216,24 +170,17 @@ class DataPipeline(
     def __init__(
         self,
         db_path: str,
-        outpath: str,
-        select_group_kwgs: dict = dict(),
-        adjuster_kwgs: dict = dict(),
-        outlier_kwgs: dict = dict(),
+    ):
+        dataextract.DataExtractor.__init__(self, db_path=db_path)
+
+    def process_frame(
+        self,
         resample_kwgs: dict = dict(),
         melt_kwgs: dict = dict(),
         smooth_kwgs: dict = dict(),
         bline_sub_kwgs: dict = dict(),
         pivot_kwgs: dict = dict(),
-    ):
-        dataextract.DataExtractor.__init__(self, db_path=db_path)
-
-        self.create_subset_table(
-            detection=("raw",),
-            exclude_samplecodes=(["72", "115", "a0301", "99", "98"]),
-            wavelengths=(256),
-        )
-
+    ) -> pd.DataFrame:
         self.raw_data_ = self.get_tbl_as_df()
 
         self.processed_df = (
@@ -247,38 +194,29 @@ class DataPipeline(
             .pipe(func=self.validate_dataframe)
             .pipe(self.pivot_df, pivot_kwgs)
             .pipe(func=self.validate_dataframe)
-            .pipe(self.output_processed_data, outpath)
         )
 
-        display(self.processed_df)
-
-    def output_processed_data(self, df: pd.DataFrame, outpath: str):
+    def output_processed_data(self, outpath: str):
         logging.info(f"output to {outpath}")
 
-        df.to_parquet(outpath)
+        self.processed_df.to_parquet(outpath)
 
         return None
 
 
 def main():
-    in_filepath = "/Users/jonathan/mres_thesis/wine_analysis_hplc_uv/src/wine_analysis_hplc_uv/notebooks/tidy_3d_dset_raw.parquet"
-
     append = True
     dp = DataPipeline(
         db_path=definitions.DB_PATH,
-        select_group_kwgs=dict(
-            var="color",
-            value="red",
-        ),
-        adjuster_kwgs=dict(
-            left_colname="samplecode",
-            right_colname="wine",
-            drop_cols=["detection", "color"],
-        ),
-        outlier_kwgs=dict(
-            label_col="code_wine",
-            outlier_label=["72", "115", "a0301", "99", "98"],
-        ),
+    )
+
+    dp.create_subset_table(
+        detection=("raw",),
+        exclude_samplecodes=(["72", "115", "a0301", "99", "98"]),
+        wavelengths=(256),
+    )
+
+    dp.process_frame(
         resample_kwgs=dict(
             grouper=["id", "code_wine"],
             time_col="mins",
@@ -310,7 +248,10 @@ def main():
             index="mins",
             values="bcorr",
         ),
-        outpath="/Users/jonathan/mres_thesis/wine_analysis_hplc_uv/src/wine_analysis_hplc_uv/notebooks/xgboost/2023-11-09_test.parquet",
+    )
+
+    dp.output_processed_data(
+        outpath="/Users/jonathan/mres_thesis/wine_analysis_hplc_uv/src/wine_analysis_hplc_uv/notebooks/xgboost_modeling/2023-11-12.parquet",
     )
 
 
