@@ -48,3 +48,9 @@ RW_CUP_450_PROCESSED = "/Users/jonathan/mres_thesis/wine_analysis_hplc_uv/src/wi
 
 # tidy format dset of raw detected samples for MCR-ALS
 RAW3DDSET = "/Users/jonathan/mres_thesis/wine_analysis_hplc_uv/src/wine_analysis_hplc_uv/notebooks/tidy_3d_dset_raw.parquet"
+
+# use ids to exclude samples rather than codes
+EXCLUDEIDS = {
+    # aborted run, other 72 is full
+    "72": "6d8a370a-9f40-460d-acba-99fd4c287ad8"
+}
