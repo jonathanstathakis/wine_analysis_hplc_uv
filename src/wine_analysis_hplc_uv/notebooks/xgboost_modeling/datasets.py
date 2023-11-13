@@ -8,92 +8,114 @@ from wine_analysis_hplc_uv import definitions
 from wine_analysis_hplc_uv.notebooks.xgboost_modeling import data_pipeline
 from wine_analysis_hplc_uv.notebooks.xgboost_modeling import dataextract
 
-
 import pandas as pd
 
 
-class MyData(data_pipeline.DataPipeline):
-    def __init__(self, db_path: str) -> tuple[pd.DataFrame, pd.DataFrame]:
-        """
-        Load the data into the class object and prepare it for modeling, splitting the labels and features
-        """
-        self.db_path_ = db_path
-        logger.info("Loading dataset..")
-
-    def get_dset(self):
-        """
-        Get the dataset through the DataPipeline class as a sql query, return the transposed form with samples as rows and labels + observations as columns, with a reset index
-        """
-        append = True
-
-        de = dataextract.DataExtractor(self.db_path_)
-
-        de.create_subset_table(
-            detection=("raw",),
-            exclude_ids=tuple(definitions.EXCLUDEIDS.values()),
-            exclude_samplecodes=("98",),
-            wavelengths=256,
-            color=("red",),
-        )
-
-        self.raw_data_ = de.get_tbl_as_df()
-        return self.raw_data_
-
+class ModelPrepper:
     def prep_for_model(
         self,
+        data: pd.DataFrame,
         target_col: str,
-        label_cols: str | list,
-        drop_cols=str | list,
+        drop_cols: str | list,
         enlarge_kwargs: dict = dict(),
-    ):
+        min_class_size: int | float = 1,
+    ) -> tuple:
         """
-        Remove NAs,
-        """
+        Take a dataframe and prepare it for model building
 
-        self.data = self.processed_df.T.reset_index()
+        Intended to be used on the output of `DataPipeline.process_frame`, take a tidy
+        format frame with samples as columns and observations as rows and return
+        a tuple of a feature matrix and label array (DataFrame and Series).
+
+        :param data: tidy format dataframe with columns as samples and rows as observations
+        :type data: pd.DataFrame
+        :param target_col: The column of data containing the classification target labels
+        :type target_col: str
+        :param drop_cols: superfluous columns to be excluded from the output
+        :type drop_cols: str | list
+        :param enlarge_kwargs: kwargs for `ModelPrepper.enlarge_dataset`, defaults to dict()
+        :type enlarge_kwargs: dict, optional
+        :param min_class_size: minimum class size required to be included in input dataset, defaults to 1
+        :type min_class_size: int | float, optional
+        :return: returns a tuple of (x, y) where targets are in y and features are in x
+        :rtype: tuple (pd.DataFrame, pd.Series)
+        """
+        # orient frame with labels and observations as columns, samples (and wavelengths) as rows
+        data = data.T.reset_index()
 
         # drop NA's
         # 2023-11-13 - the NAs are due to differing runtimes. At this point in the program the data is row-wise labels, columnwise mins/features, thus NA patterns are column-based, not all samples will have the same number of columns
 
+        data = data.pipe(self.check_for_na)
+        data = data.pipe(
+            self.select_included_classes,
+            min_num_samples=min_class_size,
+            target_col=target_col,
+        )
+        data = data.pipe(self.enlarge_dataset, **enlarge_kwargs)
+
+        logger.info(
+            f"constructing feature matrix 'x' by removing {[target_col]+drop_cols} from input frame.."
+        )
+
+        x = data.drop([target_col] + drop_cols, axis=1)
+
+        logger.info(
+            f"constructing label matrix 'y' by selecting {target_col} from input frame.."
+        )
+        y = data.loc[:, target_col]
+
+        return x, y
+
+    def check_for_na(self, data: pd.DataFrame) -> pd.DataFrame:
+        """
+        check_for_na drop observation columns if NA is detected
+
+        Models such as PCA cannot handle NA values, and require that all samples have
+        the same shape, therefore we need to drop any observation columns with an NA
+        value.
+
+        :param data: wide dataframe with labels and observations as columns, samples as rows.
+        :type data: pd.DataFrame
+        :return: wide dataframe without any NA value elements.
+        :rtype: pd.DataFrame
+        """
+
         logger.info("checking if df has any NA:")
 
-        na_count = self.data.isna().sum().sum()
+        na_count = data.isna().sum().sum()
 
         if na_count > 0:
             logger.info(
                 f"input df has {na_count} NA values, which are incompatible with modeling. All columns with NA will be dropped.."
             )
 
-            df_shape = self.data.shape
+            df_shape = data.shape
 
-            self.data = self.data.dropna(axis=1)
+            data = data.dropna(axis=1)
 
-            new_df_shape = self.data.shape
+            new_df_shape = data.shape
 
             logger.info(
                 f"Through dropping of columns containing NA, shape has gone from {df_shape} to {new_df_shape}"
             )
+        return data
 
-        self.data = self.select_included_classes()
-
-        self.data = self.enlarge_dataset(**enlarge_kwargs)
-
-        logger.info(
-            f"constructing feature matrix 'x' by removing {[self.target_col]+self.drop_cols} from input frame.."
-        )
-        self.x = self.data.drop([self.target_col] + self.drop_cols, axis=1)
-
-        logger.info(
-            f"constructing label matrix 'y' by selecting {self.target_col} from input frame.."
-        )
-        self.y = self.data.loc[:, self.target_col]
-
-        return self.x, self.y
-
-    def enlarge_dataset(self, multiplier: int = 1):
+    def enlarge_dataset(self, data: pd.DataFrame, multiplier: int = 1) -> pd.DataFrame:
         """
-        Artifically increasing the size of the dataset to see if that affects model as of
-        2023-11-06 13:15:22 I am getting the same predictions every run
+        enlarge_dataset duplicate the dataset to inflate number of samples
+
+        Small datasets lead to overfitting, or in the case of XGBoost, fail to grow trees.
+
+        One brute method of increasing dataset size is to simply duplicate the samples.
+
+        :param data: wide dataframe with labels and observations as columns, samples as rows.
+        :type data: pd.DataFrame
+        :param multiplier: multiplier by which to increase the size of the dataframe, defaults to 1
+        :type multiplier: int, optional
+        :raises ValueError: must be int or float
+        :return: dataframe enlarged in accordance with the multiplier
+        :rtype: pd.DataFrame
         """
 
         if not isinstance(multiplier, (int, float)):
@@ -107,37 +129,94 @@ class MyData(data_pipeline.DataPipeline):
             )
 
             for i in range(1, multiplier):
-                self.data = pd.concat([self.data, self.data])
+                data = pd.concat([data, data])
                 logger.info(
-                    f" Iteration {i} resulted in a dataset of size: {self.data.shape}.."
+                    f" Iteration {i} resulted in a dataset of size: {data.shape}.."
                 )
 
-        return self.data
+        return data
 
-    def select_included_classes(self, min_num_samples: int = 6):
+    def select_included_classes(
+        self, data: pd.DataFrame, target_col: str, min_num_samples: int = 6
+    ) -> pd.DataFrame:
         """
-        Subset the dataset size based on how many samples in a given class
+        select_included_classes filter classes of size below defined threshold
 
-        Note: selects for pinot noir and shiraz varietals only, both with 11 members currently 2023-11-06.
+        XGBoost requires that classes contain enough samples to avoid overfitting.
+        This function groups the input `data` by the `target_col` and eliminates any
+        groups/classes that have less than `min_num_samples`
+
+        :param data: wide dataframe with labels and observations as columns, samples as rows.
+        :type data: pd.DataFrame
+        :param target_col: label of column that will be the classification target/grouper
+        :type target_col: str
+        :param min_num_samples: minimum required number of samples in a class, defaults to 6
+        :type min_num_samples: int, optional
+        :return: dataframe with classes equal to or greater than `min_num_samples`
+        :rtype: pd.DataFrame
         """
 
         logger.info(
-            f"Selecting classes in {self.target_col} that have size greater or equal to {min_num_samples}.."
+            f"Selecting classes in {data[target_col]} that have size greater or equal to {min_num_samples}.."
         )
 
-        classes = (
-            self.data[self.target_col]
-            .value_counts()
-            .loc[lambda x: x >= min_num_samples]
-        )
+        classes = data[target_col].value_counts().loc[lambda x: x >= min_num_samples]
 
         class_labels = classes.index
 
         logger.info(f"classes selected as follows:\n{classes}")
 
-        self.data = self.data.loc[lambda df: df[self.target_col].isin(class_labels)]
+        data = data.loc[lambda df: df[target_col].isin(class_labels)]
 
-        return self.data
+        return data
+
+
+class MyData(dataextract.DataExtractor, data_pipeline.DataPipeline, ModelPrepper):
+    def __init__(self, db_path: str) -> tuple:
+        dataextract.DataExtractor.__init__(self, db_path=db_path)
+
+        self.raw_data_ = None
+
+    def data_pipeline(
+        self, process_frame_kwargs: dict = dict(), model_prep_kwargs: dict = dict()
+    ) -> tuple:
+        """
+        data_pipeline A pipeline running from the database to transformed feature and
+        label frame/series respectively.
+
+        Intended to be used to extract, clean and transform data prior to submission to
+        Sklearn pipeline.
+
+        It includes:
+        1. retrieval of the raw data with hardcoded selection values
+        2. signal processing to standardize the sample signals and remove noise
+        3. transform and select the dataset ready for modeling, including splitting the
+        target labels and the feature matrix.
+
+        :param process_frame_kwargs: kwargs for `DataPipeline.process_frame`, defaults to dict()
+        :type process_frame_kwargs: dict, optional
+        :param model_prep_kwargs: kwargs for `ModelPrepper.prep_for_model`, defaults to dict()
+        :type model_prep_kwargs: dict, optional
+        :return: returns a tuple of (x, y) where x is the feature matrix and y is the
+        classification target labels
+        :rtype: tuple
+        """
+
+        self.create_subset_table(
+            detection=("raw",),
+            exclude_ids=tuple(definitions.EXCLUDEIDS.values()),
+            exclude_samplecodes=("98",),
+            wavelengths=256,
+            color=("red",),
+        )
+
+        self.raw_data_ = self.get_tbl_as_df()
+
+        self.pro_data_ = self.raw_data_.pipe(self.process_frame, **process_frame_kwargs)
+
+        self.x, self.y = self.pro_data_.pipe(self.prep_for_model, **model_prep_kwargs)
+
+        return self.x, self.y
 
 
 class TestData:
