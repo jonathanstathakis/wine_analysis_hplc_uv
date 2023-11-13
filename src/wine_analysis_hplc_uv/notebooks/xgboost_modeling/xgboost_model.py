@@ -74,7 +74,7 @@ Before looking into strategies to handle this, apply PCA to get the first x comp
 
 For sets with class imbalance it is recommended to use 'micro' scores        
 
-2023-11-07 10:00:04 - Ok, I have established methods of producing a easy-to-read pandas dataframe confusion matrix and classification report, and plot of the tree.
+2023-11-07 10:00:04 - I have established methods of producing a easy-to-read pandas dataframe confusion matrix and classification report, and plot of the tree.
 
 2023-11-13 09:22:38 - multiclass confusion matrix displays the expected values as columns and predicted values as rows. The values are the number of samples in that location, Where the diagonal is TP <https://www.v7labs.com/blog/confusion-matrix-guide#confusion-matrix-for-multiple-classes>
 
@@ -205,6 +205,10 @@ class MyData:
         return self.data
 
     def prep_for_model(self, enlarge_kwargs: dict = dict()):
+        """
+        Remove NAs,
+        """
+
         # drop NA's
         # 2023-11-13 - the NAs are due to differing runtimes. At this point in the program the data is row-wise labels, columnwise mins/features, thus NA patterns are column-based, not all samples will have the same number of columns
 
@@ -227,7 +231,7 @@ class MyData:
                 f"Through dropping of columns containing NA, shape has gone from {df_shape} to {new_df_shape}"
             )
 
-        self.data = self.select_dataset_size()
+        self.data = self.select_included_classes()
 
         self.data = self.enlarge_dataset(**enlarge_kwargs)
 
@@ -267,7 +271,7 @@ class MyData:
 
         return self.data
 
-    def select_dataset_size(self, min_num_samples: int = 6):
+    def select_included_classes(self, min_num_samples: int = 6):
         """
         Subset the dataset size based on how many samples in a given class
 
