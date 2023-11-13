@@ -162,10 +162,16 @@ class MyData:
 
         dp.create_subset_table(
             detection=("raw",),
-            exclude_samplecodes=(["72", "115", "a0301", "99", "98"]),
-            wavelengths=(256),
+            exclude_ids=tuple(definitions.EXCLUDEIDS.values()),
+            exclude_samplecodes=("98",),
+            wavelengths=256,
             color=("red",),
         )
+
+        print(dp.get_tbl_as_df())
+        import sys
+
+        sys.exit()
 
         dp.process_frame(
             resample_kwgs=dict(

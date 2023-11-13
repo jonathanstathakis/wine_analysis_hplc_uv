@@ -24,6 +24,7 @@ class DataExtractor:
         detection: tuple = (None,),
         samplecode: tuple = (None,),
         exclude_samplecodes: tuple = (None,),
+        exclude_ids: tuple = (None,),
         color: tuple = (None,),
         wavelengths: int | list | tuple = None,
         varietal: tuple = (None,),
@@ -94,12 +95,16 @@ class DataExtractor:
                             AND ((SELECT UNNEST($exclude_samplecodes)) IS NULL
                               OR st.samplecode NOT IN (SELECT * FROM UNNEST($exclude_samplecodes))
                             )
+                            AND ((SELECT UNNEST($exclude_ids)) IS NULL
+                              OR chm.id NOT IN (SELECT * FROM UNNEST($exclude_ids))
+                            )
                     )
                             """,
             parameters={
                 "detection": detection,
                 "samplecode": samplecode,
                 "exclude_samplecodes": exclude_samplecodes,
+                "exclude_ids": exclude_ids,
                 "color": color,
                 "varietal": varietal,
                 "wine": wine,
