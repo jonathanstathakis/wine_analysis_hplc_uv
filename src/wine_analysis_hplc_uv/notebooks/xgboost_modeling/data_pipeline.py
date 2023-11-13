@@ -17,14 +17,14 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class DataFrameValidator:
+class DataframeValidationMixin:
     def validate_dataframe(self, df):
         assert isinstance(df, pd.DataFrame)
         assert not df.empty
         return df
 
 
-class DataframeAdjuster(DataFrameValidator):
+class DataframeAdjusterMixin:
     def melt_df(
         self,
         df: pd.DataFrame,
@@ -49,7 +49,7 @@ class DataframeAdjuster(DataFrameValidator):
         return out_df
 
 
-class TimeResampler:
+class TimeResamplerMixin:
     def resample_df(
         self,
         df: pd.DataFrame,
@@ -107,7 +107,7 @@ class TimeResampler:
         return resampled_df
 
 
-class SignalProcessor(signal_processing.Preprocessing):
+class SignalProcessorMixin(signal_processing.Preprocessing):
     def smooth_signals(
         self, df: pd.DataFrame, smooth_kwgs: dict() = dict(), append: bool = True
     ):
@@ -162,10 +162,10 @@ class SignalProcessor(signal_processing.Preprocessing):
 
 
 class DataPipeline(
-    dataextract.DataExtractor,
-    DataframeAdjuster,
-    TimeResampler,
-    SignalProcessor,
+    DataframeAdjusterMixin,
+    TimeResamplerMixin,
+    SignalProcessorMixin,
+    DataframeValidationMixin,
 ):
     def process_frame(
         self,
