@@ -299,10 +299,8 @@ class XGBoostModeling:
 
 
 class MyModel(datasets.MyData, XGBoostModeling):
-    def __init__(self, target_col: str, label_cols=list, drop_cols=list):
-        datasets.MyData.__init__(
-            self, target_col=target_col, label_cols=label_cols, drop_cols=drop_cols
-        )
+    def __init__(self):
+        datasets.MyData.__init__(self, db_path=definitions.DB_PATH)
 
 
 class testModel(datasets.TestData, XGBoostModeling):

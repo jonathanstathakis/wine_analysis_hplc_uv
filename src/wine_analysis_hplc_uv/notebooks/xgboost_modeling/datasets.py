@@ -6,34 +6,29 @@ from sklearn import datasets
 
 from wine_analysis_hplc_uv import definitions
 from wine_analysis_hplc_uv.notebooks.xgboost_modeling import data_pipeline
+from wine_analysis_hplc_uv.notebooks.xgboost_modeling import dataextract
+
 
 import pandas as pd
 
 
-class MyData:
-    def __init__(
-        self, target_col: str, label_cols: str | list, drop_cols=str | list
-    ) -> tuple[pd.DataFrame, pd.DataFrame]:
+class MyData(data_pipeline.DataPipeline):
+    def __init__(self, db_path: str) -> tuple[pd.DataFrame, pd.DataFrame]:
         """
         Load the data into the class object and prepare it for modeling, splitting the labels and features
         """
-
+        self.db_path_ = db_path
         logger.info("Loading dataset..")
-
-        self.target_col = target_col
-        self.label_cols = label_cols
-        self.drop_cols = drop_cols
 
     def get_dset(self):
         """
         Get the dataset through the DataPipeline class as a sql query, return the transposed form with samples as rows and labels + observations as columns, with a reset index
         """
         append = True
-        dp = data_pipeline.DataPipeline(
-            db_path=definitions.DB_PATH,
-        )
 
-        dp.create_subset_table(
+        de = dataextract.DataExtractor(self.db_path_)
+
+        de.create_subset_table(
             detection=("raw",),
             exclude_ids=tuple(definitions.EXCLUDEIDS.values()),
             exclude_samplecodes=("98",),
@@ -41,47 +36,21 @@ class MyData:
             color=("red",),
         )
 
-        dp.process_frame(
-            resample_kwgs=dict(
-                grouper=["id", "code_wine"],
-                time_col="mins",
-                original_freqstr="0.4S",
-                resample_freqstr="2S",
-            ),
-            melt_kwgs=dict(
-                id_vars=["detection", "color", "varietal", "id", "code_wine", "mins"],
-                value_name="signal",
-                var_name="wavelength",
-            ),
-            smooth_kwgs=dict(
-                smooth_kwgs=dict(
-                    grouper=["id", "wavelength"],
-                    col="signal",
-                ),
-                append=append,
-            ),
-            bline_sub_kwgs=dict(
-                prepro_bline_sub_kwgs=dict(
-                    grouper=["id", "wavelength"],
-                    col="smoothed",
-                    asls_kws=dict(max_iter=100, tol=1e-3, lam=1e5),
-                ),
-                append=append,
-            ),
-            pivot_kwgs=dict(
-                columns=["detection", "color", "varietal", "id", "code_wine"],
-                index="mins",
-                values="bcorr",
-            ),
-        )
-        self.data = dp.processed_df.T.reset_index()
+        self.raw_data_ = de.get_tbl_as_df()
+        return self.raw_data_
 
-        return self.data
-
-    def prep_for_model(self, enlarge_kwargs: dict = dict()):
+    def prep_for_model(
+        self,
+        target_col: str,
+        label_cols: str | list,
+        drop_cols=str | list,
+        enlarge_kwargs: dict = dict(),
+    ):
         """
         Remove NAs,
         """
+
+        self.data = self.processed_df.T.reset_index()
 
         # drop NA's
         # 2023-11-13 - the NAs are due to differing runtimes. At this point in the program the data is row-wise labels, columnwise mins/features, thus NA patterns are column-based, not all samples will have the same number of columns
