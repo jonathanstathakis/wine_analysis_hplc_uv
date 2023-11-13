@@ -8,12 +8,10 @@ def run_models():
     # declare parameters
 
     md = datasets.MyData(definitions.DB_PATH)
-    md.get_dset()
 
     append = True
 
-    md.process_frame(
-        md.raw_data_,
+    process_frame_kwargs = dict(
         resample_kwgs=dict(
             grouper=["id", "code_wine"],
             time_col="mins",
@@ -47,6 +45,19 @@ def run_models():
         ),
     )
 
+    model_prep_kwargs = dict(
+        target_col="varietal",
+        drop_cols=[
+            "color",
+            "detection",
+            "id",
+            "code_wine",
+        ],
+    )
+
+    md.data_pipeline(
+        process_frame_kwargs=process_frame_kwargs, model_prep_kwargs=model_prep_kwargs
+    )
     print(md.processed_data_)
 
 
