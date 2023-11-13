@@ -181,3 +181,6 @@ wahu.duckdb
 src/wine_analysis_hplc_uv/notebooks/rw_cup_450_processed.parquet
 notebooks/My Library.bib
 .Rproj.user
+src/wine_analysis_hplc_uv/notebooks/tidy_3d_dset_raw.parquet
+src/wine_analysis_hplc_uv/notebooks/processed_data.parquet
+*.parquet

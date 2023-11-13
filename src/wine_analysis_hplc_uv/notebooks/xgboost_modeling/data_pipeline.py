@@ -181,8 +181,6 @@ class DataPipeline(
         bline_sub_kwgs: dict = dict(),
         pivot_kwgs: dict = dict(),
     ) -> pd.DataFrame:
-        self.raw_data_ = self.get_tbl_as_df()
-
         self.processed_df = (
             self.raw_data_.pipe(func=self.resample_df, **resample_kwgs)
             .pipe(func=self.validate_dataframe)
@@ -202,58 +200,3 @@ class DataPipeline(
         self.processed_df.to_parquet(outpath)
 
         return None
-
-
-def main():
-    append = True
-    dp = DataPipeline(
-        db_path=definitions.DB_PATH,
-    )
-
-    dp.create_subset_table(
-        detection=("raw",),
-        exclude_samplecodes=(["72", "115", "a0301", "99", "98"]),
-        wavelengths=(256),
-    )
-
-    dp.process_frame(
-        resample_kwgs=dict(
-            grouper=["id", "code_wine"],
-            time_col="mins",
-            original_freqstr="0.4S",
-            resample_freqstr="2S",
-        ),
-        melt_kwgs=dict(
-            id_vars=["detection", "color", "varietal", "id", "code_wine", "mins"],
-            value_name="signal",
-            var_name="wavelength",
-        ),
-        smooth_kwgs=dict(
-            smooth_kwgs=dict(
-                grouper=["id", "wavelength"],
-                col="signal",
-            ),
-            append=append,
-        ),
-        bline_sub_kwgs=dict(
-            prepro_bline_sub_kwgs=dict(
-                grouper=["id", "wavelength"],
-                col="smoothed",
-                asls_kws=dict(max_iter=100, tol=1e-3, lam=1e5),
-            ),
-            append=append,
-        ),
-        pivot_kwgs=dict(
-            columns=["detection", "color", "varietal", "id", "code_wine"],
-            index="mins",
-            values="bcorr",
-        ),
-    )
-
-    dp.output_processed_data(
-        outpath="/Users/jonathan/mres_thesis/wine_analysis_hplc_uv/src/wine_analysis_hplc_uv/notebooks/xgboost_modeling/2023-11-12.parquet",
-    )
-
-
-if __name__ == "__main__":
-    main()
