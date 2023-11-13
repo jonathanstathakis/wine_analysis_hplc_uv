@@ -168,11 +168,6 @@ class MyData:
             color=("red",),
         )
 
-        print(dp.get_tbl_as_df())
-        import sys
-
-        sys.exit()
-
         dp.process_frame(
             resample_kwgs=dict(
                 grouper=["id", "code_wine"],
