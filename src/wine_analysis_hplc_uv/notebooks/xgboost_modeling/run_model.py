@@ -22,7 +22,10 @@ def run_models():
         # min_child_weight=0.01,
     )
 
-    m = xgboost_model.MyModel(
+    m = xgboost_model.MyModel()
+
+    m.get_dset()
+    m.prep_for_model(
         target_col="varietal",
         label_cols=["varietal", "code_wine", "id"],
         drop_cols=[
@@ -32,9 +35,6 @@ def run_models():
             "code_wine",
         ],
     )
-
-    m.get_dset()
-    m.prep_for_model()
     # # m.prep_for_model(enlarge_kwargs=dict(multiplier=4))
 
     # # m.grid_search(

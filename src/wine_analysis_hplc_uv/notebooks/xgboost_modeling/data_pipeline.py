@@ -167,24 +167,17 @@ class DataPipeline(
     TimeResampler,
     SignalProcessor,
 ):
-    def __init__(
-        self,
-        db_path: str,
-    ):
-        dataextract.DataExtractor.__init__(self, db_path=db_path)
-
     def process_frame(
         self,
+        raw_data_: pd.DataFrame,
         resample_kwgs: dict = dict(),
         melt_kwgs: dict = dict(),
         smooth_kwgs: dict = dict(),
         bline_sub_kwgs: dict = dict(),
         pivot_kwgs: dict = dict(),
     ) -> pd.DataFrame:
-        self.raw_data_ = self.get_tbl_as_df()
-
-        self.processed_df = (
-            self.raw_data_.pipe(func=self.resample_df, **resample_kwgs)
+        self.processed_data_ = (
+            raw_data_.pipe(func=self.resample_df, **resample_kwgs)
             .pipe(func=self.validate_dataframe)
             .pipe(func=self.melt_df, melt_kwgs=melt_kwgs)
             .pipe(func=self.validate_dataframe)
@@ -196,12 +189,12 @@ class DataPipeline(
             .pipe(func=self.validate_dataframe)
         )
 
-    def output_processed_data(self, outpath: str):
-        logging.info(f"output to {outpath}")
+        # def output_processed_data(self, outpath: str):
+        #     logging.info(f"output to {outpath}")
 
-        self.processed_df.to_parquet(outpath)
+        #     self.processed_data_.to_parquet(outpath)
 
-        return None
+        return self.processed_data_
 
 
 def main():
