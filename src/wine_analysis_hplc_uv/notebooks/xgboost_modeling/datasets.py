@@ -176,11 +176,11 @@ class MyData(dataextract.DataExtractor, data_pipeline.DataPipeline, ModelPrepper
         dataextract.DataExtractor.__init__(self, db_path=db_path)
 
         self.raw_data_ = None
-
         self.detection_ = ("raw",)
         self.exclude_ids_ = tuple(definitions.EXCLUDEIDS.values())
         self.wavelengths_ = (256,)
         self.color_ = ("red",)
+        self.X, self.y = None, None
 
     def model_pipeline(
         self, process_frame_kwargs: dict = dict(), model_prep_kwargs: dict = dict()
@@ -210,7 +210,6 @@ class MyData(dataextract.DataExtractor, data_pipeline.DataPipeline, ModelPrepper
         self.create_subset_table(
             detection=self.detection_,
             exclude_ids=self.exclude_ids_,
-            exclude_samplecodes=self.exclude_samplecodes_,
             wavelengths=self.wavelengths_,
             color=self.color_,
         )
@@ -219,9 +218,9 @@ class MyData(dataextract.DataExtractor, data_pipeline.DataPipeline, ModelPrepper
 
         self.pro_data_ = self.raw_data_.pipe(self.process_frame, **process_frame_kwargs)
 
-        self.x, self.y = self.pro_data_.pipe(self.prep_for_model, **model_prep_kwargs)
+        self.X, self.y = self.pro_data_.pipe(self.prep_for_model, **model_prep_kwargs)
 
-        return self.x, self.y
+        return self.X, self.y
 
 
 class TestData:

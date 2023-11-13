@@ -24,7 +24,7 @@ def run_models():
 
     m = xgboost_model.MyModel()
 
-    m.get_model_data()
+    m.run_ETL_pipeline()
     # # m.prep_for_model(enlarge_kwargs=dict(multiplier=4))
 
     # # m.grid_search(
@@ -34,7 +34,6 @@ def run_models():
     m.model(
         # xgb_params=xgb_clf_params
     )
-    m.display_results()
 
     # t = xgboost.testModel()
     # t.prep_for_model()
