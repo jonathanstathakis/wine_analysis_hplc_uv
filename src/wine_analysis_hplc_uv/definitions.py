@@ -33,24 +33,18 @@ TEST_WINE_NAMES = [
 
 BAD_CUPRAC_SAMPLES = ["128", "161", "163", "164", "165", "ca0101", "ca0301"]
 
+# the unprocesssed cupshz dataset
+
+RAW_PARQ_PATH = "/Users/jonathan/mres_thesis/wine_analysis_hplc_uv/tests/test_data/processing_test_set/cupshz_testset_raw.pq"
+
+XPRO_DOWNSAMPLED_PARQ_PATH = "/Users/jonathan/mres_thesis/wine_analysis_hplc_uv/tests/test_data/processing_test_set/cupshz_testset_x.pq"
+
+# path to the y-axis processed (not baseline corrected) file
+XPRO_YPRO_DOWNSAMPLED_PARQ_PATH = "/Users/jonathan/mres_thesis/wine_analysis_hplc_uv/tests/test_data/processing_test_set/y_pro_cuprac_shzset_xy.pq"
+
 # red wine cuprac 450nm processed data. Time standardized, cleaned of dud samples, baseline corrected and DTW aligned.
 
 RW_CUP_450_PROCESSED = "/Users/jonathan/mres_thesis/wine_analysis_hplc_uv/src/wine_analysis_hplc_uv/notebooks/rw_cup_450_processed.parquet"
 
 # tidy format dset of raw detected samples for MCR-ALS
 RAW3DDSET = "/Users/jonathan/mres_thesis/wine_analysis_hplc_uv/src/wine_analysis_hplc_uv/notebooks/tidy_3d_dset_raw.parquet"
-
-
-# list of raw samples identified as outliers, to be excluded from downstream analysis
-
-RAWSAMPLEOUTLIERCODES = "98"
-
-# a dict of sample ids identified as outliers - kept as a dict to make the id relatable.
-# To use, call the `.values()` method then convert to a list with `list()`.
-
-RAWSAMPLEOUTLIERIDS = {
-    # this repetition of 72 is an aborted run
-    "72": "6d8a370a-9f40-460d-acba-99fd4c287ad8",
-    # observed at 1.1T as opposed to 2.5T like all other samples. To use will need to be resampled.
-    "98": "6bf0e36f-819a-4303-9386-76d206ce3bfb",
-}

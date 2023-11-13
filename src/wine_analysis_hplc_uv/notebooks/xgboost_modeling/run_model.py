@@ -4,11 +4,6 @@ from wine_analysis_hplc_uv.notebooks.xgboost_modeling import xgboost_model
 
 
 def run_models():
-    """
-    TODO:
-
-    Normalize class interfaces - currently half the variables are defined interior, half exterior, with no clear logic why. Need to move all variable/parameter definitions to this function, where sensible. For example I have to go ~3 levels down to get to the sql query defining the dataset contents
-    """
     # declare parameters
     xgb_clf_params = dict(
         objective="multi:softprob",
@@ -39,9 +34,6 @@ def run_models():
     )
 
     m.get_dset()
-
-    print(m.data)
-
     m.prep_for_model()
     # # m.prep_for_model(enlarge_kwargs=dict(multiplier=4))
 
