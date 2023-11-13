@@ -23,7 +23,7 @@ class DataExtractor:
         self,
         detection: tuple = (None,),
         samplecode: tuple = (None,),
-        exclude_ids: tuple = (None,),
+        exclude_samplecodes: tuple = (None,),
         color: tuple = (None,),
         wavelengths: int | list | tuple = None,
         varietal: tuple = (None,),
@@ -52,14 +52,11 @@ class DataExtractor:
                     CREATE OR REPLACE TEMPORARY TABLE {self.table_name_} AS
                     (
                         SELECT
-                                chm.acq_date,
                                 st.detection,
                                 ct.color,
                                 ct.varietal,
                                 chm.id,
                                 CONCAT_WS('_',st.samplecode, ct.wine) AS code_wine,
-                                st.samplecode,
-                                ct.wine,
                                 cs.mins,
                                 {cs_col_list}
                         FROM
@@ -94,15 +91,15 @@ class DataExtractor:
                               OR ct.wine IN (SELECT * FROM UNNEST($wine)))
                             AND ($min_start IS NULL OR cs.mins >= $min_start)
                             AND ($min_end IS NULL OR cs.mins <= $min_end)
-                            AND ((SELECT UNNEST($exclude_ids)) IS NULL
-                              OR cs.id NOT IN (SELECT * FROM UNNEST($exclude_ids))
+                            AND ((SELECT UNNEST($exclude_samplecodes)) IS NULL
+                              OR st.samplecode NOT IN (SELECT * FROM UNNEST($exclude_samplecodes))
                             )
                     )
                             """,
             parameters={
                 "detection": detection,
                 "samplecode": samplecode,
-                "exclude_ids": exclude_ids,
+                "exclude_samplecodes": exclude_samplecodes,
                 "color": color,
                 "varietal": varietal,
                 "wine": wine,
@@ -163,7 +160,7 @@ class RawTestSet3DCreator(DataExtractor):
         self.create_subset_table(
             wavelengths=list(range(190, 402, 2)),
             detection=("raw",),
-            exclude_ids=("72", "98"),
+            exclude_samplecodes=("72", "98"),
         )
 
         self.df = self.get_tbl_as_df().dropna()
