@@ -45,20 +45,19 @@ def run_models():
         ),
     )
 
-    model_prep_kwargs = dict(
-        target_col="varietal",
-        drop_cols=[
-            "color",
-            "detection",
-            "id",
-            "code_wine",
-        ],
+    df = md.create_subset_table(
+        detection=md.detection_,
+        exclude_ids=md.exclude_ids_,
+        wavelengths=md.wavelengths_,
+        color=md.color_,
+    ).get_tbl_as_df()
+
+    prodf = md.process_frame(
+        df,
+        **process_frame_kwargs,
     )
 
-    md.data_pipeline(
-        process_frame_kwargs=process_frame_kwargs, model_prep_kwargs=model_prep_kwargs
-    )
-    print(md.processed_data_)
+    print(prodf.head())
 
 
 def main():

@@ -177,11 +177,16 @@ class MyData(dataextract.DataExtractor, data_pipeline.DataPipeline, ModelPrepper
 
         self.raw_data_ = None
 
-    def data_pipeline(
+        self.detection_ = ("raw",)
+        self.exclude_ids_ = tuple(definitions.EXCLUDEIDS.values())
+        self.wavelengths_ = (256,)
+        self.color_ = ("red",)
+
+    def model_pipeline(
         self, process_frame_kwargs: dict = dict(), model_prep_kwargs: dict = dict()
     ) -> tuple:
         """
-        data_pipeline A pipeline running from the database to transformed feature and
+        model_pipeline A pipeline running from the database to transformed feature and
         label frame/series respectively.
 
         Intended to be used to extract, clean and transform data prior to submission to
@@ -203,11 +208,11 @@ class MyData(dataextract.DataExtractor, data_pipeline.DataPipeline, ModelPrepper
         """
 
         self.create_subset_table(
-            detection=("raw",),
-            exclude_ids=tuple(definitions.EXCLUDEIDS.values()),
-            exclude_samplecodes=("98",),
-            wavelengths=256,
-            color=("red",),
+            detection=self.detection_,
+            exclude_ids=self.exclude_ids_,
+            exclude_samplecodes=self.exclude_samplecodes_,
+            wavelengths=self.wavelengths_,
+            color=self.color_,
         )
 
         self.raw_data_ = self.get_tbl_as_df()

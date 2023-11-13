@@ -112,6 +112,7 @@ class DataExtractor:
                 "min_end": mins[1],
             },
         )
+        return self
 
     def get_tbl_as_df(self):
         return self.con_.sql(

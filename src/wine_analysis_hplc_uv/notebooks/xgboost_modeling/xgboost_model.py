@@ -352,7 +352,7 @@ class MyModel(datasets.MyData, XGBoostModeling):
             min_class_size=6,
         )
 
-        self.x, self.y = md.data_pipeline(
+        self.x, self.y = md.model_pipeline(
             process_frame_kwargs=process_frame_kwargs,
             model_prep_kwargs=model_prep_kwargs,
         )
