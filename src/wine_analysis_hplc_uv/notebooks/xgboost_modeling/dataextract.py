@@ -14,10 +14,16 @@ from wine_analysis_hplc_uv import definitions
 
 
 class DataExtractor:
+    """
+     Contains methods necessary to extract a dataset from the database.
+
+    Contains 'create_subset_table' which creates a temporary table for the session which can be further manipulated through calls on `self.con_` or extracted as a pandas DataFrame with `get_tbl_as_df`
+    """
+
     def __init__(self, db_path: str):
         self.db_path_: str = db_path
         self.con_ = db.connect(db_path)
-        self.table_name_: str = "temp_view"
+        self.table_name_: str = "temp_tbl"
 
     def create_subset_table(
         self,
@@ -26,11 +32,38 @@ class DataExtractor:
         exclude_samplecodes: tuple = (None,),
         exclude_ids: tuple = (None,),
         color: tuple = (None,),
-        wavelengths: int | list | tuple = None,
+        wavelengths: int | list | tuple = 256,
         varietal: tuple = (None,),
         wine: tuple = (None,),
         mins: tuple = (None, None),
-    ):
+    ) -> db.DuckDBPyConnection:
+        """
+        create_subset_table create a temporary table as a multiple join of tables in the db based on values provided for each variable
+
+        Original called Super Table, this function creates a temporary table bound to the current connection session, collecting all the data relevant to a sample within the database. parameters control the extent of the data and are injected into a SQL query. Returns a connection object for further queries, or a DataFrame of the table can be created by following this call with `get_tbl_as_df`.
+
+        :param detection: detection label, either 'cuprac', or 'raw', defaults to (None,)
+        :type detection: tuple, optional
+        :param samplecode: samplecode strings for desired samples, defaults to (None,)
+        :type samplecode: tuple, optional
+        :param exclude_samplecodes: samplecode strings of samples not to be included in output, defaults to (None,)
+        :type exclude_samplecodes: tuple, optional
+        :param exclude_ids: id strings of samples not to be included in output, defaults to (None,)
+        :type exclude_ids: tuple, optional
+        :param color: color string of desired samples: 'white', 'red', 'rose','orange', defaults to (None,)
+        :type color: tuple, optional
+        :param wavelengths: wavelength signal number to be extracted, i.e. input 256 as an int, or list or tuple of ints. Set ranges from 190-600nm, but not for all samples. Defaults to "nm_256"
+        :type wavelengths: int | list | tuple, optional
+        :param varietal: Varietal string to be in output sample set. There are 46 varietals included. Defaults to (None,)
+        :type varietal: tuple, optional
+        :param wine: wine names of samples to be included in output sample ste, defaults to (None,)
+        :type wine: tuple, optional
+        :param mins: observation time range of rows in output sampleset, ranging from 0 to 52 or so, defaults to (None, None)
+        :type mins: tuple, optional
+        :return: connection to the current database session containing the created table
+        :rtype: db.DuckDBPyConnection
+        """
+
         cs_cols = self.con_.execute(
             """--sql
                                     SELECT
@@ -114,14 +147,39 @@ class DataExtractor:
         )
         return self
 
-    def get_tbl_as_df(self):
+    def get_tbl_as_df(self) -> pd.DataFrame:
+        """
+        get_tbl_as_df extract the table created by `create_subset_table` as a DataFrame
+
+        Simple function to move the table created by `create_subset_table` to Python memory as a pandas DataFrame
+
+        :return: DataFrame
+        :rtype: pd.DataFrame
+        """
+
         return self.con_.sql(
             f"""--sql
                              SELECT * FROM {self.table_name_}
                              """
         ).df()
 
-    def select_wavelengths(self, columns, wavelengths: str | list):
+    def select_wavelengths(
+        self, columns: pd.DataFrame, wavelengths: int | list
+    ) -> list:
+        """
+        select_wavelengths translate the input int wavelength selection to a list of column labels in form 'nm_*' for injection into the SQL query in `create_subset_table`
+
+        SQL databases generally abhor numerical column labels, thus the individual wavelength columns are labeled with a 'nm_' prefix then the wavelength, i.e. "nm_256". This is however, burdensome for users to enter in `create_subset_table`, thus this function translates the input ints into column labels then passes it to the SQL query for injection. This function goes one step further though, and queries the table for its current wavelength columns then selects from them for the final list. Returns a list of column labels.
+
+        :param columns: columns in the spectrum chromatogram table
+        :type columns: pd.DataFrame
+        :param wavelengths: wavelengths to be included in output sampleset, i.e. 256, 450.
+        :type wavelengths: str | list
+        :raises ValueError: if input for `wavelengths` is not an int, list, tuple, or None
+        :return: a list of strings of wavelengths, such as 'nm_256'
+        :rtype: list
+        """
+
         columns = (
             columns["column_name"]
             .str.split("_", expand=True)
@@ -140,7 +198,7 @@ class DataExtractor:
 
         else:
             raise ValueError(
-                f"expecting list or tuple or string or None for wavelengths, got{type(wavelengths)}"
+                f"expecting list, tuple, int, or None for wavelengths, got{type(wavelengths)}"
             )
 
         columns = columns.assign(
