@@ -1,55 +1,25 @@
-from wine_analysis_hplc_uv import definitions
-from wine_analysis_hplc_uv.notebooks.xgboost_modeling import data_pipeline
-
 from IPython.display import display
-
-import os
-
 import pandas as pd
 import numpy as np
-
-import seaborn as sns
-import seaborn.objects as so
-import matplotlib as mpl
-import matplotlib.pyplot as plt
 
 import matplotlib.pyplot as plt
 
 from xgboost import XGBClassifier
 from xgboost import plot_tree
 
-from sklearn import datasets
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import Pipeline
 from sklearn.model_selection import GridSearchCV
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
-from sklearn.metrics import accuracy_score
 from sklearn.metrics import classification_report, confusion_matrix
-from sklearn.model_selection import cross_validate
-from sklearn.model_selection import cross_val_predict
-from sklearn import decomposition
-
-from wine_analysis_hplc_uv.notebooks.xgboost_modeling import data_pipeline
-from wine_analysis_hplc_uv.notebooks.xgboost_modeling import datasets
 
 plt.style.use("ggplot")
 
 import logging
 
-logging_level = logging.INFO
-logger = logging.getLogger()
-logger.setLevel(logging_level)
-
-formatter = logging.Formatter(
-    "%(asctime)s %(name)s: %(message)s", datefmt="%m/%d/%Y %I:%M:%S %p"
-)
-stream_handler = logging.StreamHandler()
-stream_handler.setFormatter(formatter)
-
-# Add handler to logger
-logger.addHandler(stream_handler)
+logger = logging.getLogger(__name__)
 
 
 class ModelMixin:
