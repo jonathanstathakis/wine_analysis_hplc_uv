@@ -19,8 +19,26 @@ logger.addHandler(stream_handler)
 
 
 def run_models():
-    m = models.MyModel()
-    m.run_model()
+    runs = dict()
+
+    for i in range(1, 6):
+        m = models.MyModel()
+
+        confm, classreport = m.run_model(model_type="gridCV")
+
+        runs[i] = dict()
+        classreport.insert(0, "runnum", i)
+        runs[i]["classreport"] = classreport
+
+        # print(i)
+        # print(confm)
+        # print(classreport)
+
+    reports = pd.concat([runs[run]["classreport"] for run in runs])
+
+    print(reports)
+
+    print(f"mean accuracy: {reports.groupby('runnum')['accuracy'].first().mean()}")
 
 
 def main():
