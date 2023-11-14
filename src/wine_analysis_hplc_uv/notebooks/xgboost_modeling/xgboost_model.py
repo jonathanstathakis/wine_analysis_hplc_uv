@@ -64,8 +64,12 @@ class ModelMixin:
         )
         return X_train, X_test, y_train, y_test
 
-    def display_results(
-        self, y_test: np.ndarray, y_pred: np.ndarray, classes: np.ndarray
+    def result_reports(
+        self,
+        y_test: np.ndarray,
+        y_pred: np.ndarray,
+        classes: np.ndarray,
+        show: bool = True,
     ) -> None:
         """
         display_results display the confusion matrix and sklearn classification report
@@ -92,29 +96,29 @@ class ModelMixin:
         if not isinstance(classes, np.ndarray):
             raise TypeError(f"classes must be np.ndarray, got {type(classes)}")
 
-        display(
-            pd.DataFrame(
-                confusion_matrix(
-                    y_test,
-                    y_pred,
-                ),
-                index=classes,
-                columns=classes,
-            ).T
-        )
+        confm = pd.DataFrame(
+            confusion_matrix(
+                y_test,
+                y_pred,
+            ),
+            index=classes,
+            columns=classes,
+        ).T
 
-        display(
-            pd.DataFrame(
-                classification_report(
-                    y_test,
-                    y_pred,
-                    target_names=classes,
-                    output_dict=True,
-                )
+        classreport = pd.DataFrame(
+            classification_report(
+                y_test,
+                y_pred,
+                target_names=classes,
+                output_dict=True,
             )
         )
 
-        return None
+        if show:
+            display(confm)
+            display(classreport)
+
+        return confm, classreport
 
 
 class XGBoostMixin:
@@ -257,18 +261,9 @@ class XGBoostModeler(XGBoostMixin, ModelMixin):
 
         self.y_pred = self.fit_model.predict(self.X_test)
 
-        self.display_results(
-            y_test=self.y_test,
-            y_pred=self.y_pred,
-            classes=self.le.classes_,
-        )
+        return self.y_pred, self.pipe["xgb"]
 
-        self.plot_tree(self.pipe["xgb"])
-        plt.show()
-
-        return None
-
-    def grid_search(
+    def gridsearch_CV(
         self,
         param_grid: dict = dict(
             xgb__objective=["multi:softprob"],
@@ -302,18 +297,19 @@ class XGBoostModeler(XGBoostMixin, ModelMixin):
         )
 
         grid.fit(self.X_train, self.y_train)
+
         display(f"mean test score: {grid.cv_results_['mean_test_score']}")
-        display(grid.best_estimator_)
-        display(grid.best_params_)
+        display(f"THE BEST ESTIMATOR:\n{grid.best_estimator_}")
+
+        display(f"THE BEST PARAMS:")
+
+        for key, val in grid.best_params_.items():
+            display(f"{key}:{val},")
 
         best_pipe_clf = grid.best_estimator_
         self.y_pred = best_pipe_clf.predict(self.X_test)
 
-        display(classification_report(self.y_test, self.y_pred))
-
-        plot_tree(best_pipe_clf["xgb"])
-
-        return None
+        return self.y_pred, grid.best_estimator_["xgb"]
 
     def check_init(self) -> None:
         """

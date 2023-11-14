@@ -2,6 +2,7 @@ from wine_analysis_hplc_uv import definitions
 from wine_analysis_hplc_uv.notebooks.xgboost_modeling import datasets, xgboost_model
 from wine_analysis_hplc_uv.notebooks.xgboost_modeling import data_prep
 from dataclasses import dataclass
+import matplotlib.pyplot as plt
 
 
 class MyModel(datasets.MyData, xgboost_model.XGBoostModeler, data_prep.DataPrepper):
@@ -10,7 +11,14 @@ class MyModel(datasets.MyData, xgboost_model.XGBoostModeler, data_prep.DataPrepp
         xgboost_model.XGBoostModeler.__init__(self)
         self.kwargs = Kwargs()
 
-    def run_model(self):
+    def run_model(self, model_type: str = "single", param_grid=dict()) -> None:
+        """
+        since grid search, CV and single model implementations all share a common prepartory stage, and a common result display (if gridsearch is an intermediate before CV) it makes sense to have an intermediate function that then summons the desired behavior. Options:
+        'single' - single model
+        'CV' - perform CV
+        'gridsearchCV' - perform a grid search then CV with the best estimator
+        """
+
         self.extract_signal_process_pipeline(
             self.kwargs.extract_signal_process_pipeline_kwargs
         )
@@ -20,9 +28,24 @@ class MyModel(datasets.MyData, xgboost_model.XGBoostModeler, data_prep.DataPrepp
         )
 
         self.prep_for_model(self.kwargs.xgbclf_kwargs)
-        self.model()
 
-        return None
+        if model_type == "single":
+            y_pred, clf = self.model()
+
+        if model_type == "gridCV":
+            y_pred, clf = self.gridsearch_CV()
+
+        confm, classreport = self.result_reports(
+            y_test=self.y_test,
+            y_pred=y_pred,
+            classes=self.le.classes_,
+            show=False,
+        )
+
+        self.plot_tree(clf)
+        plt.show(block=False)
+
+        return confm, classreport
 
 
 @dataclass
@@ -73,7 +96,7 @@ class Kwargs:
         ],
         min_class_size=6,
         oversample_kwargs=dict(
-            sampling_strategy={"shiraz": 60, "pinot noir": 60, "red bordeaux blend": 60}
+            sampling_strategy={"shiraz": 33, "pinot noir": 33, "red bordeaux blend": 33}
         ),
     )
 

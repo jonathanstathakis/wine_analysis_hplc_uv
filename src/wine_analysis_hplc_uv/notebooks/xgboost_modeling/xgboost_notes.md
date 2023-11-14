@@ -79,3 +79,5 @@ For sets with class imbalance it is recommended to use 'micro' scores
 
 2023-11-06 12:35:46 - Preprocessing should be done AFTER splitting otherwise there is data leakage through
 the distribution. Refer to <https://stackoverflow.com/questions/45639915/split-x-into-test-train-before-pre-processing-and-dimension-reduction-or-after>
+
+2023-11-15 09:46:03 - Code is at a point where I can return to solving the problem of model building. Because of the stochastic nature of SMOTE, I need to run multiple runs to generate multiple datasets and observe the response.
