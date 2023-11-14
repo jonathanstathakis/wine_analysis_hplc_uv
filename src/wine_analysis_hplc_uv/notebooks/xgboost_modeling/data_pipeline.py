@@ -2,6 +2,8 @@
 2023-11-08
 
 A module reproducing the pipeline prototyped in: <src/wine_analysis_hplc_uv/notebooks/2023-11-01.pca-xgboost/2023-11-02_prep_reds_dset_for_analysis.ipynb>
+
+todo: rewrite doc strings for all methods
 """
 
 from IPython.display import display
@@ -18,6 +20,10 @@ logger = logging.getLogger(__name__)
 
 
 class DataframeValidationMixin:
+    """
+    Contains methods for validating dataframes
+    """
+
     def validate_dataframe(self, df):
         assert isinstance(df, pd.DataFrame)
         assert not df.empty
@@ -25,13 +31,17 @@ class DataframeValidationMixin:
 
 
 class DataframeAdjusterMixin:
+    """
+    Methods for adjusting a dataframe, currently just wrappers for melt and pivot
+    """
+
     def melt_df(
         self,
         df: pd.DataFrame,
         melt_kwgs: dict = dict(),
-    ):
+    ) -> pd.DataFrame:
         """
-        wrapper for pandas melt
+        wrapper for pandas melt. Input melt kwargs as a dict, returns the melted df
         """
 
         logger.info(f"Melting df with {melt_kwgs}..")
@@ -42,11 +52,36 @@ class DataframeAdjusterMixin:
 
         return out_df
 
-    def pivot_df(self, df: pd.DataFrame, pivot_kwgs: dict = dict()):
+    def pivot_df(self, df: pd.DataFrame, pivot_kwgs: dict = dict()) -> pd.DataFrame:
+        """
+        pivot_df wrapper for pivot.
+
+        Input the kwargs for pivot as a dict and outputs the pivoted df
+
+        :param df: a dataframe, generally a long one
+        :type df: pd.DataFrame
+        :param pivot_kwgs: refer to [docs](https://pandas.pydata.org/docs/reference/api/pandas.pivot_table.html), defaults to dict()
+        :type pivot_kwgs: dict, optional
+        :return: pivoted df
+        :rtype: pd.DataFrame
+        """
         logging.info(f"pivoting df with {pivot_kwgs}..")
         out_df = df.pivot_table(**pivot_kwgs).sort_index(axis=1)
 
         return out_df
+
+
+"""
+        Treat the dataframe as a time series and resample to the specified sampling rate.
+
+        df: the intended dataframe, in wide format with observations as rows containing 'time_col'
+
+        grouper: label columns to seperate each sample wavelength signal. each group needs to have 'time_col' start at the first observation and end at the last observation for the results to make sense.
+
+        original_freqstr: the frequency string corresponding to the original frequency of observations. Due to instrument error, the sampling frequency can vary minutely, and occasionally an observation can be missed. Resampling the time column to a specified frequency smooths out irregularities and enables proper resampling.
+
+        resample_freqstr: frequency string corresponding to the destination sampling frequency.
+        """
 
 
 class TimeResamplerMixin:
@@ -59,15 +94,24 @@ class TimeResamplerMixin:
         resample_freqstr: str,
     ) -> pd.DataFrame:
         """
-        Treat the dataframe as a time series and resample to the specified sampling rate.
+        resample_df resample dataframe to specified sampling rate
 
-        df: the intended dataframe, in wide format with observations as rows containing 'time_col'
+        Treating the columns of a dataframe as time series on the same time axis, resample them up or down to the frequency specified in 'resample_freqstr`. Returns the resampled dataframe
 
-        grouper: label columns to seperate each sample wavelength signal. each group needs to have 'time_col' start at the first observation and end at the last observation for the results to make sense.
+        Note: this function takes care of converting non-timedelta columns to timedelta, but should work with a timedelta input. Refer to [docs](https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html#dateoffset-objects) regarding valid strings.
 
-        original_freqstr: the frequency string corresponding to the original frequency of observations. Due to instrument error, the sampling frequency can vary minutely, and occasionally an observation can be missed. Resampling the time column to a specified frequency smooths out irregularities and enables proper resampling.
-
-        resample_freqstr: frequency string corresponding to the destination sampling frequency.
+        :param df: a dataframe containing columnar time series all on the same time axis, with a timedelta column
+        :type df: pd.DataFrame
+        :param grouper: For long frames with stacked samples, group by `grouper` then apply resampling groupwise
+        :type grouper: str | list[str]
+        :param time_col: the column to be used as the timedelta index, i.e. 'mins'
+        :type time_col: str
+        :param original_freqstr: The original frequency of the time series axis as defined as 1/T where T is Hz.
+        :type original_freqstr: str
+        :param resample_freqstr: The destination frequency
+        :type resample_freqstr: str
+        :return: a resampled dataframe
+        :rtype: pd.DataFrame
         """
 
         logger.info(
@@ -110,11 +154,20 @@ class TimeResamplerMixin:
 class SignalProcessorMixin(signal_processing.Preprocessing):
     def smooth_signals(
         self, df: pd.DataFrame, smooth_kwgs: dict() = dict(), append: bool = True
-    ):
+    ) -> pd.DataFrame:
         """
-        Apply SG smoothing on the target col of each signal specified by the grouper.
+        smooth_signals apply SG smoothing to a target column
 
-        append: if True, adds the smoothed column at the end of the df as 'smoothed', else replaces the target_col with the smoothed col.
+        Applies Savitzky-Golay smoothing to 'col', either replacing the column or appending it to the end of the dataframe. Refer to [docs](https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.savgol_filter.html) for kwargs.
+
+        :param df: dataframe containing a column to be smoothed
+        :type df: pd.DataFrame
+        :param smooth_kwgs: kwargs passed to the SG function, defaults to dict()
+        :type smooth_kwgs: dict, optional
+        :param append: If `True`, smoothed column is added to the end of the input dataframe, else it replaces the input column, defaults to True
+        :type append: bool, optional
+        :return: DataFrame containinng the smoothed column
+        :rtype: pd.DataFrame
         """
 
         logger.info(f"Smoothing signal with {smooth_kwgs}..")
@@ -134,12 +187,20 @@ class SignalProcessorMixin(signal_processing.Preprocessing):
         df: pd.DataFrame,
         prepro_bline_sub_kwgs: dict = dict(asls_kws=dict()),
         append: bool = True,
-    ):
+    ) -> pd.DataFrame:
         """
-        Apply baseline correction using asls.
+        subtract_baseline Apply baseline correction via asls
 
-        append: if True, adds the subtracted column at the end of the df as 'bcorr',
-        else replaces the target col with the baseline subtracted col.
+        Uses ASLS to calculate a baseline for a given input column then subtracts the baseline from the signal. Either returns a DataFrame with the baseline corrected signal appended to the end or replacing the signal.
+
+        :param df: A DataFrame containing a signal needing baseline correction
+        :type df: pd.DataFrame
+        :param prepro_bline_sub_kwgs: kwargs to pass to `preprocessing._baseline_subtract`, defaults to dict(asls_kws=dict())
+        :type prepro_bline_sub_kwgs: dict, optional
+        :param append: if `True`, appends the baseline corrected signal to the end of the DataFrame, else replaces the input column, defaults to True
+        :type append: bool, optional
+        :return: a DataFrame containing the baseline corrected signal
+        :rtype: pd.DataFrame
         """
 
         if append:
@@ -176,6 +237,28 @@ class DataPipeline(
         bline_sub_kwgs: dict = dict(),
         pivot_kwgs: dict = dict(),
     ) -> pd.DataFrame:
+        """
+        process_frame Pipeline function performing necessary signal processing transformations to remove noise and reduce the dataset size prior to modeling.
+
+        Before EDA and modeling it is necessary to compress the dataset through resampling, smooth, and baseline subtract. This function wraps a Pandas pipe actioning these steps on an input DataFrame which starts in long form with samples observations as rows, i.e. [sample1],[sample2],..,[sample_n] where row 1 of sample 1 is observation 0, and row n of sample 1 is observation n, and label columns, a time column 'mins' and signal columns ('nm_256', for example).
+
+        This function takes the input DataFrame, and dicts of kwargs for each step of the pipeline, and returns a tidy format dataframe with samples as columns with observations as rows.
+
+        :param raw_data_: A long augmented DataFrame of stacked samples with label columns, a time column 'mins' and at least one signal column with a label like "nm_*"
+        :type raw_data_: pd.DataFrame
+        :param resample_kwgs: see `TimeResamplerMixin.resample_df` , defaults to dict()
+        :type resample_kwgs: dict, optional
+        :param melt_kwgs: melt kwargs, defaults to dict()
+        :type melt_kwgs: dict, optional
+        :param smooth_kwgs: see `SignalProcessorMixin.smooth_signals`, defaults to dict()
+        :type smooth_kwgs: dict, optional
+        :param bline_sub_kwgs: see `SignalProcessorMixin.subtract_baseline`, defaults to dict()
+        :type bline_sub_kwgs: dict, optional
+        :param pivot_kwgs: see `DataFrameAdjusterMixin.pivot_df`, defaults to dict()
+        :type pivot_kwgs: dict, optional
+        :return: A tidy format processed dataframe with samples as columns and observations as rows
+        :rtype: pd.DataFrame
+        """
         self.processed_data_ = (
             raw_data_.pipe(func=self.resample_df, **resample_kwgs)
             .pipe(func=self.validate_dataframe)
@@ -188,11 +271,6 @@ class DataPipeline(
             .pipe(self.pivot_df, pivot_kwgs)
             .pipe(func=self.validate_dataframe)
         )
-
-        # def output_processed_data(self, outpath: str):
-        #     logging.info(f"output to {outpath}")
-
-        #     self.processed_data_.to_parquet(outpath)
 
         return self.processed_data_
 
