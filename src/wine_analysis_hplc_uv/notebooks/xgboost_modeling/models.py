@@ -1,80 +1,85 @@
 from wine_analysis_hplc_uv import definitions
 from wine_analysis_hplc_uv.notebooks.xgboost_modeling import datasets, xgboost_model
 from wine_analysis_hplc_uv.notebooks.xgboost_modeling import data_prep
+from dataclasses import dataclass
 
 
 class MyModel(datasets.MyData, xgboost_model.XGBoostModeler, data_prep.DataPrepper):
     def __init__(self):
         datasets.MyData.__init__(self, db_path=definitions.DB_PATH)
         xgboost_model.XGBoostModeler.__init__(self)
+        self.kwargs = Kwargs()
 
     def run_model(self):
-        self.extract_signal_process_pipeline(self.get_kwargs()[0])
-        self.X, self.y = self.transform_dataset(self.pro_data_, **self.get_kwargs()[1])
-        self.prep_for_model()
+        self.extract_signal_process_pipeline(
+            self.kwargs.extract_signal_process_pipeline_kwargs
+        )
+
+        self.X, self.y = self.transform_dataset(
+            data=self.pro_data_, oversample=True, **self.kwargs.transform_dataset_kwargs
+        )
+
+        self.prep_for_model(self.kwargs.xgbclf_kwargs)
         self.model()
 
         return None
 
-    def get_kwargs(self):
-        """
-        returns the kwargs for `extract_signal_process_pipeline` and `transform_dataset`
-        """
-        append = True
 
-        extract_signal_process_pipeline_kwargs = dict(
-            resample_kwgs=dict(
-                grouper=["id", "code_wine"],
-                time_col="mins",
-                original_freqstr="0.4S",
-                resample_freqstr="2S",
-            ),
-            melt_kwgs=dict(
-                id_vars=["detection", "color", "varietal", "id", "code_wine", "mins"],
-                value_name="signal",
-                var_name="wavelength",
-            ),
+@dataclass
+class Kwargs:
+    append = True
+
+    extract_signal_process_pipeline_kwargs = dict(
+        resample_kwgs=dict(
+            grouper=["id", "code_wine"],
+            time_col="mins",
+            original_freqstr="0.4S",
+            resample_freqstr="2S",
+        ),
+        melt_kwgs=dict(
+            id_vars=["detection", "color", "varietal", "id", "code_wine", "mins"],
+            value_name="signal",
+            var_name="wavelength",
+        ),
+        smooth_kwgs=dict(
             smooth_kwgs=dict(
-                smooth_kwgs=dict(
-                    grouper=["id", "wavelength"],
-                    col="signal",
-                ),
-                append=append,
+                grouper=["id", "wavelength"],
+                col="signal",
             ),
-            bline_sub_kwgs=dict(
-                prepro_bline_sub_kwgs=dict(
-                    grouper=["id", "wavelength"],
-                    col="smoothed",
-                    asls_kws=dict(max_iter=100, tol=1e-3, lam=1e5),
-                ),
-                append=append,
+            append=append,
+        ),
+        bline_sub_kwgs=dict(
+            prepro_bline_sub_kwgs=dict(
+                grouper=["id", "wavelength"],
+                col="smoothed",
+                asls_kws=dict(max_iter=100, tol=1e-3, lam=1e5),
             ),
-            pivot_kwgs=dict(
-                columns=["detection", "color", "varietal", "id", "code_wine"],
-                index="mins",
-                values="bcorr",
-            ),
-        )
+            append=append,
+        ),
+        pivot_kwgs=dict(
+            columns=["detection", "color", "varietal", "id", "code_wine"],
+            index="mins",
+            values="bcorr",
+        ),
+    )
 
-        transform_dataset_kwargs = dict(
-            target_col="varietal",
-            drop_cols=[
-                "color",
-                "detection",
-                "id",
-                "code_wine",
-            ],
-            min_class_size=6,
-        )
+    transform_dataset_kwargs = dict(
+        target_col="varietal",
+        drop_cols=[
+            "color",
+            "detection",
+            "id",
+            "code_wine",
+        ],
+        min_class_size=6,
+        oversample_kwargs=dict(
+            sampling_strategy={"shiraz": 60, "pinot noir": 60, "red bordeaux blend": 60}
+        ),
+    )
 
-        return extract_signal_process_pipeline_kwargs, transform_dataset_kwargs
+    xgbclf_kwargs = dict()
 
-
-def get_grid_params():
-    """
-    The following is a description of hyperparameter options relevant to XGBoost multiclass classification <https://www.kaggle.com/code/prashant111/a-guide-on-xgboost-hyperparameters-tuning>
-    """
-    return dict(
+    grid_param_kwargs = dict(
         # choose the booster
         xgb__booster=["dart"],
         # the following are tree booster params
