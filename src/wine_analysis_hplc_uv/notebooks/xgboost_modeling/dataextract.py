@@ -11,7 +11,6 @@ TODO:
 import duckdb as db
 import pandas as pd
 from wine_analysis_hplc_uv import definitions
-from wine_analysis_hplc_uv.notebooks.xgboost_modeling import kwarg_classes
 
 
 class DataExtractor:
@@ -28,7 +27,7 @@ class DataExtractor:
         detection: tuple = (None,),
         samplecode: tuple = (None,),
         exclude_samplecodes: tuple = (None,),
-        exclude_ids: tuple = (None,),
+        exclude_ids: tuple = tuple(definitions.EXCLUDEIDS.values()),
         color: tuple = (None,),
         wavelengths: int | list | tuple = 256,
         varietal: tuple = (None,),
@@ -98,7 +97,6 @@ class DataExtractor:
         cs_col_list = self.select_wavelengths(cs_cols, self.wavelengths)
 
         # Join the data tables together
-
         self.con.execute(
             query=f"""--sql
                     CREATE OR REPLACE TEMPORARY TABLE {self.table_name} AS
@@ -149,7 +147,8 @@ class DataExtractor:
                             AND ((SELECT UNNEST($exclude_ids)) IS NULL
                               OR chm.id NOT IN (SELECT * FROM UNNEST($exclude_ids))
                             )
-                    )
+                        )
+                        ORDER BY detection, color, varietal, code_wine, cs.id, mins
                             """,
             parameters={
                 "detection": self.detection,

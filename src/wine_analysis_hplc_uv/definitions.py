@@ -52,5 +52,7 @@ RAW3DDSET = "/Users/jonathan/mres_thesis/wine_analysis_hplc_uv/src/wine_analysis
 # use ids to exclude samples rather than codes
 EXCLUDEIDS = {
     # aborted run, other 72 is full
-    "72": "6d8a370a-9f40-460d-acba-99fd4c287ad8"
+    "72": "6d8a370a-9f40-460d-acba-99fd4c287ad8",
+    # recorded at double sampling rate of everything else resulting in twice as many data points as everything else
+    "98": "6bf0e36f-819a-4303-9386-76d206ce3bfb",
 }
