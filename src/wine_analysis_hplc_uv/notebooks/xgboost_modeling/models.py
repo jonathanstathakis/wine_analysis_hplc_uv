@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 class ModelBasis(xgboost_model.XGBoostModeler, data_prep.DataPrepper):
     def __init__(self):
         xgboost_model.XGBoostModeler.__init__(self)
-        self.kwargs = None
+        self.kwargs = DefaultKwargs()
 
     def run_model(self, model_type: str = "single", param_grid=dict()) -> None:
         """
@@ -26,13 +26,15 @@ class ModelBasis(xgboost_model.XGBoostModeler, data_prep.DataPrepper):
             data=self.pro_data_, **self.kwargs.transform_dataset_kwargs
         )
 
-        self.prep_for_model(self.kwargs.xgbclf_kwargs)
+        self.prep_for_model(self.kwargs.xgbclf_kwargs, self.kwargs.smote_kwargs)
 
         if model_type == "single":
             y_pred, clf = self.model()
 
         if model_type == "gridCV":
-            scores_df, best_est = self.gridsearch_CV()
+            scores_df, best_est = self.gridsearch_CV(
+                param_grid=self.kwargs.grid_param_kwargs
+            )
 
         print(scores_df)
         self.plot_tree(best_est["xgb"])
@@ -41,10 +43,16 @@ class ModelBasis(xgboost_model.XGBoostModeler, data_prep.DataPrepper):
         return scores_df, best_est
 
 
-class RawRedModel(ModelBasis, datasets.RawRedData):
+class RawRedVarietalModel(ModelBasis, datasets.RawRedVarietalData):
     def __init__(self):
-        datasets.RawRedData.__init__(self, db_path=definitions.DB_PATH)
-        self.kwargs = RawRedKwargs()
+        datasets.RawRedVarietalData.__init__(self, db_path=definitions.DB_PATH)
+        self.kwargs = RawRedVarietalKwargs()
+
+
+class CUPRACRedVarietalModel(ModelBasis, datasets.CUPRACRedVarietalData):
+    def __init__(self):
+        datasets.CUPRACRedVarietalData.__init__(self, db_path=definitions.DB_PATH)
+        self.kwargs = CUPRACRedVarietalKwargs()
 
 
 @dataclass
@@ -98,6 +106,8 @@ class DefaultKwargs:
 
     xgbclf_kwargs = dict()
 
+    smote_kwargs = dict(k_neighbors=2, sampling_strategy={0: 22, 1: 22, 2: 22})
+
     grid_param_kwargs = dict(
         # choose the booster
         xgb__booster=["dart"],
@@ -107,7 +117,7 @@ class DefaultKwargs:
         # typical values 0.01-0.2
         # same as learning rate. Decrease reduces
         # overfitting
-        xgb__eta=[0.01, 0.05, 1, 1.5, 2, 2.5, 3],
+        xgb__eta=[0.05, 1, 1.5, 2, 2.5, 3],
         # gamma [default=0, alias: min_split_loss]
         # specifies minimum loss reduction to initiate a split. Larger means more conservative
         # range: [0,inf]
@@ -124,7 +134,7 @@ class DefaultKwargs:
         # higher values promote underfitting
         # range: [0,inf]
         # typical vals: missing
-        xgb__min_child_weight=[0, 0.01, 0.5, 1, 2],
+        xgb__min_child_weight=[0.01, 0.5, 1, 2],
         # scale_pos_weight
         # controls balance of positive and negative weights, useful for imbalanced classes
         # >0 should be used in cases of high imbalance to produce faster convergence
@@ -133,8 +143,21 @@ class DefaultKwargs:
     )
 
 
-@dataclass
-class RawRedKwargs(DefaultKwargs):
+class RawRedVarietalKwargs(DefaultKwargs):
+    pass
+
+
+class CUPRACRedVarietalKwargs(DefaultKwargs):
+    transform_dataset_kwargs = dict(
+        target_col="varietal",
+        drop_cols=[
+            "color",
+            "detection",
+            "id",
+            "code_wine",
+        ],
+        min_class_size=5,
+    )
     pass
 
 

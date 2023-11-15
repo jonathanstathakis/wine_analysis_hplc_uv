@@ -110,3 +110,27 @@ ergo `cross_validate` is the more powerful of the two.
 2023-11-15 17:08:07 - @amazonmachinelearning_2023 says that macro F1 score is an appropriate measure for multiclass problems. döring_2018 suggests that the weighted average is acceptable as well. @baeldung_2020 suggests F1 score. says the F1 score is the harmonic mean of precision and recall. @bromberg_2023 of Investopaedia says that the harmonic mean is the arithmatic mean of the reciprocals, and is useful when calculating averages of rates or ratios.
 
 2023-11-15 18:26:57 - commited the changes made implementing smote and move to `cross_validate`, see commit 06fa692. Current setup is not able to grow trees during cross-validation though. A problem for later that can be solved a number of ways. Now I want to expose as many parameters as possible at the top level model class APIs to enable to me to customise the pipes from one position. Firstly, I am looking to quickly produce a CUPRAC model.
+
+2023-11-15 21:18:51 - Have implemented abstract Model and Data classes to enable subclassing for different datasets, i.e. Raw Reds, CUPRAC reds, etc.
+
+2023-11-15 21:19:31 - Realised that I wasnt passing the param grid to the GridSearchCV instantiation. Passing that is producing much better results, for example for raw:
+
+   f1_macro  precision_macro  recall_macro  balanced_acc
+0  0.575000         0.625000      0.541667      0.541667
+1  0.450000         0.416667      0.500000      0.500000
+2  0.866667         0.916667      0.875000      0.875000
+3  0.333333         0.291667      0.416667      0.416667
+4  0.476190         0.600000      0.500000      0.500000
+
+And for CUPRAC:
+
+   f1_macro  precision_macro  recall_macro  balanced_acc
+0  0.444444         0.500000      0.500000      0.500000
+1  0.500000         0.500000      0.500000      0.500000
+2  0.222222         0.166667      0.333333      0.333333
+3  0.166667         0.111111      0.333333      0.333333
+4  0.555556         0.500000      0.666667      0.666667
+
+But as we can see there is still a massive amount of variation.
+
+At this point it would be appropriate to move on to other analyses.

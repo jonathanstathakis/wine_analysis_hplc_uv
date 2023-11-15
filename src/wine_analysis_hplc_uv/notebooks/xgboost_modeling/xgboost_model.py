@@ -151,7 +151,7 @@ class XGBoostMixin:
 
         return clf
 
-    def init_pipe(self, clf: XGBClassifier) -> Pipeline:
+    def init_pipe(self, clf: XGBClassifier, smote_kwargs: dict = dict()) -> Pipeline:
         """
         init_pipe initalize a sklearn Pipeline with StandardScaler, PCA, and XGBClassifier supplied by the user. Returns the Pipeline object for downstream modeling
 
@@ -173,9 +173,7 @@ class XGBoostMixin:
             [
                 (
                     "smote",
-                    over_sampling.SMOTE(
-                        k_neighbors=2, sampling_strategy={0: 22, 1: 22, 2: 22}
-                    ),
+                    over_sampling.SMOTE(**smote_kwargs),
                 ),
                 ("scale", StandardScaler()),
                 ("pca", PCA()),
@@ -221,7 +219,11 @@ class XGBoostModeler(XGBoostMixin, ModelMixin):
         self.pipe = None
         self.fit_model = None
 
-    def prep_for_model(self, xgbclf_kwargs: dict() = dict()) -> tuple:
+    def prep_for_model(
+        self,
+        xgbclf_kwargs: dict = dict(),
+        smote_kwargs: dict = dict(),
+    ) -> tuple:
         """
         prep_for_model Prepare the sklearn Pipeline object and the training and test datasets
 
@@ -242,7 +244,9 @@ class XGBoostModeler(XGBoostMixin, ModelMixin):
             self.y_test,
         ) = self.encode_and_split(self.X, self.y)
 
-        self.pipe = self.prep_pipeline_classifier(xgbclf_kwargs=xgbclf_kwargs)
+        self.pipe = self.prep_pipeline_classifier(
+            xgbclf_kwargs=xgbclf_kwargs, smote_kwargs=smote_kwargs
+        )
 
         return (
             self.encode_y,
@@ -394,8 +398,10 @@ class XGBoostModeler(XGBoostMixin, ModelMixin):
 
         return self.encode_y, self.X_train, self.X_test, self.y_train, self.y_test
 
-    def prep_pipeline_classifier(self, xgbclf_kwargs: dict = dict()):
+    def prep_pipeline_classifier(
+        self, xgbclf_kwargs: dict = dict(), smote_kwargs: dict = dict()
+    ):
         self.clf = self.init_clf(xgbclf_kwargs)
-        self.pipe = self.init_pipe(self.clf)
+        self.pipe = self.init_pipe(self.clf, smote_kwargs)
 
         return self.pipe
