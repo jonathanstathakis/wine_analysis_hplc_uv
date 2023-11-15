@@ -42,21 +42,11 @@ class ModelBasis(xgboost_model.XGBoostModeler, data_prep.DataPrepper):
 
 class RawRedVarietalModel(ModelBasis, datasets.RawRedVarietalData):
     def __init__(self):
-        datasets.RawRedVarietalData.__init__(
-            self,
-            db_path=definitions.DB_PATH,
-            ext_kwargs=kwarg_classes.DefaultETKwargs().extractor_kwargs,
-            dp_kwargs=kwarg_classes.DefaultETKwargs().data_pipeline_kwargs,
-        )
-        self.kwargs = kwarg_classes.RawRedVarietalKwargs()
+        datasets.RawRedVarietalData.__init__(self, db_path=definitions.DB_PATH)
+        self.kwargs = kwarg_classes.RawRedVarietalModelKwargs()
 
 
 class CUPRACRedVarietalModel(ModelBasis, datasets.CUPRACRedVarietalData):
     def __init__(self):
         datasets.CUPRACRedVarietalData.__init__(self, db_path=definitions.DB_PATH)
-        self.kwargs = CUPRACRedVarietalKwargs()
-
-
-class testModel(datasets.TestData, xgboost_model.XGBoostModeler):
-    def __init__(self):
-        datasets.TestData.__init__(self)
+        self.kwargs = kwarg_classes.CUPRACRedVarietalKwargs()

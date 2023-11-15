@@ -36,12 +36,18 @@ class TestData:
         self.y = self.data.target
 
 
-class RawRedVarietalData(dataextract.DataExtractor, data_pipeline.DataPipeline):
-    def __init__(
-        self, db_path: str, ext_kwargs: dict = dict(), dp_kwargs: dict = dict()
-    ) -> tuple:
-        dataextract.DataExtractor.__init__(self, db_path=db_path, **ext_kwargs)
-        data_pipeline.DataPipeline.__init__(self, self.raw_data, **dp_kwargs)
+class RawRedVarietalData(
+    dataextract.DataExtractor,
+    data_pipeline.DataPipeline,
+    kwarg_classes.RawRedVarietalETKwargs,
+):
+    def __init__(self, db_path: str) -> tuple:
+        dataextract.DataExtractor.__init__(
+            self, db_path=db_path, **self.extractor_kwargs
+        )
+        data_pipeline.DataPipeline.__init__(
+            self, self.raw_data, **self.data_pipeline_kwargs
+        )
 
 
 class CUPRACRedVarietalData(dataextract.DataExtractor, data_pipeline.DataPipeline):
