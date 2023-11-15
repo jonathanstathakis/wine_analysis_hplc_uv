@@ -81,3 +81,30 @@ For sets with class imbalance it is recommended to use 'micro' scores
 the distribution. Refer to <https://stackoverflow.com/questions/45639915/split-x-into-test-train-before-pre-processing-and-dimension-reduction-or-after>
 
 2023-11-15 09:46:03 - Code is at a point where I can return to solving the problem of model building. Because of the stochastic nature of SMOTE, I need to run multiple runs to generate multiple datasets and observe the response.
+
+2023-11-15 10:37:31 - Integrating SMOTE into the Pipeline will be the best way of handling the randomness as a new dataset will be generated every fold. Is this correct to do? I would assume that you'd want to include the synthetic sets across the training and validation sets. However, [this](https://vch98.medium.com/preventing-data-leakage-standardscaler-and-smote-e7416c63259c) and [this](https://beckernick.github.io/oversampling-modeling/) suggest that generating the synthetic data from the full dataset causes data leakage, thus oversampling should be done on the training set only, i.e. within the Pipeline. Ill action that now.
+
+2023-11-15 11:35:16 - Problem. Running SMOTE after splitting is resulting in training sets too small to.. build.. what? I need to investigate this further.
+
+2023-11-15 12:19:11 - Ok so, we need to make a flow chart of the process so we can track changes to the dataset. For example, at the moment introducing SMOTE into the pipeline is resulting in fold sizes of 6 or less, sometimes 1, as we dont understand how the set is being split.
+
+2023-11-15 12:46:12 - 1 more hour then call it quits on modeling. I need to perform a PCA analysis on the datasets, and compare the CUPRAC and Raw data at their intersect.
+
+2023-11-15 13:44:31 - another discussion of why SMOTE should not be used before CV: https://datascience.stackexchange.com/questions/82073/why-you-shouldnt-upsample-before-cross-validation
+
+2023-11-15 13:44:35 - Why am I using gridsearchCV followed by another validation? Seems like im wasting samples for nothing. [stack overflow](https://stackoverflow.com/questions/40617257/sklearn-gridsearchcv-how-to-get-classification-report) suggests that the flow should be to train GridSearchCV on the whole dataset, then split the dataset into test and train sets, then fit to the training set and predict on the test to generate the classification report.
+
+2023-11-15 15:43:49 - Ok, I've successfully integrated SMOTE into the pipeline, and acknowledged that you cannot use the grid search parameters to test resampling strategies as it is integrated into the object instantiation rather than fit_resample.. which doesnt make sense, but ok, weird dev choice. Thats it then. I'll need to manually iterate over resampling strategies to find one that works, which means that I should swap to CV for the best estimator scoring rather than a single fit in order to balance out the stochastic nature of the split.
+
+There are multiple CV functions in sklearn, what is the difference? The module is `model_selection` and there is:
+  - `cross_validate`
+  - `cross_val_predict`
+  - `cross_val_score`
+
+  - `cross_validate` - contains a `scoring` argument that accepts iterables of strings refering to scoring metrics. It returns a dict of scores.
+  - `cross_val_predict` - 'returns the labels from several distinct models undistinguished'. Good for viz, and model blending. - from sklearn.
+  - `cross_val_score` - takes an average over cross-validation folds. Differs from `cross_validate` in that only 1 score is permitted.
+
+ergo `cross_validate` is the more powerful of the two.
+
+2023-11-15 17:08:07 - @amazonmachinelearning_2023 says that macro F1 score is an appropriate measure for multiclass problems. döring_2018 suggests that the weighted average is acceptable as well. @baeldung_2020 suggests F1 score. says the F1 score is the harmonic mean of precision and recall. @bromberg_2023 of Investopaedia says that the harmonic mean is the arithmatic mean of the reciprocals, and is useful when calculating averages of rates or ratios.`

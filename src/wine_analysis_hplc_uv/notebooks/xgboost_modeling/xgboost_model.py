@@ -14,6 +14,10 @@ from sklearn.model_selection import GridSearchCV
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import classification_report, confusion_matrix
+from sklearn.model_selection import cross_validate
+from sklearn import metrics
+from imblearn import pipeline, over_sampling
+
 
 plt.style.use("ggplot")
 
@@ -165,8 +169,18 @@ class XGBoostMixin:
 
         logger.info("Initializing sklearn Pipeline..")
 
-        xgbpipeline = Pipeline(
-            [("scaling", StandardScaler()), ("reduce_dim", PCA()), ("xgb", clf)]
+        xgbpipeline = pipeline.Pipeline(
+            [
+                (
+                    "smote",
+                    over_sampling.SMOTE(
+                        k_neighbors=2, sampling_strategy={0: 22, 1: 22, 2: 22}
+                    ),
+                ),
+                ("scale", StandardScaler()),
+                ("pca", PCA()),
+                ("xgb", clf),
+            ]
         )
 
         return xgbpipeline
@@ -220,13 +234,18 @@ class XGBoostModeler(XGBoostMixin, ModelMixin):
         :return: a tuple of (`X_train`,`X_test`,`y_train`, `y_test`, `pipe`)
         :rtype: tuple
         """
-        self.X_train, self.X_test, self.y_train, self.y_test = self.encode_and_split(
-            self.X, self.y
-        )
+        (
+            self.encode_y,
+            self.X_train,
+            self.X_test,
+            self.y_train,
+            self.y_test,
+        ) = self.encode_and_split(self.X, self.y)
 
         self.pipe = self.prep_pipeline_classifier(xgbclf_kwargs=xgbclf_kwargs)
 
         return (
+            self.encode_y,
             self.X_train,
             self.X_test,
             self.y_train,
@@ -275,41 +294,61 @@ class XGBoostModeler(XGBoostMixin, ModelMixin):
             xgb__random_state=[42],
         ),
     ) -> None:
-        """
-        grid_search perform a grid search
+        """ """
 
-        _extended_summary_
-
-        :param param_grid: _description_, defaults to dict( xgb__objective=["multi:softprob"], xgb__max_depth=[6], xgb__alpha=[10], xgb__learning_rate=[0.5, 1.0], xgb__n_estimators=[50, 100], xgb__tree_method=["auto"], xgb__random_state=[42], )
-        :type param_grid: _type_, optional
-        :return: _description_
-        :rtype: _type_
         """
+        From :func:sklearn.model_selecton._search.GridSearchCV :
+        - GridSearchCV automatically detects the classification problem type by the number of classes in `y`.
+        - `cv` determines splitting strategy. Options are:
+            - None: implements 5 fold.
+            - Integer: number of folds in a (Stratified)KFold
+            - Iterable yielding an array of indices as (train, test), i.e. a list
+            - Note: if input is Integer or None, and problem is binary or multiclass, uses `StratifiedKFold`, else uses `KFold`. Both are used with `shuffle=False` so splits are the same.
+            
+        Ergo its using Stratified KFold BEFORE class balancing.
+        """
+
+        # use grid search with cross validation to find optimal hyperparameters
 
         grid = GridSearchCV(
             self.pipe,
             param_grid,
-            cv=5,
+            cv=2,
             n_jobs=-1,
             scoring="roc_auc_ovr",
-            verbose=10,
+            # verbose=10,
             refit=True,
         )
 
-        grid.fit(self.X_train, self.y_train)
+        grid.fit(self.X, self.encode_y)
 
-        display(f"mean test score: {grid.cv_results_['mean_test_score']}")
-        display(f"THE BEST ESTIMATOR:\n{grid.best_estimator_}")
+        # the following scores are generally considered the most appropriate for a multiclass problem
+        scoring = dict(
+            f1_macro=metrics.get_scorer("f1_macro"),
+            precision_macro=metrics.get_scorer("precision_macro"),
+            recall_macro=metrics.get_scorer("recall_macro"),
+            balanced_acc=metrics.get_scorer("balanced_accuracy"),
+        )
 
-        display(f"THE BEST PARAMS:")
+        # apply CV to the best estimator from the grid search with the scores defined above
+        cv_output = cross_validate(
+            grid.best_estimator_,
+            self.X,
+            self.encode_y,
+            scoring=scoring,
+            return_estimator=True,
+        )
 
-        for key, val in grid.best_params_.items():
-            display(f"{key}:{val},")
+        # extract the scores of each fold
+        scores = {key: cv_output[f"test_{key}"] for key in scoring.keys()}
 
-        best_pipe_clf = grid.best_estimator_
-        self.y_pred = best_pipe_clf.predict(self.X_test)
+        scores_df = pd.DataFrame.from_dict(scores)
 
-        return self.y_pred, grid.best_estimator_["xgb"]
+        # define best estimator as the one with the highest average of the scores
+        best_estimator_idx = scores_df.mean(axis=1).idxmax()
+        best_estimator = cv_output["estimator"][best_estimator_idx]
+
+        return scores_df, best_estimator
 
     def check_init(self) -> None:
         """
@@ -347,11 +386,13 @@ class XGBoostModeler(XGBoostMixin, ModelMixin):
                 return None
 
     def encode_and_split(self, X: pd.DataFrame, y: pd.Series):
-        y = self.encode_data(y)
+        self.encode_y = self.encode_data(y)
 
-        self.X_train, self.X_test, self.y_train, self.y_test = self.split_data(X, y)
+        self.X_train, self.X_test, self.y_train, self.y_test = self.split_data(
+            X, self.encode_y
+        )
 
-        return self.X_train, self.X_test, self.y_train, self.y_test
+        return self.encode_y, self.X_train, self.X_test, self.y_train, self.y_test
 
     def prep_pipeline_classifier(self, xgbclf_kwargs: dict = dict()):
         self.clf = self.init_clf(xgbclf_kwargs)

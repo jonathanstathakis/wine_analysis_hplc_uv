@@ -24,7 +24,7 @@ class MyModel(datasets.MyData, xgboost_model.XGBoostModeler, data_prep.DataPrepp
         )
 
         self.X, self.y = self.transform_dataset(
-            data=self.pro_data_, oversample=True, **self.kwargs.transform_dataset_kwargs
+            data=self.pro_data_, **self.kwargs.transform_dataset_kwargs
         )
 
         self.prep_for_model(self.kwargs.xgbclf_kwargs)
@@ -33,19 +33,13 @@ class MyModel(datasets.MyData, xgboost_model.XGBoostModeler, data_prep.DataPrepp
             y_pred, clf = self.model()
 
         if model_type == "gridCV":
-            y_pred, clf = self.gridsearch_CV()
+            scores_df, best_est = self.gridsearch_CV()
 
-        confm, classreport = self.result_reports(
-            y_test=self.y_test,
-            y_pred=y_pred,
-            classes=self.le.classes_,
-            show=False,
-        )
+        print(scores_df)
+        self.plot_tree(best_est["xgb"])
+        plt.show()
 
-        self.plot_tree(clf)
-        plt.show(block=False)
-
-        return confm, classreport
+        return scores_df, best_est
 
 
 @dataclass
@@ -95,9 +89,6 @@ class Kwargs:
             "code_wine",
         ],
         min_class_size=6,
-        oversample_kwargs=dict(
-            sampling_strategy={"shiraz": 33, "pinot noir": 33, "red bordeaux blend": 33}
-        ),
     )
 
     xgbclf_kwargs = dict()

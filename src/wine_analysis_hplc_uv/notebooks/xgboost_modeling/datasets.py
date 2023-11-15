@@ -48,7 +48,9 @@ class MyData(dataextract.DataExtractor, data_pipeline.DataPipeline):
 
         self.raw_data_ = self.get_tbl_as_df()
 
-        self.pro_data_ = self.raw_data_.pipe(self.process_frame, **process_frame_kwargs)
+        self.pro_data_ = self.raw_data_.pipe(
+            self.signal_preprocess, **process_frame_kwargs
+        )
 
         return self.pro_data_
 
