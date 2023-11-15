@@ -5,13 +5,10 @@ from dataclasses import dataclass
 import matplotlib.pyplot as plt
 
 
-class RawRedModel(
-    datasets.RawRedData, xgboost_model.XGBoostModeler, data_prep.DataPrepper
-):
+class ModelBasis(xgboost_model.XGBoostModeler, data_prep.DataPrepper):
     def __init__(self):
-        datasets.RawRedData.__init__(self, db_path=definitions.DB_PATH)
         xgboost_model.XGBoostModeler.__init__(self)
-        self.kwargs = Kwargs()
+        self.kwargs = None
 
     def run_model(self, model_type: str = "single", param_grid=dict()) -> None:
         """
@@ -44,8 +41,14 @@ class RawRedModel(
         return scores_df, best_est
 
 
+class RawRedModel(ModelBasis, datasets.RawRedData):
+    def __init__(self):
+        datasets.RawRedData.__init__(self, db_path=definitions.DB_PATH)
+        self.kwargs = RawRedKwargs()
+
+
 @dataclass
-class Kwargs:
+class DefaultKwargs:
     append = True
 
     extract_signal_process_pipeline_kwargs = dict(
@@ -128,6 +131,11 @@ class Kwargs:
         # typical val: sum(negative instances)/sum(positive instances)
         # xgb__scale_pos_weight=[0,0.2,0.5,0.7,1]
     )
+
+
+@dataclass
+class RawRedKwargs(DefaultKwargs):
+    pass
 
 
 class testModel(datasets.TestData, xgboost_model.XGBoostModeler):

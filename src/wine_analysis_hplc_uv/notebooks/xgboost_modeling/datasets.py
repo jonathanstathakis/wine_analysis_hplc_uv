@@ -73,9 +73,17 @@ class TestData:
 class RawRedData(ExtractTransformData):
     def __init__(self, db_path: str) -> tuple:
         super().__init__(db_path=db_path)
-        self.raw_data_ = None
-        self.pro_data_ = None
+
         self.detection_ = ("raw",)
+        self.exclude_ids_ = tuple(definitions.EXCLUDEIDS.values())
+        self.wavelengths_ = (256,)
+        self.color_ = ("red",)
+
+
+class CUPRACRedData(ExtractTransformData):
+    def __init__(self, db_path: str) -> tuple:
+        super().__init__(db_path=db_path)
+        self.detection_ = ("cuprac",)
         self.exclude_ids_ = tuple(definitions.EXCLUDEIDS.values())
         self.wavelengths_ = (256,)
         self.color_ = ("red",)
