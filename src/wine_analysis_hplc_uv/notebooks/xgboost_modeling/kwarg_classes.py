@@ -49,7 +49,7 @@ class DefaultETKwargs:
 
 
 @dataclass
-class DefaultKwargs:
+class DefaultModelKwargs:
     append = True
 
     transform_dataset_kwargs = dict(
@@ -102,11 +102,25 @@ class DefaultKwargs:
     )
 
 
-class RawRedVarietalKwargs(DefaultKwargs):
+class RawRedVarietalETKwargs(DefaultETKwargs):
     pass
 
 
-class CUPRACRedVarietalKwargs(DefaultKwargs):
+class RawRedVarietalModelKwargs(DefaultModelKwargs):
+    pass
+
+
+class CUPRACRedVarietalETKwargs(DefaultETKwargs):
+    extractor_kwargs = dict(
+        detection=("cuprac",),
+        exclude_ids=("6d8a370a-9f40-460d-acba-99fd4c287ad8",),
+        wavelengths=(450,),
+        color=("red",),
+        mins=(0, 30),
+    )
+
+
+class CUPRACRedVarietaModelKwargs(DefaultModelKwargs):
     transform_dataset_kwargs = dict(
         target_col="varietal",
         drop_cols=[

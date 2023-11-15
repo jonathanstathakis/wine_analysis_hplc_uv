@@ -15,7 +15,7 @@ import pandas as pd
 
 class myPCA:
     def __init__(self, db_path: str, data_kwargs: dict = dict()) -> None:
-        self.data = self.get_data(db_path, data_kwargs).dropna()
+        self.data = self.get_data(db_path).dropna()
 
         self.melt_df = self.data.melt(
             ignore_index=False, value_name="abs"
@@ -44,18 +44,13 @@ class myPCA:
 
 
 def main():
-    # mypca = myPCA(
+    mypca = myPCA(definitions.DB_PATH)
+
+    # ds = datasets.RawRedVarietalData(
     #     definitions.DB_PATH,
-    #     models.DefaultKwargs().extract_signal_process_pipeline_kwargs,
+    #     ext_kwargs=kwarg_classes.DefaultETKwargs().extractor_kwargs,
+    #     dp_kwargs=kwarg_classes.DefaultETKwargs().data_pipeline_kwargs,
     # )
-
-    ds = datasets.RawRedVarietalData(
-        definitions.DB_PATH,
-        ext_kwargs=kwarg_classes.DefaultETKwargs().extractor_kwargs,
-        dp_kwargs=kwarg_classes.DefaultETKwargs().data_pipeline_kwargs,
-    )
-
-    print(ds.raw_data.color.value_counts())
 
 
 if __name__ == "__main__":
