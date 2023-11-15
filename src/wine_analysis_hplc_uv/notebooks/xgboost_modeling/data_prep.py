@@ -13,8 +13,6 @@ class DataPrepper:
         drop_cols: str | list,
         enlarge_kwargs: dict = dict(),
         min_class_size: int | float = 1,
-        oversample: bool = False,
-        oversample_kwargs: dict = dict(),
     ) -> tuple:
         """
         transform_dataset Take a dataframe and prepare it for model building
@@ -59,11 +57,6 @@ class DataPrepper:
             f"constructing label matrix 'y' by selecting {target_col} from input frame.."
         )
         self.y = data.loc[:, target_col]
-
-        if oversample == True:
-            self.X, self.y = self.oversample(
-                self.X, self.y, smote_kwargs=oversample_kwargs
-            )
 
         return self.X, self.y
 
@@ -169,56 +162,3 @@ class DataPrepper:
         data = data.loc[lambda df: df[target_col].isin(class_labels)]
 
         return data
-
-    def oversample(
-        self, X: pd.DataFrame, y: pd.Series, smote_kwargs: dict = dict()
-    ) -> tuple:
-        """
-            oversample oversample classes through SMOTE to artifically increase dataset size
-
-            While controversial, oversampling is one technique to avoid overfitting models.
-            Input a feature matrix X and label array Y, along with SMOTE kwargs. Returns
-            The oversampled feature matrix and label array.
-
-            :param X: feature matrix, observations as columns, samples as rows
-            :type X: pd.DataFrame
-            :param y: label array, target of the classification problem, aligned to `X`
-            :type y: pd.Series
-            :param smote_kwargs: kwargs for smote, see below, defaults to dict()
-            :type smote_kwargs: dict, optional
-            :raises TypeError: if `X` is not `pd.DataFrame`
-            :raises TypeError: if `y` is not `pd.Series`
-            :return: oversampled `X` and `y`
-            :rtype: tuple
-
-            SMOTE kwargs:
-
-            1. *sampling_strategy* (float, str, dict, callable, default='auto')
-
-            In binary class. problems use float to specify the ratio between the minority and majority class. In multiclass use `str` for broadstroke resampling options including resampling all classes, all but the majority, all but the minority, etc., or use a `dict` to fine-
-        grained control of resampling where the key is the class name and the value is the desired number of samples in each class.
-
-            2. *random_state*: (int, RandomState instance, default=`None`)
-
-            The seed of the randomization of the algo.
-
-            3. *k_neighbours*: (int or object, default=5) size of the neighbourhhod of samples to use
-        """
-        if not isinstance(X, pd.DataFrame):
-            raise TypeError("X must be a pd.DataFrame")
-
-        if not isinstance(y, pd.Series):
-            raise TypeError("y must be a pd.Series")
-
-        logging.info("performing SMOTE..")
-        logging.info(f"initializing SMOTE object with args {smote_kwargs}..")
-        logging.info(f"before resampling, class distribution:\n{y.value_counts()}..")
-
-        sm = over_sampling.SMOTE(**smote_kwargs)
-
-        X_res, y_res = sm.fit_resample(X, y)
-
-        logging.info(f"after resampling, shape: {X_res.shape, y_res.shape}..")
-        logging.info(f"after resampling, class distribution:\n{y_res.value_counts()}..")
-
-        return X_res, y_res

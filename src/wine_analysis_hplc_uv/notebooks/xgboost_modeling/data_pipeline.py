@@ -228,7 +228,7 @@ class DataPipeline(
     SignalProcessorMixin,
     DataframeValidationMixin,
 ):
-    def process_frame(
+    def signal_preprocess(
         self,
         raw_data_: pd.DataFrame,
         resample_kwgs: dict = dict(),
@@ -287,7 +287,7 @@ def main():
         wavelengths=(256),
     )
 
-    dp.process_frame(
+    dp.signal_preprocess(
         resample_kwgs=dict(
             grouper=["id", "code_wine"],
             time_col="mins",
