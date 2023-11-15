@@ -32,10 +32,12 @@ def run_model(model):
 
 def main():
     redrawmodel = models.RawRedVarietalModel()
+
     run_model(redrawmodel)
 
-    cupracredmodel = models.CUPRACRedVarietalModel()()
-    run_model(cupracredmodel)
+    # cupracredmodel = models.CUPRACRedVarietalModel()
+
+    # run_model(cupracredmodel)
 
 
 if __name__ == "__main__":

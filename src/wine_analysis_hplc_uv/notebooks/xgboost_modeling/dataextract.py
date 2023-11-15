@@ -11,6 +11,7 @@ TODO:
 import duckdb as db
 import pandas as pd
 from wine_analysis_hplc_uv import definitions
+from wine_analysis_hplc_uv.notebooks.xgboost_modeling import kwarg_classes
 
 
 class DataExtractor:
@@ -20,13 +21,10 @@ class DataExtractor:
     Contains 'create_subset_table' which creates a temporary table for the session which can be further manipulated through calls on `self.con_` or extracted as a pandas DataFrame with `get_tbl_as_df`
     """
 
-    def __init__(self, db_path: str):
-        self.db_path_: str = db_path
-        self.con_ = db.connect(db_path)
-        self.table_name_: str = "temp_tbl"
-
-    def create_subset_table(
+    def __init__(
         self,
+        db_path: str = "",
+        table_name: str = "temp_tbl",
         detection: tuple = (None,),
         samplecode: tuple = (None,),
         exclude_samplecodes: tuple = (None,),
@@ -36,6 +34,26 @@ class DataExtractor:
         varietal: tuple = (None,),
         wine: tuple = (None,),
         mins: tuple = (None, None),
+    ):
+        self.db_path = db_path
+        self.con = db.connect(db_path)
+        self.table_name = table_name
+        self.detection = detection
+        self.samplecode = samplecode
+        self.exclude_samplecodes = exclude_samplecodes
+        self.exclude_ids = exclude_ids
+        self.color = color
+        self.wavelengths = wavelengths
+        self.varietal = varietal
+        self.wine = wine
+        self.mins = mins
+        self.raw_data = None
+
+        self.create_subset_table()
+        self.raw_data = self.get_tbl_as_df()
+
+    def create_subset_table(
+        self,
     ) -> db.DuckDBPyConnection:
         """
         create_subset_table create a temporary table as a multiple join of tables in the db based on values provided for each variable
@@ -64,7 +82,7 @@ class DataExtractor:
         :rtype: db.DuckDBPyConnection
         """
 
-        cs_cols = self.con_.execute(
+        cs_cols = self.con.execute(
             """--sql
                                     SELECT
                                         column_name
@@ -77,13 +95,13 @@ class DataExtractor:
                                     """
         ).df()
 
-        cs_col_list = self.select_wavelengths(cs_cols, wavelengths)
+        cs_col_list = self.select_wavelengths(cs_cols, self.wavelengths)
 
         # Join the data tables together
 
-        self.con_.execute(
+        self.con.execute(
             query=f"""--sql
-                    CREATE OR REPLACE TEMPORARY TABLE {self.table_name_} AS
+                    CREATE OR REPLACE TEMPORARY TABLE {self.table_name} AS
                     (
                         SELECT
                                 st.detection,
@@ -134,15 +152,15 @@ class DataExtractor:
                     )
                             """,
             parameters={
-                "detection": detection,
-                "samplecode": samplecode,
-                "exclude_samplecodes": exclude_samplecodes,
-                "exclude_ids": exclude_ids,
-                "color": color,
-                "varietal": varietal,
-                "wine": wine,
-                "min_start": mins[0],
-                "min_end": mins[1],
+                "detection": self.detection,
+                "samplecode": self.samplecode,
+                "exclude_samplecodes": self.exclude_samplecodes,
+                "exclude_ids": self.exclude_ids,
+                "color": self.color,
+                "varietal": self.varietal,
+                "wine": self.wine,
+                "min_start": self.mins[0],
+                "min_end": self.mins[1],
             },
         )
         return self
@@ -157,9 +175,9 @@ class DataExtractor:
         :rtype: pd.DataFrame
         """
 
-        return self.con_.sql(
+        return self.con.sql(
             f"""--sql
-                             SELECT * FROM {self.table_name_}
+                             SELECT * FROM {self.table_name}
                              """
         ).df()
 
@@ -228,13 +246,3 @@ class RawTestSet3DCreator(DataExtractor):
         )
 
         self.df = self.get_tbl_as_df().dropna()
-
-
-def main():
-    db_path = definitions.DB_PATH
-
-    rtsc = RawTestSet3DCreator(db_path)
-
-
-if __name__ == "__main__":
-    main()
