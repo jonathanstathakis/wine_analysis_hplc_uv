@@ -5,9 +5,11 @@ from dataclasses import dataclass
 import matplotlib.pyplot as plt
 
 
-class MyModel(datasets.MyData, xgboost_model.XGBoostModeler, data_prep.DataPrepper):
+class RawRedModel(
+    datasets.RawRedData, xgboost_model.XGBoostModeler, data_prep.DataPrepper
+):
     def __init__(self):
-        datasets.MyData.__init__(self, db_path=definitions.DB_PATH)
+        datasets.RawRedData.__init__(self, db_path=definitions.DB_PATH)
         xgboost_model.XGBoostModeler.__init__(self)
         self.kwargs = Kwargs()
 
