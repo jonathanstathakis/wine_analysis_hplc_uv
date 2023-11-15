@@ -228,16 +228,32 @@ class DataPipeline(
     SignalProcessorMixin,
     DataframeValidationMixin,
 ):
-    def signal_preprocess(
+    def __init__(
         self,
-        raw_data_: pd.DataFrame,
+        raw_data: pd.DataFrame,
         resample_kwgs: dict = dict(),
         melt_kwgs: dict = dict(),
         smooth_kwgs: dict = dict(),
         bline_sub_kwgs: dict = dict(),
         pivot_kwgs: dict = dict(),
+    ):
+        self.raw_data_ = raw_data
+
+        self.resample_kwgs = resample_kwgs
+        self.melt_kwgs = melt_kwgs
+        self.smooth_kwgs = smooth_kwgs
+        self.bline_sub_kwgs = bline_sub_kwgs
+        self.pivot_kwgs = pivot_kwgs
+
+        self.processed_data_ = self.signal_preprocess()
+
+    def signal_preprocess(
+        self,
     ) -> pd.DataFrame:
         """
+        TODO:
+        update docstring
+
         process_frame Pipeline function performing necessary signal processing transformations to remove noise and reduce the dataset size prior to modeling.
 
         Before EDA and modeling it is necessary to compress the dataset through resampling, smooth, and baseline subtract. This function wraps a Pandas pipe actioning these steps on an input DataFrame which starts in long form with samples observations as rows, i.e. [sample1],[sample2],..,[sample_n] where row 1 of sample 1 is observation 0, and row n of sample 1 is observation n, and label columns, a time column 'mins' and signal columns ('nm_256', for example).
@@ -259,20 +275,20 @@ class DataPipeline(
         :return: A tidy format processed dataframe with samples as columns and observations as rows
         :rtype: pd.DataFrame
         """
-        self.processed_data_ = (
-            raw_data_.pipe(func=self.resample_df, **resample_kwgs)
+        self.pro_data_ = (
+            self.raw_data_.pipe(func=self.resample_df, **self.resample_kwgs)
             .pipe(func=self.validate_dataframe)
-            .pipe(func=self.melt_df, melt_kwgs=melt_kwgs)
+            .pipe(func=self.melt_df, melt_kwgs=self.melt_kwgs)
             .pipe(func=self.validate_dataframe)
-            .pipe(func=self.smooth_signals, **smooth_kwgs)
+            .pipe(func=self.smooth_signals, **self.smooth_kwgs)
             .pipe(func=self.validate_dataframe)
-            .pipe(self.subtract_baseline, **bline_sub_kwgs)
+            .pipe(self.subtract_baseline, **self.bline_sub_kwgs)
             .pipe(func=self.validate_dataframe)
-            .pipe(self.pivot_df, pivot_kwgs)
+            .pipe(self.pivot_df, self.pivot_kwgs)
             .pipe(func=self.validate_dataframe)
         )
 
-        return self.processed_data_
+        return self.pro_data_
 
 
 def main():
