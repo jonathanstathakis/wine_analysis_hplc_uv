@@ -11,16 +11,7 @@ from wine_analysis_hplc_uv.notebooks.xgboost_modeling import dataextract
 import pandas as pd
 
 
-class MyData(dataextract.DataExtractor, data_pipeline.DataPipeline):
-    def __init__(self, db_path: str) -> tuple:
-        super().__init__(db_path=db_path)
-        self.raw_data_ = None
-        self.pro_data_ = None
-        self.detection_ = ("raw",)
-        self.exclude_ids_ = tuple(definitions.EXCLUDEIDS.values())
-        self.wavelengths_ = (256,)
-        self.color_ = ("red",)
-
+class ExtractTransformData(dataextract.DataExtractor, data_pipeline.DataPipeline):
     def extract_signal_process_pipeline(
         self, process_frame_kwargs: dict = dict()
     ) -> pd.DataFrame:
@@ -44,6 +35,7 @@ class MyData(dataextract.DataExtractor, data_pipeline.DataPipeline):
             exclude_ids=self.exclude_ids_,
             wavelengths=self.wavelengths_,
             color=self.color_,
+            mins=(0, 20),
         )
 
         self.raw_data_ = self.get_tbl_as_df()
@@ -76,3 +68,14 @@ class TestData:
     def prep_for_model(self):
         self.x = self.data.drop("target", axis=1)
         self.y = self.data.target
+
+
+class RawRedData(ExtractTransformData):
+    def __init__(self, db_path: str) -> tuple:
+        super().__init__(db_path=db_path)
+        self.raw_data_ = None
+        self.pro_data_ = None
+        self.detection_ = ("raw",)
+        self.exclude_ids_ = tuple(definitions.EXCLUDEIDS.values())
+        self.wavelengths_ = (256,)
+        self.color_ = ("red",)

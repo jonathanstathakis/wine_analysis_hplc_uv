@@ -27,7 +27,7 @@ logger.addHandler(stream_handler)
 def run_models():
     runs = dict()
 
-    m = models.MyModel()
+    m = models.RawRedModel()
     score_df, best_est = m.run_model(model_type="gridCV")
 
 
