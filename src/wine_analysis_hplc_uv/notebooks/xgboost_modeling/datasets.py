@@ -12,6 +12,18 @@ import pandas as pd
 
 
 class ExtractTransformData(dataextract.DataExtractor, data_pipeline.DataPipeline):
+    def __init__(self, db_path):
+        dataextract.DataExtractor.__init__(self, db_path=db_path)
+        self.detection: tuple = (None,)
+        self.samplecode: tuple = (None,)
+        self.exclude_samplecodes: tuple = (None,)
+        self.exclude_ids: tuple = (None,)
+        self.color: tuple = (None,)
+        self.wavelengths: int | list | tuple = 256
+        self.varietal: tuple = (None,)
+        self.wine: tuple = (None,)
+        self.mins: tuple = (None, None)
+
     def extract_signal_process_pipeline(
         self, process_frame_kwargs: dict = dict()
     ) -> pd.DataFrame:
@@ -32,10 +44,9 @@ class ExtractTransformData(dataextract.DataExtractor, data_pipeline.DataPipeline
 
         self.create_subset_table(
             detection=self.detection_,
-            exclude_ids=self.exclude_ids_,
-            wavelengths=self.wavelengths_,
-            color=self.color_,
-            mins=(0, 20),
+            exclude_ids=self.exclude_ids,
+            wavelengths=self.wavelengths,
+            color=self.color,
         )
 
         self.raw_data_ = self.get_tbl_as_df()
@@ -70,9 +81,9 @@ class TestData:
         self.y = self.data.target
 
 
-class RawRedData(ExtractTransformData):
+class RawRedVarietalData(ExtractTransformData):
     def __init__(self, db_path: str) -> tuple:
-        super().__init__(db_path=db_path)
+        ExtractTransformData.__init__(self, db_path=db_path)
 
         self.detection_ = ("raw",)
         self.exclude_ids_ = tuple(definitions.EXCLUDEIDS.values())
@@ -80,10 +91,10 @@ class RawRedData(ExtractTransformData):
         self.color_ = ("red",)
 
 
-class CUPRACRedData(ExtractTransformData):
+class CUPRACRedVarietalData(ExtractTransformData):
     def __init__(self, db_path: str) -> tuple:
         super().__init__(db_path=db_path)
         self.detection_ = ("cuprac",)
         self.exclude_ids_ = tuple(definitions.EXCLUDEIDS.values())
-        self.wavelengths_ = (256,)
-        self.color_ = ("red",)
+        self.wavelengths_ = (450,)
+        self.varietal = ("shiraz", "pinot noir", "chardonnay")

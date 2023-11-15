@@ -24,15 +24,18 @@ stream_handler.setFormatter(formatter)
 logger.addHandler(stream_handler)
 
 
-def run_models():
-    runs = dict()
+def run_model(model):
+    score_df, best_est = model.run_model(model_type="gridCV")
 
-    m = models.RawRedModel()
-    score_df, best_est = m.run_model(model_type="gridCV")
+    return score_df, best_est
 
 
 def main():
-    run_models()
+    redrawmodel = models.RawRedVarietalModel()
+    run_model(redrawmodel)
+
+    cupracredmodel = models.CUPRACRedVarietalModel()()
+    run_model(cupracredmodel)
 
 
 if __name__ == "__main__":
