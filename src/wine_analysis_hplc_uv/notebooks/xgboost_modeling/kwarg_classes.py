@@ -102,6 +102,16 @@ class DefaultModelKwargs:
     )
 
 
+class PCARawRedVarietalData(DefaultETKwargs):
+    extractor_kwargs = dict(
+        detection=("raw",),
+        wavelengths=(256,),
+        color=("red",),
+        mins=(0, 27),
+    )
+    pass
+
+
 class RawRedVarietalETKwargs(DefaultETKwargs):
     pass
 
@@ -130,5 +140,6 @@ class CUPRACRedVarietaModelKwargs(DefaultModelKwargs):
             "code_wine",
         ],
         min_class_size=5,
+        mins=(0, 10),
     )
     pass
