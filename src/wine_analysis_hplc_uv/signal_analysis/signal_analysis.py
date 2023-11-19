@@ -1,4 +1,5 @@
 from scipy import signal
+import pandas as pd
 
 
 class SignalAnalyzer:
@@ -7,10 +8,10 @@ class SignalAnalyzer:
         df,
         grouper: str,
         target_col: str,
-        peaks_colname: str,
+        peaks_colname: str = "peaks",
         prom_ratio: float = 1,
         peak_finder_kws: dict = dict(),
-    ):
+    ) -> pd.DataFrame:
         """
         implementation of scipy.signal.peak_finder to find peaks in a column by group. Provides a prominence coefficient in the form of 'prom_ratio' to define minimum prominence of peak as a ratio of the global maxima of the signal in question.
 

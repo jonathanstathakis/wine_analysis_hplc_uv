@@ -10,10 +10,7 @@ import seaborn.objects as so
 import seaborn as sns
 from sklearn import decomposition
 import sys
-import pymcr
 import logging
-import pymcr
-from pymcr.regressors import OLS, NNLS
 from wine_analysis_hplc_uv.signal_analysis.signal_analysis import SignalAnalyzer
 from wine_analysis_hplc_uv.signal_processing.signal_processing import Preprocessing
 
@@ -156,26 +153,26 @@ class SIMPLISMA:
         return sp, concs
 
 
-class MCR_ALS:
-    def mcr_als(self, D, S, mcr_als_kws: dict = dict(), mcr_als_fit_kws: dict = dict()):
-        """
-        A wrapper for pymcr.mcr.McrAR. Returns the mcrar object.
+# class MCR_ALS:
+#     def mcr_als(self, D, S, mcr_als_kws: dict = dict(), mcr_als_fit_kws: dict = dict()):
+#         """
+#         A wrapper for pymcr.mcr.McrAR. Returns the mcrar object.
 
-        args
+#         args
 
-        D: Augmented data matrix with observations as rows and wavelengths as columns
-        S: estimate spectral matrix
-        mcr_als_kws: initialization keywords
-        mcr_als_fit_kws: fit method keywords
+#         D: Augmented data matrix with observations as rows and wavelengths as columns
+#         S: estimate spectral matrix
+#         mcr_als_kws: initialization keywords
+#         mcr_als_fit_kws: fit method keywords
 
-        See: [pyMCR](https://github.com/usnistgov/pyMCR)
-        """
-        mcrar = pymcr.mcr.McrAR(**mcr_als_kws)
-        mcrar.fit(D=D, ST=S.T, **mcr_als_fit_kws)
+#         See: [pyMCR](https://github.com/usnistgov/pyMCR)
+#         """
+#         mcrar = pymcr.mcr.McrAR(**mcr_als_kws)
+#         mcrar.fit(D=D, ST=S.T, **mcr_als_fit_kws)
 
-        return mcrar
+#         return mcrar
 
 
-class MCR_Analysis(SIMPLISMA, PCA, MCR_ALS, SignalAnalyzer):
-    def __init__(self):
-        return None
+# class MCR_Analysis(SIMPLISMA, PCA, MCR_ALS, SignalAnalyzer):
+#     def __init__(self):
+#         return None
