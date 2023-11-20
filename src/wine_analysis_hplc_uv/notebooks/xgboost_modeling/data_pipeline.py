@@ -245,7 +245,7 @@ class DataPipeline(
         self.bline_sub_kwgs = bline_sub_kwgs
         self.pivot_kwgs = pivot_kwgs
 
-        self.processed_data_ = self.signal_preprocess()
+        # self.processed_data_ = self.signal_preprocess()
 
     def signal_preprocess(
         self,
