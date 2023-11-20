@@ -7,8 +7,13 @@ import duckdb as db
 
 import os
 
+
+@pytest.fixture
+def testdbpath():
+    return ":memory:"
+
+
 db_path = definitions.DB_PATH
-print(db_path)
 
 
 @pytest.fixture
