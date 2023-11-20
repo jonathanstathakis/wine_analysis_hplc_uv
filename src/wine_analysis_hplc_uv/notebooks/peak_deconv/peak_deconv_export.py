@@ -4,6 +4,10 @@
 This module will contain a method to export the output of peak deconvolution to a DB
 table. Specifically, it will handle chunkwise insertion, as this process will both be
 slow and iterative as we develop better deconvolution methods.
+
+2023-11-20 10:26:30
+
+Whats the schema? ID + the fields from the peak table.
 """
 
 import duckdb as db
@@ -12,4 +16,27 @@ import numpy as np
 from seaborn import objects as so
 from wine_analysis_hplc_uv import definitions
 
-# from
+from wine_analysis_hplc_uv.notebooks.peak_deconv import testdata
+from wine_analysis_hplc_uv.notebooks.peak_deconv import db_interface
+import logging
+
+
+def main():
+    dbpath = definitions.DB_PATH
+    dbint = db_interface.DBInterface(dbpath)
+
+    tblname = "test"
+
+    dbint.delete_tbl(tblname=tblname)
+
+    df = dbint.load_dataset("penguins")
+
+    # tblname = 'chromatogram_spectra'
+
+    dbint.insert_df_into_table(df, tblname=tblname)
+
+    dbint.describe_table(tblname=tblname)
+
+
+if __name__ == "__main__":
+    main()
