@@ -27,7 +27,7 @@ def main():
 
     tblname = "test"
 
-    dbint.delete_tbl(tblname=tblname)
+    dbint.drop_tbl(tblname=tblname)
 
     df = dbint.load_dataset("penguins")
 

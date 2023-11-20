@@ -11,9 +11,10 @@ TODO:
 import duckdb as db
 import pandas as pd
 from wine_analysis_hplc_uv import definitions
+from wine_analysis_hplc_uv.notebooks.peak_deconv import db_interface
 
 
-class DataExtractor:
+class DataExtractor(db_interface.DBInterface):
     """
      Contains methods necessary to extract a dataset from the database.
 
@@ -34,9 +35,9 @@ class DataExtractor:
         wine: tuple = (None,),
         mins: tuple = (None, None),
     ):
-        self.db_path = db_path
-        self.con = db.connect(db_path)
-        self.table_name = table_name
+        self._db_path = db_path
+        self._con = db.connect(db_path)
+        self._table_name = table_name
         self.detection = detection
         self.samplecode = samplecode
         self.exclude_samplecodes = exclude_samplecodes
@@ -81,7 +82,7 @@ class DataExtractor:
         :rtype: db.DuckDBPyConnection
         """
 
-        cs_cols = self.con.execute(
+        cs_cols = self._con.execute(
             """--sql
                                     SELECT
                                         column_name
@@ -97,9 +98,9 @@ class DataExtractor:
         cs_col_list = self.select_wavelengths(cs_cols, self.wavelengths)
 
         # Join the data tables together
-        self.con.execute(
+        self._con.execute(
             query=f"""--sql
-                    CREATE OR REPLACE TEMPORARY TABLE {self.table_name} AS
+                    CREATE OR REPLACE TEMPORARY TABLE {self._table_name} AS
                     (
                         SELECT
                                 st.detection,
@@ -174,9 +175,9 @@ class DataExtractor:
         :rtype: pd.DataFrame
         """
 
-        return self.con.sql(
+        return self._con.sql(
             f"""--sql
-                             SELECT * FROM {self.table_name}
+                             SELECT * FROM {self._table_name}
                              """
         ).df()
 
@@ -228,6 +229,47 @@ class DataExtractor:
         cs_col_list = ", ".join([f"cs.{col}" for col in columns["tbl_wavelength_strs"]])
 
         return cs_col_list
+
+    def get_first_x_samples(self, key: str, x: int) -> pd.DataFrame:
+        """
+        get_first_x_samples get the first x samples in the dataset based on 'key' identifier
+
+        _extended_summary_
+
+        :param x: _description_
+        :type x: int
+        :return: _description_
+        :rtype: pd.DataFrame
+        """
+        self.create_subset_table()
+
+        # self.show_tables()
+
+        # select the 'code_wine' of the first x samples
+
+        first_x_codewines = f"""--sql
+        SELECT
+            DISTINCT({key})
+        FROM
+          {self._table_name}
+        LIMIT {x}
+        """
+
+        get_samples_query = f"""--sql
+        SELECT
+            *
+        FROM
+            {self._table_name}
+        WHERE
+            {key}
+        IN
+        ({first_x_codewines})
+        """
+
+        samples = self._con.query(get_samples_query).df()
+
+        print(samples)
+        return samples
 
 
 class RawTestSet3DCreator(DataExtractor):

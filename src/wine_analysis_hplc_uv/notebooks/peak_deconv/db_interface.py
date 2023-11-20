@@ -11,7 +11,7 @@ class DBInterface:
         self._con = db.connect(self._dbpath)
 
     def show_tables(self):
-        self._con.sql("SHOW TABLES").show()
+        self._con.sql("SHOW ALL TABLES").show()
 
     def _checkexists(self, tblname: str):
         checkexistquery = f"""--sql

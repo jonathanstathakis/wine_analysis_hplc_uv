@@ -4,8 +4,8 @@
 2023-11-17 08:57:57
 
 TODO:
-- [ ] get peak indexes out of `fit_peaks` to enable joining of the peak table to the source signal
-- [ ] construct a peak overlay plot, preferably with demonstration of how the peak area has been calculated
+
+- [ ] Get 5 samples for testing
 - [ ] test peak profiling on 5 random samples
 - [ ] optimize generalized peak profiling by tweaking hyperparameters
 - [ ] Write a summary of the methods used by py-hplc
@@ -80,8 +80,6 @@ def main():
     )
 
     singlesample = data.groupby("code_wine").get_group(data.code_wine.iloc[0])
-
-    # test_data.signal=test_data.signal.transform(lambda x: x-x.min())
 
     # the guess is not within the bounds.
     print("starting")
