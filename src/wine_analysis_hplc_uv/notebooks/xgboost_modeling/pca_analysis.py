@@ -72,9 +72,9 @@ class myPCA:
 
     def get_data(self, db_path: str, kwargs: dict = dict()):
         rrv = datasets.PCARawRedVarietalData(db_path=db_path)
-        rrv.pro_data_
+        rrv._pro_data
 
-        return rrv.pro_data_
+        return rrv._pro_data
 
     def matplotlib_3dscatter(X):
         fig = plt.figure(1, figsize=(4, 3))

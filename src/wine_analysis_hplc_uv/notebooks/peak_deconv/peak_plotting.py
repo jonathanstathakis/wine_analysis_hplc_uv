@@ -75,7 +75,7 @@ def main():
     db_path = definitions.DB_PATH
     data = (
         testdata.TestData(db_path=db_path)
-        .pro_data_.melt(value_name="signal", ignore_index=False)
+        ._pro_data.melt(value_name="signal", ignore_index=False)
         .reset_index()
     )
 

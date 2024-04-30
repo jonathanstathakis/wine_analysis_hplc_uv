@@ -202,14 +202,14 @@ class XGBoostMixin:
         return None
 
 
-class XGBoostModeler(XGBoostMixin, ModelMixin):
+class XGBoostModeler(ModelMixin):
     """
     Syntax taken from: <https://www.kaggle.com/code/carlosdg/xgboost-with-scikit-learn-pipeline-gridsearchcv>
     use of 'roc_auc_ovr' taken from <https://stackoverflow.com/questions/31265110/does-gridsearchcv-not-support-multi-class>
     """
 
     def __init__(self):
-        self.pro_data_ = None
+        self._pro_data = None
         self.X, self.y = None, None
         self.X_train, self.X_test = None, None
         self.y_train, self.y_test, self.y_pred = None, None, None

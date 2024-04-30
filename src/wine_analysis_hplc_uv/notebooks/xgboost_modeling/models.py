@@ -20,7 +20,7 @@ class ModelBasis(xgboost_model.XGBoostModeler, data_prep.DataPrepper):
         """
 
         self.X, self.y = self.transform_dataset(
-            data=self.pro_data_, **self.kwargs.transform_dataset_kwargs
+            data=self._pro_data, **self.kwargs.transform_dataset_kwargs
         )
 
         self.prep_for_model(self.kwargs.xgbclf_kwargs, self.kwargs.smote_kwargs)

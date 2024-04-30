@@ -13,42 +13,36 @@ import pandas as pd
 from wine_analysis_hplc_uv import definitions
 from wine_analysis_hplc_uv.notebooks.peak_deconv import db_interface
 
+from dataclasses import dataclass
 
+
+@dataclass
 class DataExtractor(db_interface.DBInterface):
     """
      Contains methods necessary to extract a dataset from the database.
 
     Contains 'create_subset_table' which creates a temporary table for the session which can be further manipulated through calls on `self.con_` or extracted as a pandas DataFrame with `get_tbl_as_df`
+
+    NOTE: It is currently necessary to run `load_data` to initialize the object fully.
     """
 
-    def __init__(
-        self,
-        db_path: str = "",
-        table_name: str = "temp_tbl",
-        detection: tuple = (None,),
-        samplecode: tuple = (None,),
-        exclude_samplecodes: tuple = (None,),
-        exclude_ids: tuple = tuple(definitions.EXCLUDEIDS.values()),
-        color: tuple = (None,),
-        wavelengths: int | list | tuple = 256,
-        varietal: tuple = (None,),
-        wine: tuple = (None,),
-        mins: tuple = (None, None),
-    ):
-        self._db_path = db_path
-        self._con = db.connect(db_path)
-        self._table_name = table_name
-        self.detection = detection
-        self.samplecode = samplecode
-        self.exclude_samplecodes = exclude_samplecodes
-        self.exclude_ids = exclude_ids
-        self.color = color
-        self.wavelengths = wavelengths
-        self.varietal = varietal
-        self.wine = wine
-        self.mins = mins
-        self.raw_data = None
+    _con: db.DuckDBPyConnection
+    _table_name: str = "temp_tbl"
+    detection: tuple = (None,)
+    samplecode: tuple = (None,)
+    exclude_samplecodes: tuple = (None,)
+    exclude_ids: tuple = tuple(definitions.EXCLUDEIDS.values())
+    color: tuple = (None,)
+    wavelengths: int | list | tuple = 256
+    varietal: tuple = (None,)
+    wine: tuple = (None,)
+    mins: tuple = (None, None)
+    raw_data = None
+    _cs_tbl: str = "chromatogram_spectra"
 
+    def load_data(
+        self,
+    ) -> None:
         self.create_subset_table()
         self.raw_data = self.get_tbl_as_df()
 
@@ -83,17 +77,27 @@ class DataExtractor(db_interface.DBInterface):
         """
 
         cs_cols = self._con.execute(
-            """--sql
+            f"""--sql
                                     SELECT
                                         column_name
                                     FROM
                                         duckdb_columns()
                                     WHERE
-                                        table_name='chromatogram_spectra'
+                                        table_name='{self._cs_tbl}'
                                         AND
                                         REGEXP_MATCHES(column_name, '^nm_[0-9]+$')
                                     """
         ).df()
+
+        if isinstance(cs_cols, pd.DataFrame):
+            if cs_cols.empty:
+                self.check_db_for_tbl_exist(self._cs_tbl)
+                self.check_db_for_tbl_col_exist(self._cs_tbl)
+
+                raise ValueError("cs_cols query returned an empty table")
+
+        else:
+            raise TypeError("Not a pd.DataFrame")
 
         cs_col_list = self.select_wavelengths(cs_cols, self.wavelengths)
 
@@ -198,12 +202,17 @@ class DataExtractor(db_interface.DBInterface):
         :rtype: list
         """
 
-        columns = (
-            columns["column_name"]
-            .str.split("_", expand=True)
-            .set_axis(axis=1, labels=["unit", "wavelength"])
-            .assign(wavelength=lambda df: df["wavelength"].astype(int))
-        )
+        if isinstance(columns, pd.DataFrame):
+            if columns.empty:
+                raise ValueError("column df is empty")
+
+        else:
+            raise TypeError("input columns var is not a DataFrame")
+
+        columns = columns["column_name"]
+        columns = columns.str.split("_", expand=True)
+        columns = columns.set_axis(axis=1, labels=["unit", "wavelength"])
+        columns = columns.assign(wavelength=lambda df: df["wavelength"].astype(int))
 
         if isinstance(wavelengths, (list, tuple)):
             columns = columns.query("wavelength in @wavelengths")
@@ -230,7 +239,9 @@ class DataExtractor(db_interface.DBInterface):
 
         return cs_col_list
 
-    def get_first_x_samples(self, key: str, x: int) -> pd.DataFrame:
+    def get_first_x_raw_samples(
+        self, key: str = "code_wine", x: int = 5
+    ) -> pd.DataFrame:
         """
         get_first_x_samples get the first x samples in the dataset based on 'key' identifier
 
@@ -241,9 +252,8 @@ class DataExtractor(db_interface.DBInterface):
         :return: _description_
         :rtype: pd.DataFrame
         """
-        self.create_subset_table()
 
-        # self.show_tables()
+        self.create_subset_table()
 
         # select the 'code_wine' of the first x samples
 
@@ -268,8 +278,49 @@ class DataExtractor(db_interface.DBInterface):
 
         samples = self._con.query(get_samples_query).df()
 
-        print(samples)
         return samples
+
+    def check_db_for_tbl_exist(
+        self,
+        tbl_name: str,
+    ):
+        """
+        check if table present in db
+        """
+
+        tbl_exists = self._con.sql(
+            f"""
+            SELECT
+                table_name
+            FROM
+                duckdb_tables()
+            WHERE
+                table_name={tbl_name}
+            """
+        )
+
+        assert False, tbl_exists
+
+    def check_db_for_tbl_col_exist(
+        self,
+        tbl_name: str,
+    ):
+        """
+        Check if any cols matching the table name are present
+        """
+        all_cs_cols = self._con.sql(
+            f"""
+            SELECT
+                column_name
+            FROM
+                duckdb_columns()
+            WHERE
+                table_name='{tbl_name}'
+            """
+        ).fetchall()
+
+        if len(all_cs_cols) == 0:
+            raise ValueError(f"{tbl_name} tbl is empty")
 
 
 class RawTestSet3DCreator(DataExtractor):

@@ -35,7 +35,7 @@ class DataPrepper:
         :rtype: tuple (pd.DataFrame, pd.Series)
         """
         # orient frame with labels and observations as columns, samples (and wavelengths) as rows
-        data = self.pro_data_.T.reset_index()
+        data = self._pro_data.T.reset_index()
 
         # drop NA's
         # 2023-11-13 - the NAs are due to differing runtimes. At this point in the program the data is row-wise labels, columnwise mins/features, thus NA patterns are column-based, not all samples will have the same number of columns

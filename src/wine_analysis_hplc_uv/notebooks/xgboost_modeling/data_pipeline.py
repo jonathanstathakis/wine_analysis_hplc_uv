@@ -52,7 +52,9 @@ class DataframeAdjusterMixin:
 
         return out_df
 
-    def pivot_df(self, df: pd.DataFrame, pivot_kwgs: dict = dict()) -> pd.DataFrame:
+    def pivot_df(
+        self, df: pd.DataFrame, pivot_tbl_kwgs: dict = dict(), bypass: bool = False
+    ) -> pd.DataFrame:
         """
         pivot_df wrapper for pivot.
 
@@ -65,8 +67,12 @@ class DataframeAdjusterMixin:
         :return: pivoted df
         :rtype: pd.DataFrame
         """
-        logging.info(f"pivoting df with {pivot_kwgs}..")
-        out_df = df.pivot_table(**pivot_kwgs).sort_index(axis=1)
+        if not bypass:
+            logging.info(f"pivoting df with {pivot_tbl_kwgs}..")
+            out_df = df.pivot_table(pivot_tbl_kwgs).sort_index(axis=1)
+
+        else:
+            out_df = df
 
         return out_df
 
@@ -184,9 +190,10 @@ class SignalProcessorMixin(signal_processing.Preprocessing):
 
     def subtract_baseline(
         self,
-        df: pd.DataFrame,
+        df: pd.DataFrame = pd.DataFrame(),
         prepro_bline_sub_kwgs: dict = dict(asls_kws=dict()),
         append: bool = True,
+        bypass: bool = False,
     ) -> pd.DataFrame:
         """
         subtract_baseline Apply baseline correction via asls
@@ -203,22 +210,24 @@ class SignalProcessorMixin(signal_processing.Preprocessing):
         :rtype: pd.DataFrame
         """
 
-        if append:
-            out_df = df.assign(
-                bcorr=lambda df: df.pipe(
-                    self._baseline_subtract, **prepro_bline_sub_kwgs
-                )
-            )
-
-        else:
-            out_df = df.assign(
-                **{
-                    prepro_bline_sub_kwgs["col"]: df.pipe(
+        if not bypass:
+            if append:
+                out_df = df.assign(
+                    bcorr=lambda df: df.pipe(
                         self._baseline_subtract, **prepro_bline_sub_kwgs
                     )
-                }
-            )
+                )
 
+            else:
+                out_df = df.assign(
+                    **{
+                        prepro_bline_sub_kwgs["col"]: df.pipe(
+                            self._baseline_subtract, **prepro_bline_sub_kwgs
+                        )
+                    }
+                )
+        else:
+            out_df = df
         return out_df
 
 
@@ -230,15 +239,12 @@ class DataPipeline(
 ):
     def __init__(
         self,
-        raw_data: pd.DataFrame,
         resample_kwgs: dict = dict(),
         melt_kwgs: dict = dict(),
         smooth_kwgs: dict = dict(),
         bline_sub_kwgs: dict = dict(),
         pivot_kwgs: dict = dict(),
     ):
-        self.raw_data_ = raw_data
-
         self.resample_kwgs = resample_kwgs
         self.melt_kwgs = melt_kwgs
         self.smooth_kwgs = smooth_kwgs
@@ -247,9 +253,7 @@ class DataPipeline(
 
         # self.processed_data_ = self.signal_preprocess()
 
-    def signal_preprocess(
-        self,
-    ) -> pd.DataFrame:
+    def signal_preprocess(self, raw_data: pd.DataFrame) -> pd.DataFrame:
         """
         TODO:
         update docstring
@@ -260,8 +264,8 @@ class DataPipeline(
 
         This function takes the input DataFrame, and dicts of kwargs for each step of the pipeline, and returns a tidy format dataframe with samples as columns with observations as rows.
 
-        :param raw_data_: A long augmented DataFrame of stacked samples with label columns, a time column 'mins' and at least one signal column with a label like "nm_*"
-        :type raw_data_: pd.DataFrame
+        :param _raw_data: A long augmented DataFrame of stacked samples with label columns, a time column 'mins' and at least one signal column with a label like "nm_*"
+        :type _raw_data: pd.DataFrame
         :param resample_kwgs: see `TimeResamplerMixin.resample_df` , defaults to dict()
         :type resample_kwgs: dict, optional
         :param melt_kwgs: melt kwargs, defaults to dict()
@@ -275,8 +279,8 @@ class DataPipeline(
         :return: A tidy format processed dataframe with samples as columns and observations as rows
         :rtype: pd.DataFrame
         """
-        self.pro_data_ = (
-            self.raw_data_.pipe(func=self.resample_df, **self.resample_kwgs)
+        self._pro_data = (
+            raw_data.pipe(func=self.resample_df, **self.resample_kwgs)
             .pipe(func=self.validate_dataframe)
             .pipe(func=self.melt_df, melt_kwgs=self.melt_kwgs)
             .pipe(func=self.validate_dataframe)
@@ -284,11 +288,11 @@ class DataPipeline(
             .pipe(func=self.validate_dataframe)
             .pipe(self.subtract_baseline, **self.bline_sub_kwgs)
             .pipe(func=self.validate_dataframe)
-            .pipe(self.pivot_df, self.pivot_kwgs)
+            .pipe(self.pivot_df, **self.pivot_kwgs)
             .pipe(func=self.validate_dataframe)
         )
 
-        return self.pro_data_
+        return self._pro_data
 
 
 def main():

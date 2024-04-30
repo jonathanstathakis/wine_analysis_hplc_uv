@@ -135,16 +135,4 @@ But as we can see there is still a massive amount of variation.
 
 At this point it would be appropriate to move on to other analyses.
 
-## Peak Deconvolution
-
-2023-11-20 10:05:10
-
-Have discovered `hplc-py` which provides a framework for automated peak deconvolution. Problem is that running it on a sample is slow and is producing bad results. trying to figure out why. Options:
-
-- my processing sucks. Specifically the baseline subtraction is not adequate to seperate peak regions
-- the test sample sucks - some peaks including the maxima have significant overlap.
-- Need to smooth the signals
-- need to chunk the signals
-
-Overall, the first port of call is to establish the output. That will be  a DB table. Lets establish that first.
-
+The work continues in [peak_deconv_notes](../peak_deconv/peak_deconv_notes.md)

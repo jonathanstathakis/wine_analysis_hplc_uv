@@ -184,3 +184,4 @@ notebooks/My Library.bib
 *.drawio
 *.parquet
 src/wine_analysis_hplc_uv/notebooks/xgboost_modeling/.$ml_flowchart.drawio.dtmp
+My Library.bib
