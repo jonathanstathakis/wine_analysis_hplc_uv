@@ -11,13 +11,6 @@ strings in column, not sorted mins, wrong order multiindex
 
 import pytest
 import pandas as pd
-import pandera as pa
-from pandera import Column, DataFrameSchema, Index
-import duckdb as db
-import numpy as np
-from wine_analysis_hplc_uv.db_methods import pivot_wine_data, get_data
-from pybaselines import Baseline
-import matplotlib.pyplot as plt
 import logging
 from . import preprocessing_test_dataset
 from wine_analysis_hplc_uv.old_signal_processing.mindex_signal_processing import (

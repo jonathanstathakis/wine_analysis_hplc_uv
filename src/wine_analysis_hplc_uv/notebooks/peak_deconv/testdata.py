@@ -9,7 +9,6 @@ from wine_analysis_hplc_uv.notebooks.xgboost_modeling import dataextract
 import logging
 from wine_analysis_hplc_uv.notebooks.xgboost_modeling import kwarg_classes
 import duckdb as db
-import pandas as pd
 
 logger = logging.getLogger(__name__)
 

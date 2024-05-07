@@ -79,7 +79,7 @@ def main():
     df = pd.read_csv(os.path.join(os.getcwd(), "schedule.csv"))
     df = df[~(df["experimenter"].isna())]
     post_new_sheet(sheet_id, "freezer_exp_schedule1", creds)
-    schedule_out_range = f"freezer_exp_schedule1!A1:E1000"
+    schedule_out_range = "freezer_exp_schedule1!A1:E1000"
 
     post_df_as_sheet_values(
         df=df,

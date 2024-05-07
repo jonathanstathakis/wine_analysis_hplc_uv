@@ -10,7 +10,6 @@ Then the primary task will be to form a dataframe and clean up the vintage and n
 
 import pandas as pd
 
-import os
 
 from google_sheets_api import (
     get_sheets_values_as_df,

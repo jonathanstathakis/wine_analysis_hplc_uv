@@ -1,10 +1,8 @@
 import pytest
 from wine_analysis_hplc_uv import queries
-import tests.definitions as test_defs
 from tests.test_etl.test_post_build_library import gen_sample_test_data
 import duckdb as db
 import polars as pl
-from wine_analysis_hplc_uv.etl import generic
 
 
 @pytest.mark.parametrize("get_cs_data", [(True,), (False,)])

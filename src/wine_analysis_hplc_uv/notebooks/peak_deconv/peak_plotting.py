@@ -5,7 +5,6 @@ from wine_analysis_hplc_uv.notebooks.xgboost_modeling import testdata
 from scipy import signal
 import pandas as pd
 import seaborn.objects as so
-import numpy as np
 from sklearn import preprocessing
 import matplotlib.pyplot as plt
 

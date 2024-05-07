@@ -1,10 +1,6 @@
 """
 Tests for chemstation to db processes, raw and clean.
 """
-import duckdb as db
-from wine_analysis_hplc_uv.core import ch_to_db
-import os
-from wine_analysis_hplc_uv import definitions
 import logging
 import pytest
 import pandas as pd

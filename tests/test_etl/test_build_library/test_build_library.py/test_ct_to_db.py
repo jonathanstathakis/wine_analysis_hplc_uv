@@ -3,12 +3,10 @@ import os
 from wine_analysis_hplc_uv import definitions
 from wine_analysis_hplc_uv.cellartracker_methods import ct_to_db
 import duckdb as db
-import pandas as pd
 import logging
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level="INFO")
-import os
 
 
 @pytest.fixture

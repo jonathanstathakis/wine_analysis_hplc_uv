@@ -5,28 +5,16 @@ Secondary methods defined during the development of [Chapter: Signal EDA by Cate
 """
 import numpy as np
 import seaborn as sns
-import seaborn.objects as so
 import pandas as pd
 from scipy import signal
 from dtwalign import dtw
-import pandas as pd
-from wine_analysis_hplc_uv import definitions
-import seaborn as sns
-import seaborn.objects as so
-from wine_analysis_hplc_uv.notebooks.dtw_methods import DTWNotebookMethods
 from wine_analysis_hplc_uv.old_signal_processing.mindex_signal_processing import (
     SignalProcessor,
 )
-import seaborn as sns
 
 sns.set_theme(rc={"figure.dpi": 200})
-import matplotlib.pyplot as plt
-import matplotlib as mpl
-import matplotlib.pyplot as plt
 from pybaselines import Baseline
-import numpy as np
 
-from IPython.display import display
 
 scipro = SignalProcessor()
 

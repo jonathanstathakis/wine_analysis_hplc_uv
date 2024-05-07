@@ -1,4 +1,3 @@
-from wine_analysis_hplc_uv.notebooks.xgboost_modeling import datasets
 from wine_analysis_hplc_uv import definitions
 import matplotlib.pyplot as plt
 
@@ -14,8 +13,6 @@ from wine_analysis_hplc_uv.notebooks.peak_deconv import testdata
 from scipy import signal
 
 # import seaborn as sns
-import traceback
-import sys
 
 import logging
 
@@ -148,7 +145,7 @@ def get_data(code_idx: int) -> pd.DataFrame:
     df = td.get_raw_samples(**rs_kwargs)
     codes = df.code_wine.drop_duplicates()
 
-    df = df.query(f"code_wine==@codes.iloc[@code_idx]")
+    df = df.query("code_wine==@codes.iloc[@code_idx]")
 
     return df
 

@@ -34,11 +34,6 @@ Now to write a query class. Take a mapping of selection values and return a data
 
 This query class will be found in "queries.py".
 
-
-
-
-
-
 # Designing a Query Generator
 
 ## of course we could simply the whole thing by simply injecting strings from the filter dict...
@@ -48,3 +43,10 @@ This query class will be found in "queries.py".
 # Simplifying the problem
 
 the problem I am actually trying to solve is sthe slow time joining the metadata with the chromatogram images. We could reduce the complexity by creating the full metadata table as another table then simply filtering on that. Then we dont need to add the filter to the sub tables. Call it 'all_samples_metadata'.
+
+# Useful Regex
+
+2024-05-07 20:01:43
+
+VSCodes 'Find All References' function is untrustworthy. To find imports in the package, use this template "<start of import>^([^\s]+ ).*( .*)<end of import>". See [stack overflow](https://stackoverflow.com/a/76129640/18650135)
+

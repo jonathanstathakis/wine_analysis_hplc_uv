@@ -3,7 +3,7 @@ Methods for retrieval of data post-ETL.
 """
 
 from .etl import generic
-from typing import Mapping, Literal, TypedDict, get_args
+from typing import Literal, TypedDict, get_args
 import duckdb as db
 import pandas as pd
 import polars as pl

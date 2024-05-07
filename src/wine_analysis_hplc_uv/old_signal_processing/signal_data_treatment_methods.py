@@ -3,7 +3,6 @@ A file to contain all the general data treatment methods: baseline correction, m
 """
 import numpy as np
 import pandas as pd
-import streamlit as st
 from pybaselines import Baseline
 from scipy.signal import find_peaks
 from typing import Any

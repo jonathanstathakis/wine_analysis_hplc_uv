@@ -1,10 +1,8 @@
 import pandas as pd
 
-from scipy.stats import norm
 
 import numpy as np
 
-import matplotlib.pyplot as plt
 
 from numpy.random import default_rng
 

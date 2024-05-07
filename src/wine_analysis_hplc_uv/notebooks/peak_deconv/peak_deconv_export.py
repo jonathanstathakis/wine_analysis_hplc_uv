@@ -10,15 +10,9 @@ slow and iterative as we develop better deconvolution methods.
 Whats the schema? ID + the fields from the peak table.
 """
 
-import duckdb as db
-import pandas as pd
-import numpy as np
-from seaborn import objects as so
 from wine_analysis_hplc_uv import definitions
 
-from wine_analysis_hplc_uv.notebooks.peak_deconv import testdata
 from wine_analysis_hplc_uv.notebooks.peak_deconv import db_interface
-import logging
 
 
 def main():

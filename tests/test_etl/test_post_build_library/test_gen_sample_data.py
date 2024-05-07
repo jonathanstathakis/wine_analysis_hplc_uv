@@ -1,4 +1,4 @@
-from wine_analysis_hplc_uv.etl import generic
+from wine_analysis_hplc_uv.etl.post_build_library import generic
 from tests.test_etl.test_post_build_library import gen_sample_test_data
 import duckdb as db
 import polars as pl

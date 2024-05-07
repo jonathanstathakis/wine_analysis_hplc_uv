@@ -1,7 +1,6 @@
 import pandas as pd
 import seaborn as sns
 from dtwalign import dtw
-from IPython.display import display
 from pybaselines import Baseline
 from wine_analysis_hplc_uv.old_signal_processing.mindex_signal_processing import (
     SignalProcessor,
@@ -47,8 +46,6 @@ class DTWNotebookMethods:
     def query_ref_align_plot(self, x, y, x_align):
         # plot 3 side-by-side subplots first of the query and ref, then the warped query and ref
         # and finally the query and warped query
-
-        from IPython.display import display
 
         data = x.join([y, x_align]).sort_index(axis=1)
 

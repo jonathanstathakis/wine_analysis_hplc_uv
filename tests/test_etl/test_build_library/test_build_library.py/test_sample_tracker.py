@@ -1,7 +1,6 @@
 import pytest
 import duckdb as db
 import os
-import sys
 from wine_analysis_hplc_uv.sampletracker import sample_tracker_processor
 from wine_analysis_hplc_uv.df_methods import df_methods
 from wine_analysis_hplc_uv.my_sheetsinterface.gspread_methods import WorkSheet

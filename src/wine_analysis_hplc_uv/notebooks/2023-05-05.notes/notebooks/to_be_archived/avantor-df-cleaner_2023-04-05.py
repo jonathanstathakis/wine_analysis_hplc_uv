@@ -12,8 +12,6 @@ As of 2023-04-05 the following needs to be applied:
 3. 
 """
 import pandas as pd
-import numpy as np
-import sys
 
 
 from agilette.modules.library import Library

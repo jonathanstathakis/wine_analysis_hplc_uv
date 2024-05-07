@@ -5,12 +5,10 @@ All methods will act on a provided series of df's, where the index is ideally th
 
 Refer to prototype_code/peak_alignment.py for use of most of these methods (at date 2023-04-30).
 """
-import sys
 from itertools import combinations
 
 import numpy as np
 import pandas as pd
-import streamlit as st
 from dtw import dtw
 from scipy.spatial.distance import euclidean
 

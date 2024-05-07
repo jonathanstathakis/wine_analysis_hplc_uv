@@ -1,5 +1,4 @@
 import pandas as pd
-import numpy as np
 
 
 def num_unique_wines_by_detect_by_type(in_df):

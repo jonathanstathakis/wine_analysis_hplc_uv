@@ -3,10 +3,8 @@
 The main file of the wine_analysis_hplc_uv thesis project. Will act
 as the overarching pipeline to get to final results.
 """
-import os
 
 from wine_analysis_hplc_uv.core import build_library
-from wine_analysis_hplc_uv.signal_processing.peak_alignment import peak_alignment_pipe
 
 
 def core(data_lib_path: str) -> None:

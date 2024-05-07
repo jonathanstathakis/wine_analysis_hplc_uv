@@ -7,19 +7,13 @@ Produce a pairwise euclidean distance matrix of sample sc matrices.
 """
 import os
 import pickle
-import sys
 
 import db_methods
-import df_methods
 import duckdb as db
-import matplotlib.pyplot as plt
-import numpy as np
 import observing_spectra_shape_variation
 import pandas as pd
-import plot_methods
 import signal_alignment_methods as sa
 import streamlit as st
-from function_timer import timeit
 from signal_processing import signal_data_treatment_methods as dt
 
 pd.set_option("display.max_rows", None)

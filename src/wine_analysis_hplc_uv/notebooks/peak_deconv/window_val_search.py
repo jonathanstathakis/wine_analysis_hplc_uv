@@ -1,18 +1,13 @@
-from wine_analysis_hplc_uv.notebooks.xgboost_modeling import datasets
 from wine_analysis_hplc_uv import definitions
-import matplotlib.pyplot as plt
 
 # plt.rcParams['figure.figsize'] = [10,15]
 # plt.rcParams['figure.dpi'] = 140
 
 
-import numpy as np
 import seaborn.objects as so
 import pandas as pd
 from hplc_py.quant import Chromatogram
 from wine_analysis_hplc_uv.notebooks.peak_deconv import testdata
-
-from wine_analysis_hplc_uv.notebooks.peak_deconv import peak_deconv
 
 
 def search_for_windows(df, window_list: list):

@@ -1,9 +1,7 @@
 """
 
 """
-from mydevtools import project_settings, function_timer as ft
 import pandas as pd
-import pprint
 import plotly.graph_objs as go
 
 

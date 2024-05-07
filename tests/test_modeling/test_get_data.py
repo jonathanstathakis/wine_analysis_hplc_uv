@@ -1,7 +1,6 @@
 from wine_analysis_hplc_uv.db_methods import get_data, pivot_wine_data
 import pytest
 import pandas as pd
-import duckdb as db
 import logging
 
 logger = logging.getLogger(__name__)

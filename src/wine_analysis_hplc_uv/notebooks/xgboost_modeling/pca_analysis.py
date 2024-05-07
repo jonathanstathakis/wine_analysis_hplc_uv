@@ -2,15 +2,11 @@
 1. get the data - processed. Needs to be the varietal data.
 2. set up the PCA analysis
 """
-from wine_analysis_hplc_uv.notebooks.xgboost_modeling import kwarg_classes
 from wine_analysis_hplc_uv.notebooks.xgboost_modeling import datasets
 from wine_analysis_hplc_uv import definitions
-from wine_analysis_hplc_uv.notebooks.xgboost_modeling import models
 from wine_analysis_hplc_uv.notebooks.xgboost_modeling import data_prep
 import matplotlib.pyplot as plt
-import mpl_toolkits.mplot3d
 import numpy as np
-import seaborn.objects as so
 import pandas as pd
 from sklearn import pipeline
 from sklearn import preprocessing

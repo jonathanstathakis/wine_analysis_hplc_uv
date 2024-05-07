@@ -4,8 +4,6 @@ import pytest
 from wine_analysis_hplc_uv.notebooks.peak_deconv import db_interface
 
 from seaborn import load_dataset
-import duckdb as db
-import pandas as pd
 from wine_analysis_hplc_uv.notebooks.peak_deconv.db_interface import DBInterface
 
 import logging

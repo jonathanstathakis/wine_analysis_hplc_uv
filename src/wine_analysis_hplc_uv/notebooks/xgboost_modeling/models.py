@@ -1,7 +1,6 @@
 from wine_analysis_hplc_uv import definitions
 from wine_analysis_hplc_uv.notebooks.xgboost_modeling import datasets, xgboost_model
 from wine_analysis_hplc_uv.notebooks.xgboost_modeling import data_prep
-from dataclasses import dataclass
 import matplotlib.pyplot as plt
 from wine_analysis_hplc_uv.notebooks.xgboost_modeling import kwarg_classes
 

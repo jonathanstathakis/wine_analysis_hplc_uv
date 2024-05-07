@@ -1,6 +1,5 @@
 from wine_analysis_hplc_uv.generic import Exporter
 from wine_analysis_hplc_uv.df_methods import df_cleaning_methods
-from wine_analysis_hplc_uv.db_methods import db_methods
 
 import logging
 

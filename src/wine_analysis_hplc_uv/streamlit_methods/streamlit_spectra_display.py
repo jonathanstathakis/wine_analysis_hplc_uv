@@ -1,6 +1,5 @@
 import pandas as pd
 import streamlit as st
-import sys
 
 
 from tests import test_spectra_df

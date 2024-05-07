@@ -126,10 +126,7 @@ def test_baseline_correction():
     # baseline_subtracted_df.plot(title = baseline_subtracted_df['name_ct'].values[0])
     import sys
 
-    import matplotlib.pyplot as plt
-
     sys.path.append("../../")
-    import streamlit as st
     from scripts.core_scripts import hplc_dad_plots
 
     print(baseline_subtracted_df.columns)

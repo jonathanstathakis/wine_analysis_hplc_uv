@@ -31,24 +31,14 @@ TODO:
 
 """
 
-import os
-import pickle
-import shutil
-import sys
 
-import duckdb as db
 import numpy as np
 import pandas as pd
 import streamlit as st
 
 st.set_page_config(layout="wide")
-from typing import List, Union
 
-from wine_analysis_hplc_uv import definitions
 from wine_analysis_hplc_uv.plot_methods import plotly_plot_methods
-from wine_analysis_hplc_uv.scripts.core_scripts import (
-    signal_data_treatment_methods as dt,
-)
 from wine_analysis_hplc_uv.signal_processing import signal_alignment_methods as sa
 from wine_analysis_hplc_uv.signal_processing import signal_data_treatment_methods as sdt
 

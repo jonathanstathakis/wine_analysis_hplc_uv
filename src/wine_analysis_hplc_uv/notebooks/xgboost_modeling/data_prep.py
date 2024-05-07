@@ -1,6 +1,5 @@
 import pandas as pd
 import logging
-from imblearn import over_sampling
 
 logger = logging.getLogger(__name__)
 

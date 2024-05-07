@@ -6,13 +6,8 @@ A module reproducing the pipeline prototyped in: <src/wine_analysis_hplc_uv/note
 todo: rewrite doc strings for all methods
 """
 
-from IPython.display import display
 import pandas as pd
-import numpy as np
-from wine_analysis_hplc_uv.notebooks.mcr import mcr_methods
-import matplotlib.pyplot as plt
 from wine_analysis_hplc_uv.signal_processing import signal_processing
-from wine_analysis_hplc_uv.notebooks.xgboost_modeling import dataextract
 from wine_analysis_hplc_uv import definitions
 import logging
 

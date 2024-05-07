@@ -1,5 +1,4 @@
 from mydevtools.testing import test_methods_df
-from wine_analysis_hplc_uv.cellartracker_methods import ct_cleaner as cleaner
 from wine_analysis_hplc_uv import definitions
 import pandas as pd
 import pytest

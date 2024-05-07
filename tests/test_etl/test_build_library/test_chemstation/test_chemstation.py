@@ -1,17 +1,14 @@
-"""
+""" """
 
-"""
 import pytest
-import sys
-from wine_analysis_hplc_uv.df_methods import df_methods
-import os
-from glob import glob
-import random
+from tests import test_df
 import pandas as pd
 import duckdb as db
-from wine_analysis_hplc_uv.chemstation import read_single_file
+from wine_analysis_hplc_uv.etl.build_library.chemstation import read_single_file
 import logging
-from wine_analysis_hplc_uv.chemstation.chemstationprocessor import ChemstationProcessor
+from wine_analysis_hplc_uv.etl.build_library.chemstation.chemstationprocessor import (
+    ChemstationProcessor,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +26,7 @@ def test_read_single_file(single_filepath):
 
 
 def test_metadata_df(chemstationprocessor):
-    df_methods.test_df(chemstationprocessor.metadata_df)
+    test_df.test_df(chemstationprocessor.metadata_df)
 
 
 # def test_metadata_df_to_csv(chemstationprocessor):
@@ -37,8 +34,6 @@ def test_metadata_df(chemstationprocessor):
 
 
 def test_data_df(chemstationprocessor) -> None:
-    # df_methods.describe_df(df=ch.data_df)
-
     groups = chemstationprocessor.data_df.groupby("id")
     group_shapes = [(name, group.shape) for name, group in groups]
 
@@ -47,7 +42,7 @@ def test_data_df(chemstationprocessor) -> None:
         chemstationprocessor.metadata_df[["notebook", "id"]], data_shape_df, on="id"
     ).drop("id", axis=1)
 
-    df_methods.test_df(chemstationprocessor.data_df)
+    test_df.test_df(chemstationprocessor.data_df)
     return None
 
 

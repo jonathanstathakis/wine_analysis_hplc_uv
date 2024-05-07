@@ -1,18 +1,8 @@
-import sys
-
-import os
-
 import pandas as pd
 
-import numpy as np
-
-from scipy.signal import find_peaks
 
 pd.options.plotting.backend = "plotly"
 
-import plotly.graph_objs as go
-
-from plotly.subplots import make_subplots
 
 from sklearn.preprocessing import MinMaxScaler
 

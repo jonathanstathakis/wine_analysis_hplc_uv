@@ -1,11 +1,6 @@
 import pandas as pd
-from pathlib import Path
 import plotly.graph_objs as go
 from scipy.signal import find_peaks
-import pandas as pd
-import pandas as pd
-import plotly.graph_objs as go
-import numpy as np
 
 
 def color_scale():
@@ -50,11 +45,6 @@ def plot_3d_line(df, plot_title=None):
     y = melt_df["mins"]
     z = melt_df["mAU"]
 
-    import pandas as pd
-
-
-import plotly.graph_objs as go
-
 
 def plot_3d_line(df, plot_title=None):
     """
@@ -70,8 +60,6 @@ def plot_3d_line(df, plot_title=None):
 
     # Custom colorscale
     # Custom Magma-like colorscale
-
-    import streamlit as st
 
     # Group the data by the 'nm' column
     grouped = melt_df.groupby("nm")
@@ -136,7 +124,6 @@ def surface_plot(df, plot_title=None, downsample_factor=10):
     """
     Takes a wide format uv data df with mins as column 1 and a default index, melts it into a long format then plots a 3d surface plot.
     """
-    import streamlit as st
 
     # Pivot the data into a 2D matrix format
     z = df.drop(["mins"], axis=1)
@@ -164,8 +151,6 @@ def surface_plot(df, plot_title=None, downsample_factor=10):
 
 
 import pandas as pd
-import plotly.graph_objs as go
-import streamlit as st
 
 
 def downsample(data, factor):

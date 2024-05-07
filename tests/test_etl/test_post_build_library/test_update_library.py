@@ -2,7 +2,7 @@
 Test library update execution
 """
 
-from wine_analysis_hplc_uv.etl import update_library
+from wine_analysis_hplc_uv.etl.post_build_library import update_library
 import pytest
 import duckdb as db
 import tests.definitions as test_defs

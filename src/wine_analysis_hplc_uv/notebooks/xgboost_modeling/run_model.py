@@ -3,10 +3,7 @@ TODO:
 - [ ] move the transform_dataset actions to the signal process pipeline.
 """
 
-import pandas as pd
-import numpy as np
 from wine_analysis_hplc_uv.notebooks.xgboost_modeling import models
-from wine_analysis_hplc_uv.notebooks.xgboost_modeling.smotetracker import smotes
 
 import logging
 

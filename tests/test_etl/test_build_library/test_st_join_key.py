@@ -2,7 +2,6 @@ from wine_analysis_hplc_uv import definitions
 from wine_analysis_hplc_uv.core import st_ct_join
 import pytest
 import polars as pl
-import duckdb as db
 import logging
 
 logger = logging.getLogger(__name__)
@@ -11,7 +10,7 @@ logger = logging.getLogger(__name__)
 @pytest.fixture
 def st(corecon):
     st_df = corecon.sql(
-        f"SELECT * FROM c_sample_tracker WHERE" " added_to_cellartracker='y'"
+        "SELECT * FROM c_sample_tracker WHERE" " added_to_cellartracker='y'"
     ).df()
     assert not st_df.empty
     return st_df

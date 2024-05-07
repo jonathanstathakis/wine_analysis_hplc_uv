@@ -16,8 +16,6 @@ from wine_analysis_hplc_uv.db_methods import get_data
 from wine_analysis_hplc_uv.modeling import pca
 from wine_analysis_hplc_uv import definitions
 import duckdb as db
-import pandas as pd
-import os
 
 
 def get_frames(con):

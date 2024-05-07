@@ -17,7 +17,6 @@ TODO:
 - [ ] perform PCA on binned dataset
 """
 
-from wine_analysis_hplc_uv.notebooks.xgboost_modeling import datasets
 from wine_analysis_hplc_uv import definitions
 import matplotlib.pyplot as plt
 
@@ -26,12 +25,9 @@ import matplotlib.pyplot as plt
 
 
 import numpy as np
-import seaborn.objects as so
-import pandas as pd
 from hplc_py.quant import Chromatogram
 from wine_analysis_hplc_uv.notebooks.peak_deconv import testdata
 
-import logging
 
 # logger = logging.basicConfig(level="DEBUG")
 
