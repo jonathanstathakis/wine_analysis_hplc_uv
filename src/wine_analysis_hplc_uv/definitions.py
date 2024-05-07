@@ -2,7 +2,7 @@ import os
 
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 
-DB_PATH = os.environ.get("DB_PATH")
+DB_PATH: str = os.environ.get("DB_PATH")
 
 LIB_DIR = "/Users/jonathan/uni/0_jono_data/mres_data_library/"
 

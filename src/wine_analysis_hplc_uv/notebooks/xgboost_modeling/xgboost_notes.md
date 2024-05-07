@@ -29,7 +29,6 @@ Multiclass classification solutions can be divided into one - vs. -rest (OvR) an
 <https://www.evidentlyai.com/classification-metrics/multi-class-metrics>:
 - Accuracy is (correct predictions)/(all predictions)
 
-
 2023-11-06 10:25:08 - problem 1: how to measure results?
 
 2023-11-06 10:57:45 - all of the classifiers are producing the same mlogloss value of 0.69.., which is v. sus. To solve this im going to recreate a kaggle notebook with a similar problem and test my pipeline on that. Note that since im using a OOP pipeline, ive constructed it such that data acquisition and processing is seperate from modeling so that it swapping datasets should be straightforeward.

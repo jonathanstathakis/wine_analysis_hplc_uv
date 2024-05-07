@@ -78,16 +78,16 @@ class DataframeAdjusterMixin:
 
 
 """
-        Treat the dataframe as a time series and resample to the specified sampling rate.
+Treat the dataframe as a time series and resample to the specified sampling rate.
 
-        df: the intended dataframe, in wide format with observations as rows containing 'time_col'
+df: the intended dataframe, in wide format with observations as rows containing 'time_col'
 
-        grouper: label columns to seperate each sample wavelength signal. each group needs to have 'time_col' start at the first observation and end at the last observation for the results to make sense.
+grouper: label columns to seperate each sample wavelength signal. each group needs to have 'time_col' start at the first observation and end at the last observation for the results to make sense.
 
-        original_freqstr: the frequency string corresponding to the original frequency of observations. Due to instrument error, the sampling frequency can vary minutely, and occasionally an observation can be missed. Resampling the time column to a specified frequency smooths out irregularities and enables proper resampling.
+original_freqstr: the frequency string corresponding to the original frequency of observations. Due to instrument error, the sampling frequency can vary minutely, and occasionally an observation can be missed. Resampling the time column to a specified frequency smooths out irregularities and enables proper resampling.
 
-        resample_freqstr: frequency string corresponding to the destination sampling frequency.
-        """
+resample_freqstr: frequency string corresponding to the destination sampling frequency.
+"""
 
 
 class TimeResamplerMixin:

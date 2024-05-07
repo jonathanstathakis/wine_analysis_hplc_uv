@@ -2,7 +2,6 @@ from wine_analysis_hplc_uv import definitions
 import duckdb as db
 import pandas as pd
 from wine_analysis_hplc_uv.db_methods import get_data
-from wine_analysis_hplc_uv.modeling import pca
 import matplotlib.pyplot as plt
 import seaborn as sns
 import logging
@@ -24,18 +23,14 @@ def get_sample(con):
     [('124', '2022 mr. barval nebbia'), ('130', '2021 le juice fleurie fleurie gamay'), ('125', '2020 rockford moppa springs'), ('133', '2018 chalmers schioppettino dott.'), ('174', '2021 babo chianti')]
     ('124', '130', '125', '133', '174')
     """
-    print(wines)
+
     wines = tuple([wine[0] for wine in wines])
-    print(wines)
 
     get_data.get_wine_data(con, samplecode=wines, wavelength=(450,))
 
     wine_data = con.sql("SELECT * FROM wine_data").df()
 
-    print(wine_data)
-    pwine_data = pca.pivot_wine_data(wine_data)
-    pwine_data.plot()
-    plt.show()
+    pwine_data = pivot_wine_data(wine_data)
 
 
 def pivot_wine_data(
@@ -49,8 +44,7 @@ def pivot_wine_data(
     """
     for a previously created long table 'wine_data' apply a pivot to reshape it into
     wide form to reduce memory size prior to transferring to python.
-    
-    
+     
     1. Adds a numerical row index to each sample 'grouping' to enable pivoting
     2. pivot on samplecode as the unique identifier. The pivot merely reshapes rather
         than aggregating

@@ -1,16 +1,14 @@
 import logging
 
-logger = logging.getLogger(__name__)
-
-from sklearn import datasets
-
-from wine_analysis_hplc_uv import definitions
-from wine_analysis_hplc_uv.notebooks.xgboost_modeling import data_pipeline
-from wine_analysis_hplc_uv.notebooks.xgboost_modeling import dataextract
-from dataclasses import dataclass
-from wine_analysis_hplc_uv.notebooks.xgboost_modeling import kwarg_classes
-
 import pandas as pd
+from sklearn import datasets
+from wine_analysis_hplc_uv.notebooks.xgboost_modeling import (
+    data_pipeline,
+    kwarg_classes,
+)
+from wine_analysis_hplc_uv.notebooks.xgboost_modeling.data_extraction import dataextract
+
+logger = logging.getLogger(__name__)
 
 
 class TestData:
@@ -36,17 +34,15 @@ class TestData:
         self.y = self.data.target
 
 
-class RawRedVarietalData(
-    dataextract.DataExtractor,
-    data_pipeline.DataPipeline,
-    kwarg_classes.RawRedVarietalETKwargs,
-):
+class RawRedVarietalData:
     def __init__(self, db_path: str) -> tuple:
-        dataextract.DataExtractor.__init__(
-            self, db_path=db_path, **self.extractor_kwargs
+        self.et_kwargs = kwarg_classes.RawRedVarietalETKwargs()
+        self.extractor = dataextract.DataExtractor.__init__(
+            self, db_path=db_path, **self.et_kwargs.extractor_kwargs
         )
+
         data_pipeline.DataPipeline.__init__(
-            self, self.raw_data, **self.data_pipeline_kwargs
+            self, self.raw_data, **self.et_kwargs.data_pipeline_kwargs
         )
 
 

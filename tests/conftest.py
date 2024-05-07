@@ -2,10 +2,8 @@ import pytest
 import pandas as pd
 from wine_analysis_hplc_uv.chemstation.chemstationprocessor import ChemstationProcessor
 import numpy as np
-from wine_analysis_hplc_uv import definitions
 import duckdb as db
-
-import os
+from tests import definitions as test_defs
 
 
 @pytest.fixture
@@ -13,11 +11,11 @@ def testdbpath():
     return ":memory:"
 
 
-db_path = definitions.DB_PATH
+db_path = test_defs.DB_PATH
 
 
 @pytest.fixture
-def corecon():
+def con():
     assert isinstance(db_path, str)
     con = db.connect(db_path)
     return con
