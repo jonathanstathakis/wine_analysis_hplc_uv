@@ -96,8 +96,8 @@ class GetSampleData:
         :param join_key: the column name of the key column linking the sample metadata and chromato-spectral tables, defaults to "id"
         :type join_key: str, optional
         """
-
-        self.filter = self._validate_filter(filter)
+        self._validate_filter(filter)
+        self.filter = filter
 
         self.get_cs_data = get_cs_data
         self.return_frame_type = return_frame_type
@@ -112,6 +112,10 @@ class GetSampleData:
         TODO: filter input validation, range fields must be a two element tuple, all others scalars or iterables.
         TODO: filter input validation for empty filter - throw an error if an empty filter is provided. include a backend attribute that allows for disabling the error prior to calling `run_query`
         """
+
+        for key, val in filter.items():
+            if not val:
+                raise TypeError("dont expect an empty filter value")
 
         return filter
 
@@ -150,7 +154,7 @@ class GetSampleData:
         # ranges will be iterable though so need to handle them seperately
         key: str
         for key, val in self.filter.items():
-            if key in self.cs_range_fields:
+            if key in self.cs_range_fields and self.get_cs_data:
                 self.queries[
                     key
                 ] = f"{self.cs_tblname}.{key} BETWEEN {val[0]} AND {val[1]}"
@@ -163,7 +167,8 @@ class GetSampleData:
 
     def _assemble_query(self) -> str:
         """
-        Assemble the query. If get_cs_data is False skip the join, but raise an error if values for 'mins' and 'wavelength' are provided in the filter
+        Assemble the query. If get_cs_data is False skip the join, but raise an error if
+          values for 'mins' and 'wavelength' are provided in the filter
 
         :return: a formatted query string
 
@@ -234,7 +239,7 @@ class GetSampleData:
 
         return result
 
-    def validate_filter_input(self):
+    def _validate_filter_input(self):
         """
         validate the input of filter. values can only be scalar, list or tuple.
         """

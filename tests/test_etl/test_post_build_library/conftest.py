@@ -68,4 +68,12 @@ def stg(
 def stg_with_gen_samples(
     stg: gen_sample_test_data.SampleTableGenerator,
 ) -> gen_sample_test_data.SampleTableGenerator:
+    """
+    Run stg.gen_samples(), producing a random sampling of metadata and chromato-spectral tables within the test database
+
+    :param stg: an initialised SampleTableGenerator class instance
+    :type stg: gen_sample_test_data.SampleTableGenerator
+    :return: the initialised SampleTableGenerator class instance
+    :rtype: gen_sample_test_data.SampleTableGenerator
+    """
     return stg.gen_samples()

@@ -41,7 +41,7 @@ class SampleTableGenerator:
             sm=sample_metadata_tblname,
             cs=cs_tblname,
             sm_sample=sm_sample_tblname,
-            cs_smaple=cs_sample_tblname,
+            cs_sample=cs_sample_tblname,
         )
 
     def get_sample_ids(self):
@@ -74,7 +74,7 @@ class SampleTableGenerator:
                                 SELECT
                                     *
                                 FROM
-                                    {self.intm_sm_tblnames['not_null']}
+                                    {self.intm_sm_tblnames['non_null']}
                                 USING
                                     SAMPLE {self.n}
                                 

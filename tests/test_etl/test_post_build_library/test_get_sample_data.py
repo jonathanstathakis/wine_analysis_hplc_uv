@@ -5,11 +5,21 @@ import duckdb as db
 import polars as pl
 
 
-@pytest.mark.parametrize("get_cs_data", [(True,), (False,)])
+@pytest.mark.parametrize(
+    [
+        "get_cs_data",
+        "filter",
+    ],
+    [
+        (True, queries.Filter(wavelength=(256, 256), color="red")),
+        (False, queries.Filter(color="red")),
+    ],
+)
 def test_get_sample_data(
     con: db.DuckDBPyConnection,
     stg_with_gen_samples: gen_sample_test_data.SampleTableGenerator,
     get_cs_data: bool,
+    filter: queries.Filter,
 ):
     """
     # Tests
@@ -28,19 +38,22 @@ def test_get_sample_data(
 
     Too much work. I reckon its working fine.
     """
-    filter = queries.Filter(wavelength=(256, 256), color="red")
 
+    # initialise a GetSampleData with the input filter and test tables
     gsd = queries.GetSampleData(
         filter=filter,
-        cs_tblname=stg_with_gen_samples.cs_sample_tblname,
-        metadata_tblname=stg_with_gen_samples.sm_sample_tblname,
+        get_cs_data=get_cs_data,
+        cs_tblname=stg_with_gen_samples.tblnames["cs_sample"],
+        metadata_tblname=stg_with_gen_samples.tblnames["sm_sample"],
     )
 
+    # retrieve the output df
     df: pl.DataFrame = gsd.run_query(con=con)  # type: ignore
 
     assert not df.is_empty()
 
-    output_schema = {
+    # assert that the output df matches the expected schema
+    expected_schema = {
         "detection": pl.Utf8,
         "samplecode": pl.Utf8,
         "color": pl.Utf8,
@@ -52,10 +65,10 @@ def test_get_sample_data(
         "absorbance": pl.Float64,
     }
     if get_cs_data:
-        assert df.schema == output_schema
+        assert df.schema == expected_schema
     else:
         assert df.schema == {
             key: val
-            for key, val in output_schema.items()
-            if key not in ["wavelength", "absorbance"]
+            for key, val in expected_schema.items()
+            if key not in ["wavelength", "absorbance", "mins"]
         }
