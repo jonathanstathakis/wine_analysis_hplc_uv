@@ -1,11 +1,17 @@
-import pytest
+"""
+Test the function of the `PipelineETL` class
+"""
 
-from wine_analysis_hplc_uv.etl import (
+import duckdb as db
+import pytest
+from wine_analysis_hplc_uv.etl.post_build_library import (
     etl_pipeline,
     generic,
+)
+from wine_analysis_hplc_uv.etl.post_build_library import (
     transformers as etl_tformers,
 )
-import duckdb as db
+
 from tests.test_etl.test_post_build_library.gen_sample_test_data import GenSampleCSWide
 
 

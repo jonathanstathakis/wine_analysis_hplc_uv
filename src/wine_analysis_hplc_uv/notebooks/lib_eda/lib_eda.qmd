@@ -140,9 +140,9 @@ import duckdb as db
 from wine_analysis_hplc_uv import definitions
 
 con = db.connect(definitions.DB_PATH)
-ct_df = con.sql(f"SELECT * FROM {definitions.CLEAN_CT_TBL_NAME}").df()
+ct_df = con.sql(f"SELECT * FROM {definitions.Clean_tbls.CT}").df()
 ct_df = con.sql(
-    f"SELECT vintage, name, type, varietal, country FROM {definitions.CLEAN_CT_TBL_NAME}"
+    f"SELECT vintage, name, type, varietal, country FROM {definitions.Clean_tbls.CT}"
 ).df()
 ct_df = ct_df.assign(wine=lambda x: x["vintage"] + " " + x["name"]).drop(
     ["vintage", "name"], axis=1

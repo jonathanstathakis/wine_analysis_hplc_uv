@@ -8,7 +8,7 @@ import polars as pl
 @pytest.mark.parametrize("get_cs_data", [(True,), (False,)])
 def test_get_sample_data(
     con: db.DuckDBPyConnection,
-    gen_test_sample_tables: gen_sample_test_data.SampleTableGenerator,
+    stg_with_gen_samples: gen_sample_test_data.SampleTableGenerator,
     get_cs_data: bool,
 ):
     """
@@ -32,8 +32,8 @@ def test_get_sample_data(
 
     gsd = queries.GetSampleData(
         filter=filter,
-        cs_tblname=gen_test_sample_tables.cs_sample_tblname,
-        metadata_tblname=gen_test_sample_tables.sm_sample_tblname,
+        cs_tblname=stg_with_gen_samples.cs_sample_tblname,
+        metadata_tblname=stg_with_gen_samples.sm_sample_tblname,
     )
 
     df: pl.DataFrame = gsd.run_query(con=con)  # type: ignore

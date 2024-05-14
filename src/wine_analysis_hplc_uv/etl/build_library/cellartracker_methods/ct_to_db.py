@@ -1,4 +1,4 @@
-from wine_analysis_hplc_uv.cellartracker_methods.my_cellartracker_class import (
+from wine_analysis_hplc_uv.etl.build_library.cellartracker_methods.my_cellartracker_class import (
     MyCellarTracker,
 )
 
@@ -18,8 +18,8 @@ def ct_to_db(con, ct_tbl: str, un: str, pw: str):
 def main():
     con = db.connect(os.path.join(os.path.dirname(__file__), "testdb"))
     ct_tbl = "cellar_tracker"
-    un = os.environ.get("CELLAR_TRACKER_UN")
-    pw = os.environ.get("CELLAR_TRACKER_PW")
+    un = os.environ["CELLAR_TRACKER_UN"]
+    pw = os.environ["CELLAR_TRACKER_PW"]
 
     ct_to_db(con, ct_tbl, un, pw)
 

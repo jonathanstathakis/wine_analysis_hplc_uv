@@ -1,3 +1,4 @@
+import seaborn as sns
 from wine_analysis_hplc_uv import definitions
 import matplotlib.pyplot as plt
 
@@ -44,8 +45,6 @@ def fine_tune_window_val(chm: Chromatogram):
         x="time",
         y="signal_corrected",
     ).add(so.Line()).show()
-
-    display(chm.window_df.query("window_id==2").describe())
 
     so.Plot(
         chm.window_df.assign(window_id=lambda df: df.window_id.astype(str)).query(
@@ -143,7 +142,7 @@ def get_data(code_idx: int) -> pd.DataFrame:
     # pro_df = td.get_processed_samples(rs_kwargs)
 
     df = td.get_raw_samples(**rs_kwargs)
-    codes = df.code_wine.drop_duplicates()
+    df.code_wine.drop_duplicates()
 
     df = df.query("code_wine==@codes.iloc[@code_idx]")
 
@@ -184,7 +183,7 @@ def main():
 
     chm._assign_windows(prominence=1e-3, rel_height=1)
 
-    num_plots = chm.window_df.window_id.nunique()
+    chm.window_df.window_id.nunique()
 
     for id, grp in chm.window_df.query("window_type=='peak'").groupby("window_id"):
         # plot each window and its id
@@ -192,7 +191,7 @@ def main():
         ax[1][1].annotate(id, xy=[grp.time.median(), grp.signal_corrected.max() * 1.2])
 
         # plot the detected peaks
-        peak_data = chm.df.iloc[chm._peak_indices]
+        chm.df.iloc[chm._peak_indices]
         # ax.scatter(peak_data.time, peak_data.signal_corrected, label='peaks')
 
         # # annotate each peak

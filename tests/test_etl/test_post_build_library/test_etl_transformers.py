@@ -19,10 +19,17 @@ The original data_extract involves the following tables:
 To generate test data, get 5 wine ids then pull their rows from each table, export as csv to this module.
 """
 
-from wine_analysis_hplc_uv.etl import generic, transformers as etl_tformers
-import duckdb as db
-import pytest
 import logging
+
+import duckdb as db
+import polars as pl
+import pytest
+from wine_analysis_hplc_uv.etl.post_build_library import (
+    generic,
+)
+from wine_analysis_hplc_uv.etl.post_build_library import (
+    transformers as etl_tformers,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -121,7 +128,7 @@ def sample_cs_wide(con: db.DuckDBPyConnection, tbl_name: str = "sample_cs", n: i
     :return: The wide form "chromatogram_specta" table as a duckdb relation object
     :type return: DuckDBPyRelation
     """
-    cs_id_sample = con.sql(
+    con.sql(
         f"""--sql
             SELECT
                 id
@@ -205,8 +212,6 @@ def test_cs_wide_to_long(
     )
 
     cswtl.run(con=con)
-
-    import polars as pl
 
     # if write_to_db is false, 'new_tbl_name' should not be present in the database, and result should match the predefined long schema.
 

@@ -97,7 +97,7 @@ def main():
     con = db.connect(definitions.DB_PATH)
     td = TestData(con)
 
-    samples = td.get_raw_samples(key="code_wine", x=1)
+    td.get_raw_samples(key="code_wine", x=1)
     breakpoint()
 
 

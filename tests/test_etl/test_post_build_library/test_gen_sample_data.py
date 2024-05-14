@@ -1,39 +1,24 @@
-from wine_analysis_hplc_uv.etl.post_build_library import generic
-from tests.test_etl.test_post_build_library import gen_sample_test_data
+"""
+Test the `gen_sample_test_data.SampleTableGenerator` class
+"""
+
 import duckdb as db
 import polars as pl
+from wine_analysis_hplc_uv.etl.post_build_library import generic
 
-
-def get_stg(
-    con: db.DuckDBPyConnection,
-    sm_tblname: str = "sample_metadata",
-    cs_tblname: str = "chromatogram_spectra_long",
-    join_key: str = "id",
-    sm_sample_tblname: str = "sm_sample",
-    cs_sample_tblname: str = "cs_sample",
-    n: int = 5,
-) -> gen_sample_test_data.SampleTableGenerator:
-    """
-    Generate the sample tables and return the table names
-    """
-    stg = gen_sample_test_data.SampleTableGenerator(
-        con=con,
-        n=n,
-        sample_metadata_tblname=sm_tblname,
-        cs_tblname=cs_tblname,
-        join_key=join_key,
-        sm_sample_tblname=sm_sample_tblname,
-        cs_sample_tblname=cs_sample_tblname,
-    )
-
-    return stg
+from tests.test_etl.test_post_build_library import gen_sample_test_data
+import pytest
 
 
 def test_sample_table_generator(
     con: db.DuckDBPyConnection,
+    stg: gen_sample_test_data.SampleTableGenerator,
 ):
+    """
+    Test SampleTableGenerator by asserting that the output schema and the number of
+    unique samples matches the expectation
+    """
     try:
-        stg = get_stg(con=con)
         stg.gen_samples()
         # test if they exist, if they match the expected schema, and number of distinct ids.
 

@@ -4,7 +4,10 @@
 contains the process necessary to get the database into what I am considering the base state for EDA. That is, a metadata table that is filterable to select data subsets, and an efficiently queryable spectrum_chromatogram table containg the spectrum_chromatogram images, where we define an image as a 2D signal. See [etl](notes/etl.md#process)
 """
 
-from wine_analysis_hplc_uv.etl import etl_pipeline, transformers as etl_tformers
+from wine_analysis_hplc_uv.etl.post_build_library import (
+    etl_pipeline,
+    transformers as etl_tformers,
+)
 from wine_analysis_hplc_uv import definitions
 import duckdb as db
 import logging

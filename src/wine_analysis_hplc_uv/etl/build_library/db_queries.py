@@ -14,7 +14,7 @@ def query_db(db_path: str, tbl_name: str):
     ;
     """
     with db.connect(db_path) as con:
-        a = con.sql(query).show()
+        con.sql(query).show()
     return None
 
 

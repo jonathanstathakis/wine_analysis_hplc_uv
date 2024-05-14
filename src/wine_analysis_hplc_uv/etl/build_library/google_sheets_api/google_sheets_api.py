@@ -139,7 +139,6 @@ def delete_sheet(spreadsheet_id: str, sheet_title: str, creds_parent_path):
         assert sheet_id
 
         sheet_body = {"requests": [{"deleteSheet": {"sheetId": sheet_id}}]}
-        reponse = ""
         response = (
             service.spreadsheets()
             .batchUpdate(spreadsheetId=spreadsheet_id, body=sheet_body)

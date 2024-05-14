@@ -18,9 +18,9 @@ def myfunc(argv):
         opts, args = getopt.getopt(
             argv[1:], "hi:u:o:", ["help", "input=", "user=", "output="]
         )
-    except:
-        print(arg_help)
-        sys.exit(2)
+    except Exception as e:
+        e.add_note(arg_help)
+        raise e
 
     for opt, arg in opts:
         if opt in ("-h", "--help"):

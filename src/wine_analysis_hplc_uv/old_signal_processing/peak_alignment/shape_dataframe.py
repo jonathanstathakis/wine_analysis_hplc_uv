@@ -1,14 +1,16 @@
 """
 2023-08-21 14:12:15
 
-A module to take the current multiindexed dataframe of shape 
-[range_idx: (samplecode, wine, vars)] where vars = [mins, value], where 
+A module to take the current multiindexed dataframe of shape
+[range_idx: (samplecode, wine, vars)] where vars = [mins, value], where
 value = absorbance and reshape it into the form appropriate for the peak alignment
 pipe constructed back in autumn.
 """
 
-from wine_analysis_hplc_uv.db_methods import get_data, pivot_wine_data
-from wine_analysis_hplc_uv.signal_processing.peak_alignment import peak_alignment_pipe
+from wine_analysis_hplc_uv.etl.build_library.db_methods import get_data, pivot_wine_data
+from wine_analysis_hplc_uv.old_signal_processing.peak_alignment import (
+    peak_alignment_pipe,
+)
 from wine_analysis_hplc_uv import definitions
 import duckdb as db
 import pandas as pd
@@ -21,15 +23,14 @@ pd.options.display.colheader_justify = "left"
 
 
 def main():
-    con = db.connect(definitions.DB_PATH)
-    get_data.get_wine_data(
-        con=con,
+    wd = get_data.WineData(db_path=definitions.DB_PATH)
+    wd.get_wine_data(
         detection=("cuprac",),
         varietal=("pinot noir",),
         wavelength=(450,),
         mins=(0, 5),
     )
-    wide_df = pivot_wine_data.pivot_wine_data(con)
+    wide_df = pivot_wine_data.pivot_wine_data(wd.con)
 
     # convert to a dictionary based on samplecode. Do this by iterating thru it i guess
     df_dict = {}

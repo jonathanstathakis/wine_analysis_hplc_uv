@@ -3,7 +3,7 @@ A cellartracker class inheriting from CellarTracker with cleaning and export fun
 """
 from cellartracker import cellartracker
 import pandas as pd
-from wine_analysis_hplc_uv.generic import Exporter
+from wine_analysis_hplc_uv.etl.build_library.generic import Exporter
 
 
 class MyCellarTracker(cellartracker.CellarTracker, Exporter):

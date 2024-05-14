@@ -3,6 +3,7 @@
 """
 from typing import List
 import multiprocessing as mp
+from wine_analysis_hplc_uv.etl.build_library.process_chemstation import uv_extractor
 
 
 def uv_extractor_pool(dirpaths: List[str]) -> tuple:
@@ -13,16 +14,16 @@ def uv_extractor_pool(dirpaths: List[str]) -> tuple:
     counter = mp.Value("i", 0)  # 'i' indicates an integer
     counter_lock = mp.Lock()
 
-    def init_pool(c, l):
+    def init_pool(counter, lock):
         global counter, counter_lock
-        counter = c
-        counter_lock = l
+        counter = counter
+        counter_lock = lock
 
     print("Initializing multiprocessing pool...\n")
     pool = mp.Pool(initializer=init_pool, initargs=(counter, counter_lock))
 
     print(f"Processing {len(dirpaths)} directories using a multiprocessing pool...\n")
-    uv_file_tuples = pool.map(uv_extractor, dirpaths)
+    uv_file_tuples = pool.map(uv_extractor.uv_extractor, dirpaths)
 
     print("Closing and joining the multiprocessing pool...\n")
     pool.close()

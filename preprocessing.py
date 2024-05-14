@@ -12,7 +12,7 @@ The spectrum-chromatograms are obtainable via the pca module methods. They will 
 See [Establishing a Preprocessing Pipeline](/Users/jonathan/mres_thesis/notes/mres_logbook.md#Establishing-a-Preprocessing-Pipeline) for more information
 """
 
-from wine_analysis_hplc_uv.db_methods import get_data
+from wine_analysis_hplc_uv.etl.build_library.db_methods import get_data
 from wine_analysis_hplc_uv.modeling import pca
 from wine_analysis_hplc_uv import definitions
 import duckdb as db

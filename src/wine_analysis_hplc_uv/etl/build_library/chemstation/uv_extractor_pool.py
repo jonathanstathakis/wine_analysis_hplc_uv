@@ -1,7 +1,7 @@
 from typing import List, Dict
 import multiprocessing as mp
 import pandas as pd
-from wine_analysis_hplc_uv.chemstation import read_single_file
+from wine_analysis_hplc_uv.etl.build_library.chemstation import read_single_file
 import logging
 
 logger = logging.getLogger(__name__)

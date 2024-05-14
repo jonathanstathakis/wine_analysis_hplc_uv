@@ -1,7 +1,7 @@
 import pandas as pd
 
 
-def num_unique_wines_by_detect_by_type(in_df):
+def num_unique_wines_by_detect_by_type(in_df, type_order):
     # count of unique wines by type
     df = in_df.copy()
 

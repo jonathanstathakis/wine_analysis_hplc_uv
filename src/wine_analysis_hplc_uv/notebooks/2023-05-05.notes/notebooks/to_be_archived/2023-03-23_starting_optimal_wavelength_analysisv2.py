@@ -89,7 +89,7 @@ def main():
         lambda row: row["scaled_spectrum"] - row["spectrum_baseline"], axis=1
     )
 
-    a = uv_dataframe["baseline_corrected_scaled_spectrum"][0]
+    uv_dataframe["baseline_corrected_scaled_spectrum"][0]
 
     # av baseline grad
 

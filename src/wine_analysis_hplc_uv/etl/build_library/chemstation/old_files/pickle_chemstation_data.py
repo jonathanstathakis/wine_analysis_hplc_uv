@@ -1,12 +1,13 @@
 """
 A submodule to handle chemstation data pickling to speed up testing and dev.
 """
+
 import os
 import pickle
 from typing import List, Tuple
 
 
-from wine_analysis_hplc_uv.chemstation import process_chemstation
+from wine_analysis_hplc_uv.etl.build_library.chemstation import process_chemstation
 
 
 def process_and_pickle(
@@ -48,7 +49,7 @@ def pickle_interface(
 
     if os.path.isfile(pickle_filepath):
         action_key: str = input("pickle found, use, or overwrite? (u/o): ")
-    elif usepickle == True:
+    elif usepickle is True:
         action_key = input(f"no pickle found, create? at {pickle_filepath} (y/n): ")
     else:
         action_key = "n"

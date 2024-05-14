@@ -2,16 +2,19 @@ from mydevtools.testing import test_methods_df
 from wine_analysis_hplc_uv import definitions
 import pandas as pd
 import pytest
-from wine_analysis_hplc_uv.cellartracker_methods.ct_cleaner import CTCleaner
+from wine_analysis_hplc_uv.etl.build_library.cellartracker_methods.ct_cleaner import (
+    CTCleaner,
+)
 import logging
+import duckdb as db
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)
 
 
 @pytest.fixture
-def dirty_ct(corecon):
-    df = corecon.sql(f"SELECT * FROM {definitions.CT_TBL_NAME}").df()
+def dirty_ct(con: db.DuckDBPyConnection) -> pd.DataFrame:
+    df = con.sql(f"SELECT * FROM {definitions.Raw_tbls.CT}").df()
 
     assert isinstance(df, pd.DataFrame)
     assert not df.empty
@@ -68,7 +71,7 @@ def test_has_whitespace(dirty_ct):
 
 def test_remove_illegal_chars(cleaned_ct):
     # test to ensure that all identified illegal characters are removed - such as single quotes
-    a = cleaned_ct.remove_illegal_chars_ct["name"]
+    cleaned_ct.remove_illegal_chars_ct["name"]
     # str.contains returns a bool series with true if there is a match, assert not to invert it.
     assert not cleaned_ct.remove_illegal_chars_ct["name"].str.contains("'").any()
 

@@ -1,12 +1,13 @@
 import logging
 import duckdb as db
+from dataclasses import dataclass
+from deprecated import deprecated
 
 logging.basicConfig(level="INFO")
 logger = logging.getLogger(__name__)
 
-from dataclasses import dataclass
 
-
+@deprecated(reason="Depreceated in favor of queries.GetSampleData")
 @dataclass
 class WineData:
     db_path: str

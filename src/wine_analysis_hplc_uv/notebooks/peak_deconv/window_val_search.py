@@ -82,7 +82,7 @@ def main():
 
         file = pro_df
 
-        chromkwargs = dict(
+        dict(
             file=file,
         )
 
@@ -90,7 +90,7 @@ def main():
         raw_df = td.get_raw_samples("code_wine", 1)
         file = raw_df
 
-        chromkwargs = dict(
+        dict(
             file=file,
         )
 

@@ -49,12 +49,12 @@ class SignalProcessor:
         # lots of duplicates for higher levels. `DataFrameGroupBy.size()` will be expected
         # to return all groups of the same size. Any groups larger than the average will
         # indicate duplicates.
-        mask = df.columns.get_level_values(0).duplicated()
+        df.columns.get_level_values(0).duplicated()
 
         samplecode = df.columns.get_level_values(0)
-        mode = samplecode.value_counts().mode()[0]
+        samplecode.value_counts().mode()[0]
         outlier_mask = samplecode.value_counts() > 2
-        duplicates = outlier_mask[outlier_mask == True].dropna().index.values
+        duplicates = outlier_mask[outlier_mask is True].dropna().index.values
 
         assert len(duplicates) == 0, duplicates
 

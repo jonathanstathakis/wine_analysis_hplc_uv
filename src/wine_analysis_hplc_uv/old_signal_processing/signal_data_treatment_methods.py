@@ -1,8 +1,11 @@
 """
 A file to contain all the general data treatment methods: baseline correction, mean centering, normalization, peak alignment, peak finding, etc.
 """
-import numpy as np
+
+from typing import List, Union
+
 import pandas as pd
+import numpy as np
 from pybaselines import Baseline
 from scipy.signal import find_peaks
 from typing import Any
@@ -53,18 +56,13 @@ def peak_finder(
     return peak_df
 
 
-from typing import List, Union
-
-import pandas as pd
-
-
 def subset_spectra(
     df_series: pd.DataFrame, wavelength: Union[str, List[str]] = None
 ) -> pd.DataFrame:
     """
     Given a dataframe of mins | nm_1 | ... | nm_n, subset to return a df of same length but only the specified wavelengths. A single wavelength can be selected by providing a single string to 'wavelength'.
     """
-    if wavelength == None:
+    if wavelength is None:
         print("No wavelength values provided, therefore no point using this function.")
         raise RuntimeError
 

@@ -50,3 +50,78 @@ the problem I am actually trying to solve is sthe slow time joining the metadata
 
 VSCodes 'Find All References' function is untrustworthy. To find imports in the package, use this template "<start of import>^([^\s]+ ).*( .*)<end of import>". See [stack overflow](https://stackoverflow.com/a/76129640/18650135)
 
+
+# Git
+
+## Recovering Old Deleted Files
+
+[Stack Overflow](https://stackoverflow.com/a/44425132/18650135) has provided a one-liner to recover deleted files:
+
+```sh
+git config --global alias.undelete '!sh -c "git checkout $(git rev-list -n 1 HEAD -- $1)^ -- $1" -'
+```
+
+Use as  follows:
+
+```sh
+git undelete path/to/file.ext
+```
+
+And it will add the file back in, at its path. Note: does require a clean repo, or stashing any changes.
+
+# SQL Table Comparisons
+
+2024-05-09 16:08:13
+
+While verifying old tests, I decided to implement a simple comparison function. It should be straight foreward - get two tables, and do a series of comparisons to find similarities and differences, ala polars, pandas compare. But polars doesnt come with a comparison function, and calling for equality of `describe`, for example, where `describe` is used to summarize the functions is both discourged by the devs, and does not contain sufficient information about non numerical columns. Then I found that duckdb comes with a built-in SUMMARIZE method, but no table-to-table equality functions. So I envisioned a join and anti-join strategy, however it quickly became apparent that this was going to be a laborious task, to iterate through and compare each column, and to produce a similiarty/dissimilarity report. So i turned to third party options, and found data-diff. But data-diff was not constructed in the mind of comparing totally dissimilar tables, and furthermore the Python API is not well fleshed out or documented, and the return values are complex, requiring parsing to produce an easy-to-read report. All in all, no solution has worked yet.
+
+The main problem is that descriptions of similarity are arbitrary, as is expected behavior in the face of disimilarity.
+
+The main problem right now is that the generation of the stats dict requires id columns to be designated (?)
+
+I think the best course of action is to relegate `find_diff` to difference summaries and restrict my discussions of difference to booleans.
+
+Essentially, there are different levels of similarity, and different reports on the disimilarity for different levels. 
+
+1. If no columns in common, relegated to comparisons of geometry
+2. if column names common, compare datatypes
+3. if column names and data types the same, can compare.
+
+Two totally dissimilar tables cannot be compared at all. 
+
+There are set operations built in to duckdb as well.
+
+But how do I finish this in 15 minutes?
+
+polars `assert_frame_equal`. Thats how. Get the tables as frames and call it.
+
+# duckdb
+
+2024-05-09 16:48:52
+
+## Create tables from lists:
+```sql
+CREATE TABLE testx as SELECT unnest([1,2,3,4,5]) as a, unnest([4,5,4,2,1]) as y;
+
+>>>
+┌───────┬───────┐
+│   a   │   y   │
+│ int32 │ int32 │
+├───────┼───────┤
+│     1 │     4 │
+│     2 │     5 │
+│     3 │     4 │
+│     4 │     2 │
+│     5 │     1 │
+└───────┴───────┘
+```
+
+If they are different length, the shorter will be empty on table creation.
+
+## Handling Database Connections
+
+2024-05-10 10:07:07
+
+Modeling a programmatic flow while operating on a SQL database from a higher level language requires managing database connections. Connections are made by providing a configuration, a URL, or a filepath. In the case of duckdb, we use filepaths as it is a local-first database. In Pythons, database connections are modeled as objects, who can be passed like any other variable. This then raises the quetion of whether to a pass a live connection object, or the filepath string, and create a connection within every function. As duckdb has no problems creating multiple connection simultaneously for read and write operations (based on personal tests), then the decision becomes arbitrary. There is, however, one cosideration, which is that of performance. According to [this stack overflow thread](https://stackoverflow.com/a/65387376/18650135), creating connection objects within each scope is less perfromant than maintaining one object, and thus "one connection per application (sic.)" is best practice.
+
+TLDR: one connection object per application. Always write applications expecting a connection object, except for the user facing API.

@@ -7,6 +7,10 @@ TODO:
 - [ ] create a mock_df class initialized from a manually defined dict, then modify it
 in class to fail variously defined tests, i.e. duplicated samplecodes, wrong order vars,
 strings in column, not sorted mins, wrong order multiindex
+
+rules:
+1. level 0 must only have unique values
+3. level 2 must only contain ['mins'],['value'], in that order.
 """
 
 import pytest
@@ -17,6 +21,8 @@ from wine_analysis_hplc_uv.old_signal_processing.mindex_signal_processing import
     SignalProcessor,
 )
 
+import random
+
 logger = logging.getLogger(__name__)
 
 pd.options.display.width = None
@@ -24,13 +30,10 @@ pd.options.display.width = None
 pd.options.display.max_rows = 35
 pd.options.display.max_columns = 15
 pd.options.display.colheader_justify = "left"
-import random
 
-"""
-rules:
-1. level 0 must only have unique values
-3. level 2 must only contain ['mins'],['value'], in that order.
-"""
+# As of 2024-05-14, these tests are defunct, and marked for deletion. The respective module has been depreceated.
+
+pytest.skip(allow_module_level=True)
 
 
 @pytest.fixture
@@ -58,7 +61,7 @@ def test_cupshz_dset(cupshz_dset: pd.DataFrame) -> None:
 def test_adjust_timescale(
     signalprocessor: SignalProcessor, cupshz_dset: pd.DataFrame
 ) -> None:
-    df = cupshz_dset.pipe(signalprocessor.adjust_timescale)
+    cupshz_dset.pipe(signalprocessor.adjust_timescale)
 
 
 class BadDataSet:

@@ -17,7 +17,7 @@ def not_avantor_run_filter(df: pd.DataFrame) -> pd.DataFrame:
     """
     try:
         df = df[(df["acq_date"] > "2023-01-01")]
-    except:
+    except Exception:
         print(df.columns)
 
     print(f"after filtering for 2023 runs, {df.shape[0]} runs remaining\n")
@@ -49,7 +49,7 @@ def not_avantor_run_filter(df: pd.DataFrame) -> pd.DataFrame:
         .tolist()
     )
 
-    sequence_drop_mask = df["sequence_name"].isin(sequences_to_drop) == False
+    sequence_drop_mask = df["sequence_name"].isin(sequences_to_drop) is False
     print(
         f"Filtering out 'dups', 'repeat', '44min', 'acetone' runs, {df.shape[0]} runs remaining. Removing:\n\n{df[~sequence_drop_mask].groupby('sequence_name').size()}"
     )

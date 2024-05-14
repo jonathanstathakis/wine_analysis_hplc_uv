@@ -14,8 +14,10 @@ from wine_analysis_hplc_uv import definitions
 from wine_analysis_hplc_uv.notebooks.peak_deconv import db_interface
 
 from dataclasses import dataclass
+from deprecated import deprecated
 
 
+@deprecated(reason="use `wine_analysis_hplc_uv.queries.GetSampleData")
 @dataclass
 class DataExtractor(db_interface.DBInterface):
     """
@@ -26,7 +28,7 @@ class DataExtractor(db_interface.DBInterface):
     NOTE: It is currently necessary to run `load_data` to initialize the object fully.
     """
 
-    _con: db.DuckDBPyConnection
+    con: db.DuckDBPyConnection
     _table_name: str = "temp_tbl"
     detection: tuple = (None,)
     samplecode: tuple = (None,)
@@ -87,16 +89,16 @@ class DataExtractor(db_interface.DBInterface):
         :rtype: db.DuckDBPyConnection
         """
 
-        cs_col_list = self._select_wavelengths(cs_cols, self.wavelengths)
-
         from pathlib import Path
 
         here = Path(__file__).parent
         with open(here / "subset_tbl.sql", "r") as f:
             subset_tbl_query = f.read()
 
+        cs_col_list = []
+
         # Join the data tables together
-        self._con.execute(
+        self.con.execute(
             query=subset_tbl_query,
             parameters={
                 "cs_col_list": cs_col_list,
@@ -123,7 +125,7 @@ class DataExtractor(db_interface.DBInterface):
         :rtype: pd.DataFrame
         """
 
-        return self._con.sql(
+        return self.con.sql(
             f"""--sql
                              SELECT * FROM {self._table_name}
                              """
@@ -144,7 +146,7 @@ class DataExtractor(db_interface.DBInterface):
         :rtype: list
         """
 
-        columns = self._con.execute(
+        columns = self.con.execute(
             f"""--sql
                                     SELECT
                                         column_name
@@ -160,7 +162,6 @@ class DataExtractor(db_interface.DBInterface):
         #
         if isinstance(columns, pd.DataFrame):
             if columns.empty:
-                self._check_db_for_tbl_exist(self._cs_tbl)
                 self._check_db_for_tbl_col_exist(self._cs_tbl)
 
                 raise ValueError("cs_cols query returned an empty table")
@@ -242,7 +243,7 @@ class DataExtractor(db_interface.DBInterface):
         ({first_x_codewines})
         """
 
-        samples = self._con.query(get_samples_query).df()
+        samples = self.con.query(get_samples_query).df()
 
         return samples
 
@@ -253,7 +254,7 @@ class DataExtractor(db_interface.DBInterface):
         """
         Check if any cols matching the table name are present
         """
-        all_cs_cols = self._con.sql(
+        all_cs_cols = self.con.sql(
             f"""
             SELECT
                 column_name
@@ -274,12 +275,13 @@ class RawTestSet3DCreator(DataExtractor):
     """
 
     def __init__(self, db_path: str):
-        DataExtractor.__init__(self, db_path=db_path)
-
-        self._create_subset_table(
+        self.con = db.connect(database=db_path)
+        super().__init__(
+            self,
             wavelengths=list(range(190, 402, 2)),
             detection=("raw",),
             exclude_samplecodes=("72", "98"),
         )
+        super()._create_subset_table()
 
         self.df = self._get_tbl_as_df().dropna()

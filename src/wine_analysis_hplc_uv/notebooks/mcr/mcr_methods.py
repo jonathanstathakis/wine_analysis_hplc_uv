@@ -36,9 +36,6 @@ class PCA:
         # filter out components with less than 1E-3 variance ratio
         selected_components = screeplot_data.loc[lambda x: x.var_ratio > 1e-3]
 
-        # display the selected components table
-        display(selected_components)
-
         # create the scree plot, marking the last retained component
         screeplot_data.pipe(
             lambda x: so.Plot(data=x.loc[0:20], x="n", y="var_ratio")
@@ -50,14 +47,10 @@ class PCA:
                 y="var_ratio",
             )
         ).show()
-        display()
 
         # number of components is equal to the number of rows of the selected_components table
 
         n_components = selected_components.shape[0]
-
-        # display the nmber of components
-        display(f"n components = {n_components}")
 
         return n_components
 
@@ -101,14 +94,14 @@ class SIMPLISMA:
         imp[0] = int(np.argmax(p[0, :]))
         mp[0] = p[0, :][int(imp[0])]
 
-        l = np.sqrt((s[0, :] ** 2) + ((mean + error) ** 2))
+        l_ = np.sqrt((s[0, :] ** 2) + ((mean + error) ** 2))
 
         for j in range(ncol):
-            dl[:, j] = d[:, j] / l[j]
+            dl[:, j] = d[:, j] / l_[j]
 
         c = np.dot(dl.T, dl) / nrow
 
-        w[0, :] = w[0, :] / (l**2)
+        w[0, :] = w[0, :] / (l_**2)
         p[0, :] = w[0, :] * p[0, :]
         s[0, :] = w[0, :] * s[0, :]
 

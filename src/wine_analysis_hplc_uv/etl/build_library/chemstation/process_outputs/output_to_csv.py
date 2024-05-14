@@ -3,14 +3,15 @@ Output chemstation process data to csv.
 
 TODO:
 - [ ] write tests
-- [ ] clean up pickling and other dev artifacts. 
+- [ ] clean up pickling and other dev artifacts.
 """
+
 from typing import List
 import os
 import shutil
 import directory_tree
 import pandas as pd
-from wine_analysis_hplc_uv.chemstation import chemstationprocessor
+from wine_analysis_hplc_uv.etl.build_library.chemstation import chemstationprocessor
 
 # devimports, delete
 import pickle

@@ -131,4 +131,4 @@ def main():
 
     data = df.loc["2021-DEBORTOLI-CABERNET-MERLOT_HALO.D"]["data"]
 
-    uv_data = retrieve_uv_data(data)
+    retrieve_uv_data(data)

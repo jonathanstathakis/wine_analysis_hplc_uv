@@ -7,21 +7,24 @@ Produce a pairwise euclidean distance matrix of sample sc matrices.
 """
 import os
 import pickle
-
-import db_methods
 import duckdb as db
-import observing_spectra_shape_variation
 import pandas as pd
-import signal_alignment_methods as sa
 import streamlit as st
-from signal_processing import signal_data_treatment_methods as dt
+
+from wine_analysis_hplc_uv.etl.build_library.db_methods import db_methods
+from wine_analysis_hplc_uv.old_signal_processing.peak_alignment import (
+    observing_spectra_shape_variation,
+)
+from wine_analysis_hplc_uv.old_signal_processing import signal_alignment_methods as sa
+from wine_analysis_hplc_uv.old_signal_processing import (
+    signal_data_treatment_methods as dt,
+)
 
 pd.set_option("display.max_rows", None)
 pd.set_option("display.max_columns", None)
 pd.set_option("display.width", None)
 
 
-@ft.timeit
 def peak_alignment_spectrum_chromatogram():
     # get a dataframe consisting of sample metadata and a column of sc matrices as nested dataframes.
     df = load_spectrum_chromatograms()
@@ -47,8 +50,10 @@ def peak_alignment_spectrum_chromatogram():
         print(e)
 
 
-@ft.timeit
 def query_unique_wines_spectra_to_df(con: db.DuckDBPyConnection):
+    raise NotImplementedError(
+        "modifications to library has rendered this function unusable"
+    )
     print("starting")
 
     with con:
@@ -61,12 +66,11 @@ def query_unique_wines_spectra_to_df(con: db.DuckDBPyConnection):
         df = con.sql(query).df()
         print("getting spectra")
 
-        df = db_methods.get_spectra(df, con)
+        df = db_methods.get_sc_df(df, con)
 
     return df
 
 
-@ft.timeit
 def write_unique_id_spectra_df(df: pd.DataFrame, filepath: str):
     print("writing pickle")
     with open(filepath, "wb") as file:
@@ -74,7 +78,6 @@ def write_unique_id_spectra_df(df: pd.DataFrame, filepath: str):
     return None
 
 
-@ft.timeit
 def read_unique_id_spectra_pickle(filepath: str):
     print("reading pickle")
     with open(filepath, "rb") as file:
@@ -82,7 +85,6 @@ def read_unique_id_spectra_pickle(filepath: str):
     return df
 
 
-@ft.timeit
 def load_spectrum_chromatograms():
     table_name = "unique_join_samplecode_spectra"
     filepath = table_name + ".pk1"
@@ -90,7 +92,7 @@ def load_spectrum_chromatograms():
     # Check if the pickle file exists
     if not os.path.isfile(filepath):
         print("establishing conn. with db")
-        db_path = os.environ.get("WINE_AUTH_DB_PATH")
+        db_path = os.environ["WINE_AUTH_DB_PATH"]
         con = db.connect(db_path)
         df = query_unique_wines_spectra_to_df(con)
         write_unique_id_spectra_df(df, filepath)
@@ -101,7 +103,6 @@ def load_spectrum_chromatograms():
     return df
 
 
-@ft.timeit
 def main():
     peak_alignment_spectrum_chromatogram()
 

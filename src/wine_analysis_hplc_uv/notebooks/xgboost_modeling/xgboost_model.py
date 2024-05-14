@@ -17,11 +17,11 @@ from sklearn.metrics import classification_report, confusion_matrix
 from sklearn.model_selection import cross_validate
 from sklearn import metrics
 from imblearn import pipeline, over_sampling
+import logging
 
 
 plt.style.use("ggplot")
 
-import logging
 
 logger = logging.getLogger(__name__)
 

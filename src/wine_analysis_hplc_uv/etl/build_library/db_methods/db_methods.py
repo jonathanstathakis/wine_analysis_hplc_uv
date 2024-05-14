@@ -1,4 +1,4 @@
-""" 
+"""
 A file to contain general duckdb database methods.
 """
 
@@ -7,6 +7,7 @@ from wine_analysis_hplc_uv import definitions
 from mydevtools.function_timer import timeit
 import logging
 import duckdb as db
+from deprecated import deprecated
 
 logger = logging.getLogger(__name__)
 
@@ -16,7 +17,7 @@ def write_df_to_db(df: pd.DataFrame, tblname: str, con: db.DuckDBPyConnection):
         # write given table in db from df
         con.sql(f"CREATE OR REPLACE TABLE {tblname} AS SElECT * FROM df")
 
-        db_name = con.sql("SELECT current_database()").fetchone()[0]
+        db_name = con.sql("SELECT current_database()").fetchone()[0]  # type: ignore
 
         # log that the tbl has been written to the db
         logger.info(f"{tblname} written to {db_name}")
@@ -47,6 +48,7 @@ def display_table_info(con: db.DuckDBPyConnection, table_name: str) -> None:
     return None
 
 
+@deprecated(reason="use `wine_analysis_hplc_uv.queries.GetSampleData")
 def get_sc_df(
     con: db.DuckDBPyConnection,
     sampleids: list = None,
@@ -70,9 +72,9 @@ def get_sc_df(
             SELECT
             sc.mins, sc.wavelength, sc.value, super.wine, super.detection, super.id
             FROM
-            {definitions.CH_DATA_TBL_NAME} sc
+            {definitions.Raw_tbls.CH_DATA} sc
             JOIN
-            {definitions.CLEAN_CT_TBL_NAME} super
+            {definitions.Clean_tbls.CT} super
             USING (id)
             """
 
@@ -98,7 +100,7 @@ def get_sc_df(
                  SELECT
                   sc.mins, sc.wavelength, sc.value, super.wine, super.detection, super.id
                  FROM
-                 {definitions.CH_DATA_TBL_NAME} sc
+                 {definitions.Raw_tbls.CH_DATA} sc
                  JOIN
                  {definitions.SUPER_TBL_NAME} super
                  USING (id)

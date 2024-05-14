@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 
 
 def two_grouped_col_df(df):

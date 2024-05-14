@@ -1,4 +1,8 @@
 from typing import List, Tuple
+import collections
+from wine_analysis_hplc_uv.etl.build_library.chemstation import (
+    uv_extractor_pool,
+)
 
 counter = None
 counter_lock = None
@@ -11,7 +15,7 @@ def ch_data_multiprocess(dirpath_list: List[str]) -> Tuple[List[dict], List[dict
     3. return uv_metadata_list and uv_data_list
     """
     if isinstance(dirpath_list, list):
-        uv_file_pool = uv_extractor_pool(dirpath_list)
+        uv_file_pool = uv_extractor_pool.uv_extractor_pool(dirpath_list)
 
         try:
             uv_metadata_list, uv_data_list = zip(*uv_file_pool)

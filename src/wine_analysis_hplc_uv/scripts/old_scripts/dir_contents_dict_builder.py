@@ -12,27 +12,27 @@ It will return the dict of dicts.
 
 from pathlib import Path
 
+
 def contents_dict():
-    
-    p = Path('../002_0_jono_data/')
-    
-    root_dir_dict = {}
-    
+    p = Path("../002_0_jono_data/")
+
     # for each item in the root_dir we need to create a dictionary item with {filename : {metdata, data}}
-    
+
     single_runs = {x for x in p.iterdir() if ".D" in str(x)}
-    
-    sequences = [x for x in p.iterdir() if ".D" not imv n str(x)]    
-    
+
+    sequences = [x for x in p.iterdir() if ".D" not in str(x)]
+
     [print(x) for x in sequences]
-    
+
     [x.rename(p / "single_runs" / x.name) for x in single_runs]
-    
+
+
 #    [x.rename(p / "sequences" / x.name) for x in sequences]
-    
+
+
 #    [print(x.name) for x in p / "single_runs"]
 def main():
-    
     contents_dict()
-    
+
+
 main()

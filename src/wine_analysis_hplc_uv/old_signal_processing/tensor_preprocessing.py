@@ -23,24 +23,26 @@ Parts of the pipe to add
 6. [ ] alignment
 """
 
-from wine_analysis_hplc_uv.db_methods import get_data
-from wine_analysis_hplc_uv.modeling import pca
+from wine_analysis_hplc_uv.etl.build_library.db_methods import get_data
+from wine_analysis_hplc_uv.etl.build_library.db_methods import pivot_wine_data
 from wine_analysis_hplc_uv import definitions
 import duckdb as db
 
 
 def get_frames(con):
-    get_data.get_wine_data(
+    wd = get_data.WineData(db_path=definitions.DB_PATH)
+
+    wd.get_wine_data(
         con, samplecode=("124", "130", "125", "133", "174"), wavelength=(450,)
     )
-    df = con.sql("select * from wine_data").df().pipe(pca.pivot_wine_data)
+    df = con.sql("select * from wine_data").df().pipe(pivot_wine_data.pivot_wine_data)
 
     return df
 
 
 def main():
     con = db.connect(definitions.DB_PATH)
-    df = get_frames(con)
+    get_frames(con)
 
 
 if __name__ == "__main__":

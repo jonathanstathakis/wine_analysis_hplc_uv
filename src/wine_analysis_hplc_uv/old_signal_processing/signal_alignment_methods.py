@@ -5,19 +5,28 @@ All methods will act on a provided series of df's, where the index is ideally th
 
 Refer to prototype_code/peak_alignment.py for use of most of these methods (at date 2023-04-30).
 """
+
 from itertools import combinations
 
 import numpy as np
 import pandas as pd
 from dtw import dtw
 from scipy.spatial.distance import euclidean
-
-from ..signal_processing import signal_data_treatment_methods as dt
+from wine_analysis_hplc_uv.scripts.core_scripts import (
+    signal_data_treatment_methods as dt,
+)
 
 
 def baseline_subtraction(df_series: pd.Series):
     print("calculating baselines..")
-    baselines = df_series.apply(lambda row: dt.calc_baseline(row))
+    x_col_key = "x"
+    y_col_key = df_series.name
+    df = df_series.to_frame().reset_index(names=[x_col_key])
+    baselines = df.apply(
+        lambda row: dt.calc_baseline(
+            signal_df=row, x_col_key=x_col_key, y_col_key=y_col_key
+        )
+    )
     baseline_subtracted_signals = {}
 
     print("subtracting baselines..")
@@ -168,8 +177,8 @@ def calculate_distance_matrix(series_of_dataframes: pd.Series):
         df_2 = df_2.apply(pd.to_numeric)
 
         # Flatten the DataFrames and calculate the Euclidean distance
-        flattened_df_1 = df_1.values.flatten()
-        flattened_df_2 = df_2.values.flatten()
+        flattened_df_1 = df_1.to_numpy().flatten()
+        flattened_df_2 = df_2.to_numpy().flatten()
         distance = euclidean(flattened_df_1, flattened_df_2)
 
         # Fill the distance matrix symmetrically

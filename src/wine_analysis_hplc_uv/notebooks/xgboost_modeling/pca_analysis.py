@@ -2,6 +2,7 @@
 1. get the data - processed. Needs to be the varietal data.
 2. set up the PCA analysis
 """
+
 from wine_analysis_hplc_uv.notebooks.xgboost_modeling import datasets
 from wine_analysis_hplc_uv import definitions
 from wine_analysis_hplc_uv.notebooks.xgboost_modeling import data_prep
@@ -49,16 +50,14 @@ class myPCA:
 
         X = data.drop(["varietal", "color", "detection", "id", "code_wine"], axis=1)
         y = data["varietal"]
-        le = LabelEncoder()
+
+        # 2024-05-14 13:14:53. Line below may be needed, linting may have accidentally removed its call?
+        # le = LabelEncoder()
 
         Xt = self.pipeline.fit_transform(X)
-
-        # print(Xt)
         Xt = pd.DataFrame(Xt, index=y).reset_index()
 
         Xt = Xt.assign(code_wine=data.code_wine)
-
-        # matplotlib_3dscatter(X)
 
         self.plotly_3dscatter(Xt)
 
@@ -92,7 +91,7 @@ class myPCA:
                 bbox=dict(alpha=0.5, edgecolor="w", facecolor="w"),
             )
 
-        # y = np.choose(X.varietal.unique(), [1,2,0]).astype(float)
+        y = np.choose(X.varietal.unique(), [1, 2, 0]).astype(float)
 
         ax.scatter(
             X.loc[:, 0],
@@ -104,10 +103,6 @@ class myPCA:
             #    s=100
         )
         plt.show()
-
-        import sys
-
-        sys.exit()
 
         for name, label in [("Setosa", 0), ("Versicolour", 1), ("Virginica", 2)]:
             # add the text box at the intersect of the mean of the three components of each class
@@ -141,7 +136,7 @@ class myPCA:
 
 
 def main():
-    mypca = myPCA(definitions.DB_PATH)
+    myPCA(definitions.DB_PATH)
 
     # ds = datasets.RawRedVarietalData(
     #     definitions.DB_PATH,

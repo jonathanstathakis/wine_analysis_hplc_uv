@@ -1,8 +1,10 @@
 import pandas as pd
-from wine_analysis_hplc_uv.df_methods import df_cleaning_methods
+from wine_analysis_hplc_uv.etl.build_library import df_cleaning_methods
 from wine_analysis_hplc_uv.etl.build_library.generic import Exporter
 import re
 import logging
+import warnings
+
 
 logger = logging.getLogger(__name__)
 
@@ -57,7 +59,7 @@ def ch_m_samplecode_cleaner(df: pd.DataFrame) -> pd.DataFrame:
 
 def replace_116_sigurd(df: pd.DataFrame):
     """
-    Modifies sigurd chenin blanc samplecode from 116 to sigurdcb, as there was a doubleup.
+    Modifies sigurd chenin blanc samplecode from 116 to sigurdcb, as there was a double up.
     """
 
     assert isinstance(df, pd.DataFrame)
@@ -70,28 +72,36 @@ def replace_116_sigurd(df: pd.DataFrame):
     try:
         num_116 = df["samplecode"].value_counts()["116"]
 
-        assert num_116 == 2, df["samplecode"].value_counts()["116"]
-        replacement_str = "sigurdcb"
+        if not num_116 == 2:
+            if num_116 == 1:
+                warnings.warn(
+                    "only one 116 found, possibly this is an unecessary cleaning routine"
+                )
+            else:
+                raise ValueError(
+                    f"Expected 2 116's in the raw set, but found {num_116} repeats."
+                )
+        else:
+            replacement_str = "sigurdcb"
 
-        # mask for the row containing 'sigurd' in the description col
-        sigurd_mask = df["desc"].str.contains("sigurd", na=False)
-        # make sure there is at least 1 True value
-        assert sigurd_mask.isin([True]).any()
-        # make the value replacement
-        df.loc[sigurd_mask, "samplecode"] = replacement_str
-        # make sure there is now only 1 '116'
-        assert (
-            df[df["samplecode"] == "116"].shape[0] == 1
-        ), f"{df[df['samplecode'] == '116']}"
-        # make sure there is 1 'sigurdcb'
-        assert (
-            df[df["samplecode"] == replacement_str].shape[0] == 1
-        ), f"{df[df['samplecode'] == replacement_str]}"
+            # mask for the row containing 'sigurd' in the description col
+            sigurd_mask = df["desc"].str.contains("sigurd", na=False)
+            # make sure there is at least 1 True value
+            assert sigurd_mask.isin([True]).any()
+            # make the value replacement
+            df.loc[sigurd_mask, "samplecode"] = replacement_str
 
-    except AssertionError:
-        logging.warning(
-            f"Only {num_116} 116 samplecode in library. Skipped renaming to sigurdcb process"
-        )
+            # make sure there is now only 1 '116'
+            assert (
+                df[df["samplecode"] == "116"].shape[0] == 1
+            ), f"{df[df['samplecode'] == '116']}"
+            # make sure there is 1 'sigurdcb'
+            assert (
+                df[df["samplecode"] == replacement_str].shape[0] == 1
+            ), f"{df[df['samplecode'] == replacement_str]}"
+
+    except ValueError as e:
+        logger.error(e)
 
     return df
 

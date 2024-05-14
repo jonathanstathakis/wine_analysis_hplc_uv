@@ -1,25 +1,37 @@
 import os
+from enum import StrEnum
 
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 
-DB_PATH: str = os.environ.get("DB_PATH")
+DB_PATH: str = os.environ["DB_PATH"]
 
 LIB_DIR = "/Users/jonathan/uni/0_jono_data/mres_data_library/"
 
-CH_META_TBL_NAME = "chemstation_metadata"
-CH_DATA_TBL_NAME = "chromatogram_spectra"
-ST_TBL_NAME = "sample_tracker"
-CT_TBL_NAME = "cellar_tracker"
 
-CLEAN_CH_META_TBL_NAME = "c_" + CH_META_TBL_NAME
-CLEAN_ST_TBL_NAME = "c_" + ST_TBL_NAME
-CLEAN_CT_TBL_NAME = "c_" + CT_TBL_NAME
+class Raw_tbls(StrEnum):
+    CH_META = "chemstation_metadata"
+    CH_DATA = "chromatogram_spectra"
+    ST = "sample_tracker"
+    CT = "cellar_tracker"
+
+
+class Clean_tbls(StrEnum):
+    CH_META = "c_" + Raw_tbls.CH_META
+    ST = "c_" + Raw_tbls.ST
+    CT = "c_" + Raw_tbls.CT
+
+
+class GoogleSheetsAPIInfo(StrEnum):
+    SHEET_TITLE = os.environ["SAMPLE_TRACKER_SHEET_TITLE"]
+    GKEY = os.environ["SAMPLE_TRACKER_KEY"]
+    USERNAME = os.environ["CELLAR_TRACKER_UN"]
+    PW = os.environ["CELLAR_TRACKER_PW"]
+
 
 SUPER_TBL_NAME = "super_tbl"
 
 TEST_DB_PATH = os.path.join(os.getcwd(), "tests", "test.db")
-
-TEST_SHEETS_KEY = os.environ.get("TEST_SAMPLE_TRACKER_KEY")
+TEST_GKEY = os.environ.get("TEST_SAMPLE_TRACKER_KEY")
 
 ID_COLNAME = "id"
 

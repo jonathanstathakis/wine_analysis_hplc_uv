@@ -47,7 +47,11 @@ class RawRedVarietalData:
 
 
 class CUPRACRedVarietalData(dataextract.DataExtractor, data_pipeline.DataPipeline):
-    def __init__(self, db_path: str) -> tuple:
+    def __init__(
+        self,
+        db_path: str,
+        kwargs,
+    ) -> tuple:
         dataextract.DataExtractor.__init__(self, db_path=db_path)
         data_pipeline.DataPipeline.__init__(
             self, self.raw_data, kwargs.data_pipeline_kwargs

@@ -5,9 +5,11 @@ Initialized with a WorkSheet object that provides a dataframe and sheet_title.
 
 Exporting back to Sheets (if desired) can either use that WorkSheet object or create a new one, if a new `sheet_title` is provided.
 """
-from wine_analysis_hplc_uv.generic import Exporter
+from wine_analysis_hplc_uv.etl.build_library.generic import Exporter
 import logging
-from wine_analysis_hplc_uv.my_sheetsinterface.gspread_methods import WorkSheet
+from wine_analysis_hplc_uv.etl.build_library.my_sheetsinterface.gspread_methods import (
+    WorkSheet,
+)
 import os
 
 logger = logging.getLogger(__name__)

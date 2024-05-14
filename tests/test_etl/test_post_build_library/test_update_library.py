@@ -2,19 +2,15 @@
 Test library update execution
 """
 
-from wine_analysis_hplc_uv.etl.post_build_library import update_library
-import pytest
-import duckdb as db
-import tests.definitions as test_defs
 import logging
+
+import duckdb as db
+import pytest
+from wine_analysis_hplc_uv.etl.post_build_library import update_library
+
 from tests.test_etl.test_post_build_library import gen_sample_test_data
 
 logger = logging.getLogger(__name__)
-
-
-@pytest.fixture
-def con():
-    return db.connect(database=test_defs.DB_PATH)
 
 
 @pytest.mark.parametrize(
@@ -43,6 +39,6 @@ def test_build_library_updater(
         raise e
 
     finally:
-        logger.debug(f"cleaning up {new_tbls} by dropping from db..")
+        logger.debug("cleaning up %s by dropping from db..", new_tbls)
         for tbl in new_tbls:
             con.execute(f"DROP TABLE {tbl}")

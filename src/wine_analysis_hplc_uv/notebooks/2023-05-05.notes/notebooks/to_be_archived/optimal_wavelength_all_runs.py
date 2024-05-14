@@ -1,19 +1,14 @@
+from pathlib import Path
+from time import perf_counter
+
 import pandas as pd
-
-
-pd.options.plotting.backend = "plotly"
-
-
-from sklearn.preprocessing import MinMaxScaler
-
-from pybaselines import Baseline
 
 # adds root dir 'wine_analyis_hplc_uv' to path.)
 from agilette.agilette_core import Library
+from pybaselines import Baseline
+from sklearn.preprocessing import MinMaxScaler
 
-from pathlib import Path
-
-from time import perf_counter
+pd.options.plotting.backend = "plotly"
 
 
 def uv_data_scaler(uv_data_column):
@@ -77,7 +72,7 @@ def spectrum_baseline_calculation(spectrum_column):
 
 
 def main():
-    time_1 = perf_counter()
+    perf_counter()
     selected_runs = [
         "2023-02-23_2021-DEBORTOLI-CABERNET-MERLOT_AVANTOR.D",
         "2023-02-23_LOR-RISTRETTO.D",

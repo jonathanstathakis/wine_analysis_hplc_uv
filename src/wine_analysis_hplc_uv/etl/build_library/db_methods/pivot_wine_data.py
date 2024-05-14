@@ -1,11 +1,13 @@
 import duckdb as db
 import pandas as pd
-from wine_analysis_hplc_uv.db_methods import get_data
+from wine_analysis_hplc_uv.etl.build_library.db_methods import get_data
 import logging
+from deprecated import deprecated
 
 logger = logging.getLogger(__name__)
 
 
+@deprecated(reason="Depreceated in favor of queries.GetSampleData")
 def get_sample(con):
     get_data.get_wine_data(
         con,
@@ -27,10 +29,11 @@ def get_sample(con):
 
     wine_data = con.sql("SELECT * FROM wine_data").df()
 
-    pwine_data = pivot_wine_data(wine_data)
+    _pivot_wine_data(wine_data)
 
 
-def pivot_wine_data(
+@deprecated(reason="Depreceated in favor of queries.GetSampleData")
+def _pivot_wine_data(
     con: db.DuckDBPyConnection,
 ) -> pd.DataFrame:
     """
@@ -123,33 +126,3 @@ def pivot_wine_data(
     )
 
     return pwine_df
-
-
-def stack_df(df):
-    """
-    reshape an unstacked multi-index column df to a stacked df for plotting purposes.
-
-    probs not gna use this but its a useful example for personal use.
-    """
-
-    df = (
-        df.pipe(
-            lambda df: df.set_axis(
-                pd.MultiIndex.from_tuples(
-                    [tuple(c.split("_")) for c in df.columns],
-                    names=["samplecode", "vars"],
-                ),
-                axis=1,
-            )
-        )
-        .rename_axis("i")
-        # .reset_index(names=['i'])
-        .stack(["samplecode"])
-        .reset_index()
-        .set_index(["i", "samplecode", "wine"])
-        .unstack(["samplecode", "wine"])
-        .reorder_levels(["samplecode", "wine", "vars"], axis=1)
-        .sort_index(axis=1, level=0, sort_remaining=True)
-    )
-
-    return df

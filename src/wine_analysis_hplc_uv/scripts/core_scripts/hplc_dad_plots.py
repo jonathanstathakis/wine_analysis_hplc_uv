@@ -39,25 +39,6 @@ def plot_3d_line(df, plot_title=None):
     except Exception as e:
         print(e)
 
-    color_scale = "Magma"
-
-    x = melt_df["nm"]
-    y = melt_df["mins"]
-    z = melt_df["mAU"]
-
-
-def plot_3d_line(df, plot_title=None):
-    """
-    Takes a wide format uv data df with mins as column 1 and a default index, melts it into a long format then plots a 3d line plot.
-    """
-    try:
-        melt_df = df.melt(id_vars="mins")
-        melt_df.columns = ["mins", "nm", "mAU"]
-        melt_df["nm"] = pd.to_numeric(melt_df["nm"])
-
-    except Exception as e:
-        print(e)
-
     # Custom colorscale
     # Custom Magma-like colorscale
 
@@ -148,13 +129,6 @@ def surface_plot(df, plot_title=None, downsample_factor=10):
     fig = go.Figure(data=[trace], layout=layout)
 
     return fig
-
-
-import pandas as pd
-
-
-def downsample(data, factor):
-    return data[::factor]
 
 
 def contour_plot(df, plot_title=None, downsample_factor=10):

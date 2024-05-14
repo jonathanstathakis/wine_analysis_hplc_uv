@@ -1,6 +1,7 @@
 """
 Inner join of two tables
 """
+
 from wine_analysis_hplc_uv import definitions
 import duckdb as db
 
@@ -36,8 +37,8 @@ def inner_join(db_path: str, tbl1: str, tbl2: str, tbl1_key: str, tbl2_key: str)
 def main():
     inner_join(
         db_path=definitions.DB_PATH,
-        tbl1=definitions.CLEAN_ST_TBL_NAME,
-        tbl2=definitions.CLEAN_CT_TBL_NAME,
+        tbl1=definitions.Clean_tbls.ST,
+        tbl2=definitions.Clean_tbls.CT,
         tbl1_key="join_key",
         tbl2_key="join_key",
     )

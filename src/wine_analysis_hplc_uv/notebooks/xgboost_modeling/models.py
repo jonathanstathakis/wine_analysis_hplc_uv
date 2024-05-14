@@ -8,7 +8,7 @@ from wine_analysis_hplc_uv.notebooks.xgboost_modeling import kwarg_classes
 class ModelBasis(xgboost_model.XGBoostModeler, data_prep.DataPrepper):
     def __init__(self):
         xgboost_model.XGBoostModeler.__init__(self)
-        self.kwargs = DefaultKwargs()
+        self.kwargs = {}
 
     def run_model(self, model_type: str = "single", param_grid=dict()) -> None:
         """

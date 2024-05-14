@@ -1,8 +1,10 @@
 """
 Generic Class and method definitions
 """
-from wine_analysis_hplc_uv.db_methods import db_methods
-from wine_analysis_hplc_uv.my_sheetsinterface import gspread_methods as g_methods
+from wine_analysis_hplc_uv.etl.build_library.db_methods import db_methods
+from wine_analysis_hplc_uv.etl.build_library.my_sheetsinterface import (
+    gspread_methods as g_methods,
+)
 import logging
 
 logger = logging.getLogger(__name__)

@@ -11,7 +11,7 @@ Then the primary task will be to form a dataframe and clean up the vintage and n
 import pandas as pd
 
 
-from google_sheets_api import (
+from wine_analysis_hplc_uv.etl.build_library.google_sheets_api.google_sheets_api import (
     get_sheets_values_as_df,
     post_df_as_sheet_values,
     post_new_sheet,
@@ -92,7 +92,10 @@ def values_df_cleaner(df: pd.DataFrame):
 def main():
     creds_path = "/Users/jonathan/wine_analysis_hplc_uv/notebooks/credentials_tokens/"
 
-    # in_sheet, in_data_range = ("15S2wm8t6ol2MRwTzgKTjlTcUgaStNlA22wJmFYhcwAY","sample_tracker!A1:G200")
+    in_sheet, in_data_range = (
+        "15S2wm8t6ol2MRwTzgKTjlTcUgaStNlA22wJmFYhcwAY",
+        "sample_tracker!A1:G200",
+    )
 
     df = get_sheets_values_as_df(in_sheet, in_data_range, creds_parent_path=creds_path)
 
@@ -120,7 +123,7 @@ def main():
 
     df = df.fillna("")
 
-    # sheet_title = 'test_sheet_9000'
+    sheet_title = "test_sheet_9000"
 
     response = post_new_sheet(in_sheet, sheet_title, creds_path)
 

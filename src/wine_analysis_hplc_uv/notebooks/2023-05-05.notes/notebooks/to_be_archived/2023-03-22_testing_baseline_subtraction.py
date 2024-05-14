@@ -1,10 +1,7 @@
-import pandas as pd
-
-
 import numpy as np
-
-
+import pandas as pd
 from numpy.random import default_rng
+from pybaselines import Baseline
 
 """
 I need:
@@ -50,8 +47,6 @@ pd.options.display.min_rows = 10
 pd.options.display.max_colwidth = 100
 
 # Calculate baselines
-
-from pybaselines import Baseline
 
 baseline_fitter = Baseline(top_df.loc["run_1", "signals"].index)
 

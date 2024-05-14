@@ -1,9 +1,9 @@
 import pandas as pd
 import streamlit as st
+from wine_analysis_hplc_uv.scripts.core_scripts import hplc_dad_plots
 
-
-from tests import test_spectra_df
-from scripts.core_scripts import hplc_dad_plots
+# FIXME: needs a sample chromato-spectral dataframe
+test_spectra_df = pd.DataFrame()
 
 
 def spectra_display(df: pd.DataFrame):
@@ -24,9 +24,7 @@ def spectra_display(df: pd.DataFrame):
 
 
 def main():
-    spectra_display(
-        test_spectra_df.test_spectra_df().drop(["name_ct", "hash_key"], axis=1)
-    )
+    spectra_display(test_spectra_df.drop(["name_ct", "hash_key"], axis=1))
 
 
 if __name__ == "__main__":

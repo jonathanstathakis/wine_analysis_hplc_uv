@@ -1,7 +1,7 @@
 import pytest
 import os
 from wine_analysis_hplc_uv import definitions
-from wine_analysis_hplc_uv.cellartracker_methods import ct_to_db
+from wine_analysis_hplc_uv.etl.build_library.cellartracker_methods import ct_to_db
 import duckdb as db
 import logging
 
@@ -26,7 +26,7 @@ def db_con():
 
 @pytest.fixture
 def ct_tblname():
-    return definitions.CT_TBL_NAME
+    return definitions.Raw_tbls.CT
 
 
 def test_ct_to_db(ct_un, ct_pw, db_con, ct_tblname):

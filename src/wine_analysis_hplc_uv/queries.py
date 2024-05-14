@@ -2,7 +2,7 @@
 Methods for retrieval of data post-ETL.
 """
 
-from .etl import generic
+from .etl.post_build_library import generic
 from typing import Literal, TypedDict, get_args
 import duckdb as db
 import pandas as pd
@@ -79,12 +79,6 @@ class GetSampleData:
 
         See `filter` default value, `Filter` type.
 
-        TODO: filter input validation, range fields must be a two element tuple, all others scalars or
-        iterables.
-        TODO: filter input validation for empty filter - throw an error if an empty filter is provided?,
-        include a backend attribute that allows for disabling the error prior to calling `run_query`
-        TODO: implement `return_frame_type`
-
         :param filter: a mapping of dataset column names to values. Columns in table 'sample_metadata' are
         used to select by sample metadata such as color or varietal, columns in 'chromatogram_spectra_long'
         are used to select the extent of the chromato-spectral image., defaults to default_filter
@@ -103,7 +97,8 @@ class GetSampleData:
         :type join_key: str, optional
         """
 
-        self.filter = filter
+        self.filter = self._validate_filter(filter)
+
         self.get_cs_data = get_cs_data
         self.return_frame_type = return_frame_type
         self.metadata_tblname = metadata_tblname
@@ -112,12 +107,23 @@ class GetSampleData:
 
         self.cs_range_fields = ["mins", "wavelength"]
 
+    def _validate_filter(self, filter):
+        """
+        TODO: filter input validation, range fields must be a two element tuple, all others scalars or iterables.
+        TODO: filter input validation for empty filter - throw an error if an empty filter is provided. include a backend attribute that allows for disabling the error prior to calling `run_query`
+        """
+
+        return filter
+
     @property
     def return_frame_type(self):
         return self._return_frame_type
 
     @return_frame_type.setter
     def return_frame_type(self, val):
+        """
+        TODO: implement `return_frame_type`
+        """
         if val != "polars":
             if val in ["pandas", "temp"]:
                 raise NotImplementedError("only 'polars' is currently implemented")

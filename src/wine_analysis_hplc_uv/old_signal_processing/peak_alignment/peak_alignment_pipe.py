@@ -1,6 +1,6 @@
 """
 ~~rule: signal dataframes are always structured index | mins | signal~~
-rule: dataframes with a combination of signal and metadata will always have the sample 
+rule: dataframes with a combination of signal and metadata will always have the sample
 name as the index.
 rule: use dictionaries to handle collections of dataframes.
 rule: ditch time.
@@ -8,7 +8,7 @@ rule: ditch time.
 1. interpolate time axis, then just store 1 time array in a df. reduces dimensionality
 by 1.
 
-2023-08-20 18:37:26: Revitalizing the pipe. Ideally we're gna convert it to a 
+2023-08-20 18:37:26: Revitalizing the pipe. Ideally we're gna convert it to a
 multiindexed approach of (samplecode, wine, signal).
 2023-08-20 18:39:20: TBH I should create a mock df in the format the pipe is expecting
 in order to test the pipe before and after structure format conversion.
@@ -20,7 +20,7 @@ dataset that the pipe was originally formed on.
 2023-08-21 14:10:45: because db_methods.get_spectra has been deleted, and I cant be
 bothered trying to revert to an undeleted state, I'll just form a mock structure from
 the current multiindexed structure.
-2023-08-21 14:55:56: the baseline subraction module actually acts on a series of 
+2023-08-21 14:55:56: the baseline subraction module actually acts on a series of
 dataframes, not a dict. minimal difference..
 
 TODO:
@@ -31,19 +31,16 @@ TODO:
 
 """
 
-
 import numpy as np
 import pandas as pd
-import streamlit as st
-
-st.set_page_config(layout="wide")
-
-from wine_analysis_hplc_uv.plot_methods import plotly_plot_methods
-from wine_analysis_hplc_uv.signal_processing import signal_alignment_methods as sa
-from wine_analysis_hplc_uv.signal_processing import signal_data_treatment_methods as sdt
-
 import pandera as pa
+import streamlit as st
 from pandera.typing import DataFrame, Series
+from wine_analysis_hplc_uv.plot_methods import plotly_plot_methods
+from wine_analysis_hplc_uv.old_signal_processing import signal_alignment_methods as sa
+from wine_analysis_hplc_uv.old_signal_processing import (
+    signal_data_treatment_methods as sdt,
+)
 
 
 class SampleSignalSchema(pa.DataFrameModel):
@@ -53,6 +50,9 @@ class SampleSignalSchema(pa.DataFrameModel):
 
 class PeakAlignmentPipeSchema(pa.DataFrameModel):
     raw_df: Series[DataFrame[SampleSignalSchema]]
+
+
+st.set_page_config(layout="wide")
 
 
 def peak_alignment_pipe(df: DataFrame[PeakAlignmentPipeSchema]):
@@ -126,17 +126,17 @@ def find_representative_sample(corr_df=pd.DataFrame) -> str:
     return highest_corr_key
 
 
-def peak_alignment_st_output(series: pd.Series) -> None:
+def peak_alignment_st_output(s: pd.Series) -> pd.Series:
     """
     Display the intermediate and final results of the the pipeline. As each stage of the pipeline is stored in the df as a column idx : wine, column : dfs, can iterate through the columns, using the col naems as section headers.
     """
-    st.subheader(f"{series.name}")
+    st.subheader(f"{s.name}")
 
-    x_axis_name = list(series.iloc[0].columns)[0]
-    y_axis_name = list(series.iloc[0].columns)[1]
+    x_axis_name = list(s.iloc[0].columns)[0]
+    y_axis_name = list(s.iloc[0].columns)[1]
 
-    fig = plotly_plot_methods.plot_signal_in_series(series, x_axis_name, y_axis_name)
+    fig = plotly_plot_methods.plot_signal_in_series(s, x_axis_name, y_axis_name)
 
     st.plotly_chart(fig)
 
-    return series
+    return s

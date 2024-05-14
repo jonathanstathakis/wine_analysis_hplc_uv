@@ -1,5 +1,11 @@
-import duckdb as db
+"""
+Contains the `SampleTableGenerator` which adds temporary samplings of 'sample_metadata' and 'chromatogram_spectra_long' for testing
+"""
+
 from typing import Self
+
+import duckdb as db
+import sqlparse
 
 
 class SampleTableGenerator:
@@ -24,12 +30,19 @@ class SampleTableGenerator:
 
         self.con = con
         self.n = n
-        self.sample_metadata_tblname = sample_metadata_tblname
-        self.cs_tblname = cs_tblname
+        self.tblnames = {}
         self.join_key = join_key
-        self.sm_sample_tblname = sm_sample_tblname
-        self.cs_sample_tblname = cs_sample_tblname
-        self.sampling_tbl = "sm_sampling"
+
+        self.sample_ids = None
+
+        self.intm_sm_tblnames = dict(sampling="sm_sampling", non_null="sm_non_null_ids")
+
+        self.tblnames = dict(
+            sm=sample_metadata_tblname,
+            cs=cs_tblname,
+            sm_sample=sm_sample_tblname,
+            cs_smaple=cs_sample_tblname,
+        )
 
     def get_sample_ids(self):
         """
@@ -37,15 +50,14 @@ class SampleTableGenerator:
         """
         try:
             # first get all non-null id sample entires
-            self.non_null_tbl = "sm_non_null_ids"
             self.con.execute(
                 f"""--sql
-                             CREATE TEMP TABLE {self.non_null_tbl}
+                             CREATE TEMP TABLE {self.intm_sm_tblnames['non_null']}
                              AS (
                                 SELECT
                                     *
                                 FROM
-                                {self.sample_metadata_tblname}
+                                {self.tblnames['sm']}
                                 WHERE
                                 {self.join_key} IS NOT NULL
                              )
@@ -57,12 +69,12 @@ class SampleTableGenerator:
             self.con.execute(
                 f"""--sql
                              
-                             CREATE TEMP TABLE {self.sampling_tbl}
+                             CREATE TEMP TABLE {self.intm_sm_tblnames['sampling']}
                              AS (
                                 SELECT
                                     *
                                 FROM
-                                    {self.non_null_tbl}
+                                    {self.intm_sm_tblnames['not_null']}
                                 USING
                                     SAMPLE {self.n}
                                 
@@ -78,7 +90,7 @@ class SampleTableGenerator:
                 f"""--sql
                     SELECT distinct({self.join_key})
                     FROM
-                        {self.sampling_tbl}
+                        {self.intm_sm_tblnames['sampling']}
 
                     """
             ).fetchall()
@@ -105,7 +117,6 @@ class SampleTableGenerator:
             raise RuntimeError(
                 "no sample ids collected, ensure to run `get_sample_ids`"
             )
-        import sqlparse
 
         query = sqlparse.format(
             f"""--sql
@@ -134,8 +145,8 @@ class SampleTableGenerator:
         """
 
         self._gen_temp_sample_table(
-            input_tblname=self.sample_metadata_tblname,
-            output_tblname=self.sm_sample_tblname,
+            input_tblname=self.tblnames["sm"],
+            output_tblname=self.tblnames["sm_sample"],
             colname=self.join_key,
         )
 
@@ -144,12 +155,12 @@ class SampleTableGenerator:
         Generate the sampling of the chromato-spectral images
         """
         self._gen_temp_sample_table(
-            input_tblname=self.cs_tblname,
-            output_tblname=self.cs_sample_tblname,
+            input_tblname=self.tblnames["cs"],
+            output_tblname=self.tblnames["cs_sample"],
             colname=self.join_key,
         )
 
-    def gen_samples(self):
+    def gen_samples(self) -> Self:
         """
         Generate sample metadata (`sample_metadata_sample_tblname`) and chromato-spectral image (`cs_sample_tblname`) temporary tables in the input `con` database with the given names.
         """
@@ -159,6 +170,8 @@ class SampleTableGenerator:
             self._gen_temp_cs()
         except Exception as e:
             raise e
+
+        return self
 
     def _drop_table(self, tblname: str):
         try:
@@ -175,7 +188,7 @@ class SampleTableGenerator:
         reverse the action of `gen_samples`, if necessary
         """
 
-        for tbl in [self.sm_sample_tblname, self.cs_sample_tblname]:
+        for tbl in [self.tblnames["sm_sample"], self.tblnames["cs_sample"]]:
             self._drop_table(tblname=tbl)
 
 
@@ -187,6 +200,10 @@ class GenSampleCSWide:
         output_tblname: str = "cs_sample_wide",
         n: int = 5,
     ):
+        """
+        Use `self.gen_sample_cs_wide` to create a temporary sampling of the wide "chromatogram_spectra" table.
+        Used for testing the wide to long transformation.
+        """
         self.con = con
         self.output_tblname = output_tblname
         self.input_tblname = input_tblname

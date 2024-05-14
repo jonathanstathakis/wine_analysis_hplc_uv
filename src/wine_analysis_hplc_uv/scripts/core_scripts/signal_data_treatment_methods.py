@@ -6,6 +6,7 @@ import pandas as pd
 import streamlit as st
 from pybaselines import Baseline
 from scipy.signal import find_peaks
+from wine_analysis_hplc_uv.scripts.core_scripts import hplc_dad_plots
 
 
 def calc_baseline(
@@ -127,7 +128,6 @@ def test_baseline_correction():
     import sys
 
     sys.path.append("../../")
-    from scripts.core_scripts import hplc_dad_plots
 
     print(baseline_subtracted_df.columns)
 

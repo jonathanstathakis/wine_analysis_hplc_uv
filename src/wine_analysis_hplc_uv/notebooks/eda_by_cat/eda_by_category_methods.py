@@ -4,16 +4,16 @@
 Secondary methods defined during the development of [Chapter: Signal EDA by Category](./chapter.results.signal_eda_by_category.ipynb)
 """
 import numpy as np
-import seaborn as sns
 import pandas as pd
-from scipy import signal
+import seaborn as sns
 from dtwalign import dtw
+from pybaselines import Baseline
+from scipy import signal
 from wine_analysis_hplc_uv.old_signal_processing.mindex_signal_processing import (
     SignalProcessor,
 )
 
 sns.set_theme(rc={"figure.dpi": 200})
-from pybaselines import Baseline
 
 
 scipro = SignalProcessor()
@@ -60,7 +60,7 @@ class Plotting:
         # set y tick labels to 5 values evenly spaced
 
         labels = hm_data.index[:: int(len(hm_data.index) / 5)]
-        yticks = hm.set_yticks(
+        hm.set_yticks(
             ticks=np.linspace(start=0, stop=len(hm_data.index), num=len(labels)),
             labels=labels,
         )
@@ -229,7 +229,7 @@ class ApplyDTW:
             .values
         )
 
-        aligned_s = pd.Series(aligned_query, index=query.index)
+        pd.Series(aligned_query, index=query.index)
 
         return aligned_query
 

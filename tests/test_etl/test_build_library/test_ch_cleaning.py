@@ -8,14 +8,14 @@ TODO:
 - [ ] remove marked runs.
 
 """
+
 import pytest
 import re
 import os
 from wine_analysis_hplc_uv import definitions
 from mydevtools.testing import test_methods_df
-from wine_analysis_hplc_uv.df_methods import df_cleaning_methods
-from wine_analysis_hplc_uv.chemstation import ch_m_cleaner
-from wine_analysis_hplc_uv.definitions import DB_PATH, CH_META_TBL_NAME, ST_TBL_NAME
+from wine_analysis_hplc_uv.etl.build_library import df_cleaning_methods
+from wine_analysis_hplc_uv.etl.build_library.chemstation import ch_m_cleaner
 import pandas as pd
 import duckdb as db
 import logging
@@ -26,11 +26,11 @@ logger = logging.getLogger(__name__)
 
 @pytest.fixture
 def db_path():
-    return DB_PATH
+    return definitions.DB_PATH
 
 
 @pytest.fixture
-def raw_ch_m(db_path, tbl_name=CH_META_TBL_NAME):
+def raw_ch_m(db_path, tbl_name=definitions.Raw_tbls.CH_META):
     con = db.connect(db_path)
     df = con.sql(f"SELECT * FROM {tbl_name}").df()
     assert isinstance(df, pd.DataFrame)
@@ -40,7 +40,7 @@ def raw_ch_m(db_path, tbl_name=CH_META_TBL_NAME):
 
 @pytest.fixture
 def raw_ch_m_tblname():
-    return definitions.CH_META_TBL_NAME
+    return definitions.Raw_tbls.CH_META
 
 
 @pytest.fixture
@@ -96,7 +96,7 @@ def test_date_formatter(raw_ch_m: pd.DataFrame):
 
     # Check each timestamp in the transformed column matches the new format
     pattern = re.compile(
-        "^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$"
+        r"^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$"
     )  # The pattern matches 'YYYY-MM-DD HH:MM:SS'
     # check_format = pattern.match("13-Apr-23, 13:32:12")
     check_format = clean_df["acq_date"].apply(lambda x: bool(pattern.match(x)))
@@ -106,7 +106,7 @@ def test_date_formatter(raw_ch_m: pd.DataFrame):
 
 def test_four_digit_samplecode_to_two_digit(raw_ch_m: pd.DataFrame):
     # make copy of original df
-    cp_raw_ch_m = raw_ch_m.copy()
+    raw_ch_m.copy()
 
     # clean the string elements in the df - strip and lower
     clean_df = df_cleaning_methods.df_string_cleaner(raw_ch_m)
@@ -179,24 +179,24 @@ def test_samplecode_cleaner(raw_ch_m):
         return comparison
 
     # get the values in ch_m.samplecode, not in st.sampelcode
-    con = db.connect(DB_PATH)
-    st_samplecode = con.sql(f"SELECT samplecode FROM {ST_TBL_NAME}").df()
+    con = db.connect(definitions.DB_PATH)
+    st_samplecode = con.sql(f"SELECT samplecode FROM {definitions.Raw_tbls.ST}").df()
     con.close()
     ch_m_samplecode = clean_df["join_samplecode"]
-    val_in_ch_m_not_st = compare_columns(ch_m_samplecode, st_samplecode)
+    compare_columns(ch_m_samplecode, st_samplecode)
 
     pd.options.display.max_rows = 200
-    val_in_st_not_in_ch_m = compare_columns(st_samplecode, ch_m_samplecode)
+    compare_columns(st_samplecode, ch_m_samplecode)
 
     # a is ch_m, b is st, thus difference_ab is elements in a but not b, elements in
     # ch_m but not st. difference_ba is elements in st but not ch_m
 
-    difference_ab = set(ch_m_samplecode).difference(st_samplecode)
-    difference_ba = set(st_samplecode).difference(ch_m_samplecode)
+    set(ch_m_samplecode).difference(st_samplecode)
+    set(st_samplecode).difference(ch_m_samplecode)
     # pandas isin relies on np.in1d with default args. It tests whether each element of
     # the first array is in the second.
 
-    pd_diff_ab = compare_columns(st_samplecode, ch_m_samplecode)
+    compare_columns(st_samplecode, ch_m_samplecode)
 
     # assert val_in_st_not_in_ch_m.shape[0] == 0, f"\nThe following are in st but not in ch_m:\n\n{val_in_st_not_in_ch_m}"
 

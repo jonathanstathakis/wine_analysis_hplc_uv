@@ -1,11 +1,17 @@
+import datetime
 import os
 import sys
-import pandas as pd
+
 import numpy as np
+import pandas as pd
+
+from wine_analysis_hplc_uv.etl.build_library.google_sheets_api.google_sheets_api import (
+    post_df_as_sheet_values,
+    post_new_sheet,
+)
 
 sys.path.append("/Users/jonathan/wine_analysis_hplc_uv/")
 print(sys.path)
-from google_sheets_api import post_df_as_sheet_values, post_new_sheet
 
 
 def google_sheets_write_info():
@@ -36,9 +42,6 @@ def sample_code_gen(exp=[], num_wines=int, num_rep=int):
     return result
 
 
-import datetime
-
-
 def schedule_df_genner():
     start_date = datetime.date(2023, 4, 18)
     end_date = start_date + datetime.timedelta(days=14)
@@ -58,11 +61,9 @@ def schedule_df_genner():
 
 
 def main():
-    codes = sample_code_gen(["a", "n", "e"], 3, 7)
+    sample_code_gen(["a", "n", "e"], 3, 7)
 
-    schedule_df = schedule_df_genner()
-
-    code_out_range = "exp_codes!A1:H1000"
+    schedule_df_genner()
 
     creds, sheet_id = google_sheets_write_info()
 

@@ -1,11 +1,11 @@
 """
 All the methods used to preprocess the chemstation files into the db
 """
+
 import os
 import fnmatch
 
 
-@ft.timeit
 def uv_filepaths_to_list(root_dir_path: str) -> list:
     """
     Take a filepath and search it for .D dirs containing .UV files. Returns a list of filepaths matching the criteria.

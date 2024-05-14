@@ -9,8 +9,8 @@ logger = logging.getLogger(__name__)
 
 def clean_st_to_db(con):
     st_cleaner = STCleaner()
-    st_cleaner.clean_st(con.sql(f"select * from {definitions.ST_TBL_NAME}").df())
-    st_cleaner.to_db(con=con, tbl_name=definitions.CLEAN_ST_TBL_NAME)
+    st_cleaner.clean_st(con.sql(f"select * from {definitions.Raw_tbls.ST}").df())
+    st_cleaner.to_db(con=con, tbl_name=definitions.Clean_tbls.ST)
 
 
 def main():
