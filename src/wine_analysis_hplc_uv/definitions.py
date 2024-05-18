@@ -1,7 +1,13 @@
 import os
 from enum import StrEnum
+from pathlib import Path
 
+# '/Users/jonathan/mres_thesis/wine_analysis_hplc_uv/src/wine_analysis_hplc_uv'
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
+
+# pbl dir
+
+PBL = str(Path(ROOT_DIR) / "etl/post_build_library")
 
 DB_PATH: str = os.environ["DB_PATH"]
 

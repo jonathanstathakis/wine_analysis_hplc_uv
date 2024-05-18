@@ -15,6 +15,9 @@ import duckdb as db
 
 DB_PATH = str(Path(__file__).parent / "test.db")
 
+# the expected number of samples. Use to verify table size (rows)
+NUM_SAMPLES = 175
+
 
 @pytest.fixture
 def testdbpath():
@@ -25,7 +28,7 @@ def testdbpath():
 
 
 @pytest.fixture
-def con():
+def testcon():
     """
     Return a duckdb connection object initialised with the DB_PATH constant
     """

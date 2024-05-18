@@ -1,13 +1,17 @@
-from tests.test_etl.test_post_build_library import gen_sample_test_data
+from tests.test_etl.test_post_build_library.test_build_library_oop import (
+    gen_sample_test_data,
+)
 import pytest
 import duckdb as db
 
-from tests.test_etl.test_post_build_library.gen_sample_test_data import GenSampleCSWide
+from tests.test_etl.test_post_build_library.test_build_library_oop.gen_sample_test_data import (
+    GenSampleCSWide,
+)
 
 
 @pytest.fixture
 def gen_test_sample_tables(
-    con: db.DuckDBPyConnection,
+    testcon: db.DuckDBPyConnection,
     sm_tblname: str = "sample_metadata",
     cs_tblname: str = "chromatogram_spectra_long",
     join_key: str = "id",
@@ -19,7 +23,7 @@ def gen_test_sample_tables(
     Generate the sample tables and return the table names
     """
     stg = gen_sample_test_data.SampleTableGenerator(
-        con=con,
+        con=testcon,
         n=n,
         sample_metadata_tblname=sm_tblname,
         cs_tblname=cs_tblname,
@@ -33,8 +37,8 @@ def gen_test_sample_tables(
 
 
 @pytest.fixture
-def gen_sample_cs_wide(con: db.DuckDBPyConnection):
-    samplegenner = GenSampleCSWide(con=con)
+def gen_sample_cs_wide(testcon: db.DuckDBPyConnection):
+    samplegenner = GenSampleCSWide(con=testcon)
     samplegenner.gen_sample_cs_wide()
 
     return samplegenner
@@ -42,7 +46,7 @@ def gen_sample_cs_wide(con: db.DuckDBPyConnection):
 
 @pytest.fixture
 def stg(
-    con: db.DuckDBPyConnection,
+    testcon: db.DuckDBPyConnection,
     sm_tblname: str = "sample_metadata",
     cs_tblname: str = "chromatogram_spectra_long",
     join_key: str = "id",
@@ -54,7 +58,7 @@ def stg(
     Generate the sample tables and return the table names
     """
     return gen_sample_test_data.SampleTableGenerator(
-        con=con,
+        con=testcon,
         n=n,
         sample_metadata_tblname=sm_tblname,
         cs_tblname=cs_tblname,

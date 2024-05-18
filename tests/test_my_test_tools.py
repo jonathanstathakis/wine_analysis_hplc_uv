@@ -9,6 +9,9 @@ from tests.my_test_tools.dataset_generation import create_bl_test_set
 import pytest
 
 
+pytest.skip(allow_module_level=True, reason="subjects of tests have been depreceated..")
+
+
 @pytest.mark.skip
 def test_find_table_differences():
     """

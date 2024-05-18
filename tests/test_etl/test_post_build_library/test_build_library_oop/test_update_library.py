@@ -6,11 +6,15 @@ import logging
 
 import duckdb as db
 import pytest
-from wine_analysis_hplc_uv.etl.post_build_library import update_library
+from wine_analysis_hplc_uv.etl.post_build_library.pbl_oop import update_library
 
-from tests.test_etl.test_post_build_library import gen_sample_test_data
+from tests.test_etl.test_post_build_library.test_build_library_oop import (
+    gen_sample_test_data,
+)
 
 logger = logging.getLogger(__name__)
+
+pytest.skip(allow_module_level=True, reason="test subjects have been depreceated..")
 
 
 @pytest.mark.parametrize(

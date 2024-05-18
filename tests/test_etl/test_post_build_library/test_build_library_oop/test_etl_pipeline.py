@@ -4,15 +4,18 @@ Test the function of the `PipelineETL` class
 
 import duckdb as db
 import pytest
-from wine_analysis_hplc_uv.etl.post_build_library import (
-    etl_pipeline,
-    generic,
-)
-from wine_analysis_hplc_uv.etl.post_build_library import (
+from wine_analysis_hplc_uv.etl.post_build_library.pbl_oop import etl_pipeline
+from wine_analysis_hplc_uv.etl.post_build_library.pbl_oop import generic
+
+from wine_analysis_hplc_uv.etl.post_build_library.pbl_oop import (
     transformers as etl_tformers,
 )
 
-from tests.test_etl.test_post_build_library.gen_sample_test_data import GenSampleCSWide
+from tests.test_etl.test_post_build_library.test_build_library_oop.gen_sample_test_data import (
+    GenSampleCSWide,
+)
+
+pytest.skip(allow_module_level=True, reason="test subjects have been depreceated..")
 
 
 @pytest.mark.parametrize("write_to_db", [(False,), (True,)])

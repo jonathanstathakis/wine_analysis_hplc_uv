@@ -13,8 +13,8 @@ logger = logging.getLogger(__name__)
 
 
 @pytest.fixture
-def dirty_ct(con: db.DuckDBPyConnection) -> pd.DataFrame:
-    df = con.sql(f"SELECT * FROM {definitions.Raw_tbls.CT}").df()
+def dirty_ct(testcon: db.DuckDBPyConnection) -> pd.DataFrame:
+    df = testcon.sql(f"SELECT * FROM {definitions.Raw_tbls.CT}").df()
 
     assert isinstance(df, pd.DataFrame)
     assert not df.empty

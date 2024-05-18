@@ -4,10 +4,15 @@ Test the `gen_sample_test_data.SampleTableGenerator` class
 
 import duckdb as db
 import polars as pl
-from wine_analysis_hplc_uv.etl.post_build_library import generic
+from wine_analysis_hplc_uv.etl.post_build_library.pbl_oop import generic
 
-from tests.test_etl.test_post_build_library import gen_sample_test_data
+from tests.test_etl.test_post_build_library.test_build_library_oop import (
+    gen_sample_test_data,
+)
+
 import pytest
+
+pytest.skip(allow_module_level=True, reason="tests using this have been depreceated..")
 
 
 def test_sample_table_generator(
@@ -24,8 +29,8 @@ def test_sample_table_generator(
 
         # test if the new tables exist as temp tables
 
-        sm_sample_tblname = stg.sm_sample_tblname
-        cs_sample_tblname = stg.cs_sample_tblname
+        sm_sample_tblname = stg.tblnames["sm_sample"]
+        cs_sample_tblname = stg.tblnames["cs_sample"]
         join_key = stg.join_key
         n = stg.n
 
@@ -62,10 +67,14 @@ def test_sample_table_generator(
 
         sm_distinct_id_n = con.execute(
             f"SELECT COUNT(DISTINCT({join_key})) FROM {sm_sample_tblname}"
-        ).fetchone()[0]
+        ).fetchone()[
+            0
+        ]  # type: ignore
         cs_distinct_id_n = con.execute(
             f"SELECT COUNT(DISTINCT({join_key})) FROM {cs_sample_tblname}"
-        ).fetchone()[0]
+        ).fetchone()[
+            0
+        ]  # type: ignore
 
         assert sm_distinct_id_n == n
         assert cs_distinct_id_n == n
