@@ -55,4 +55,3 @@ An A4 page measures 210 mm x 297 mm (8.27 in x 11.7 in) [wikipedia](https://en.w
 The following are examples of how to use Quarto for scientific reporting:
 
 https://hbiostat.org/rflow/rformat.html
-

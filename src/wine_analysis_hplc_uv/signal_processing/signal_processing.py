@@ -3,7 +3,12 @@ from scipy import signal
 from sklearn import preprocessing
 import pybaselines
 import logging
+from deprecated import deprecated
 
+# TODO: identify where the current signal processing module is
+deprecated(
+    reason="this is an obsolete module as the approach to signal processing has changed"
+)
 logger = logging.getLogger(__name__)
 
 
