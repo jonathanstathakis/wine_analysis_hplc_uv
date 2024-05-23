@@ -1,4 +1,6 @@
 import pytest
+from polars import testing as ptest
+import polars as pl
 import duckdb as db
 from wine_analysis_hplc_uv.sampletracker import sample_tracker_processor
 from tests.my_test_tools.pandas_tools import verify_df
@@ -7,7 +9,6 @@ from wine_analysis_hplc_uv.etl.build_library.my_sheetsinterface.gspread_methods 
 )
 import pandas as pd
 from wine_analysis_hplc_uv.sampletracker.st_cleaner import STCleaner
-from mydevtools.testing import test_methods_df
 import logging
 
 logging.basicConfig(level=logging.INFO)
@@ -37,8 +38,8 @@ def test_sample_tracker_clean_df(sample_tracker) -> None:
     st_cleaner = STCleaner()
     clean_st_df = st_cleaner.clean_st(df1)
     verify_df(clean_st_df)
+    ptest.assert_frame_not_equal(pl.from_pandas(df1), pl.from_pandas(clean_st_df))
 
-    test_methods_df.assert_frame_not_equal(df1, clean_st_df)
     return None
 
 

@@ -4,7 +4,6 @@ A file to contain general duckdb database methods.
 
 import pandas as pd
 from wine_analysis_hplc_uv import definitions
-from mydevtools.function_timer import timeit
 import logging
 import duckdb as db
 from deprecated import deprecated
@@ -114,7 +113,6 @@ def get_sc_df(
     return a.pl()
 
 
-@timeit
 def testing(con, wine_subset):
     def get_a(con_, wines_):
         return a

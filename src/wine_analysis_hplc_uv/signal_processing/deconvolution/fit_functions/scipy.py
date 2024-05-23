@@ -6,16 +6,18 @@ from typing import Iterable
 import numpy as np
 from numpy.typing import NDArray
 from numpy import float64
-from numpy.typing import ArrayLike
 from scipy import stats
-import matplotlib.pyplot as plt
+from wine_analysis_hplc_uv.signal_processing.deconvolution.types import FloatArray
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def compute_skewnorm(
     x: Iterable, amp: float, loc: float, scale: float, alpha: float
 ) -> NDArray[float64]:
     """
-    Compute the skewnorm.
+    Compute a single skewnorm distribution from input parameters and time interval
     """
     dist = _compute_skewnorm(x=x, params=(amp, loc, scale, alpha))
     return dist
@@ -84,7 +86,7 @@ def _compute_skewnorm(
     return skewnorm
 
 
-def fit_skewnorms(x, *params):
+def fit_skewnorms(x, *params) -> FloatArray:
     """
     for n peaks in a time window of interval `x`, calculate the convolution as the sum
     of computed skewnorm distributions from input parameters.
@@ -102,7 +104,7 @@ def fit_skewnorms(x, *params):
     params = np.reshape(params, (n_peaks, 4))
 
     # Evaluate each distribution
-
+    logger.info("computing the skewnorm for each param set..")
     dists = [_compute_skewnorm(x, peak_params) for peak_params in params]
 
     return sum(dists)
