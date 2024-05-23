@@ -72,4 +72,50 @@ to do:
 2024-05-23 09:49:37 - solving my dependency problem. The problem is that my tests rely on fixtures, and fixtures cannot be used as normal python objects in actual scripts. And I want to be able to write test data to files using the same objects which are also fixtures. So you end up either writing fixtures as wrappers around actual objects or never writing the test data to file. Writing the data to a file makes it less bitter in the event of a total fuckup. The alternative to writing data to file is to write parametrized fixtures that produce the test data. So for example if i am writing a test to check whether a function computes a sum correctly, the fixture providing the test data may be seeded with a base level fixture containing the seed values. Or furthermore, a class which handles that logic internally, and a fixture providing access to either the attribute of the class, or an instance of the class. In the example of my p0, lb and ub tables, a class handling the logic internally is a useful way to go. Provides a branching structure internally, and multiple interfaces on one object.
 2024-05-23 10:55:59 - pytest caching. Caching of expensive computations can be achieved through the `pytestconfig` object, [see here](https://docs.pytest.org/en/latest/how-to/cache.html). @pytest, @testing, @caching
 2024-05-23 10:57:48 - a eureka moment. With the addition of caching, one should never write data to external files, as the files can (will) become stale over time, and the management of these files adds unecessary overhead. Cache expensive computations, everything is a fixture. This is the way. @pytest, @caching, @devnotes, @progress
-2024-05-23 11:49:01 - formatter wars. I recently upgraded the project to Python 3.12, which has caused a number of dependency problems as I didnt check whether they supported this version. One such case is Black, the most ubiquitous Python formatter, which only supports up to 3.12. Luckily, Ruff does. As I dont have much care for Black, i'll replace it now. The main issue is updating the pre-commit hooks.
+2024-05-23 11:49:01 - formatter wars. I recently upgraded the project to Python 3.12, which has caused a number of dependency problems as I didnt check whether they supported this version. One such case is Black, the most ubiquitous Python formatter, which only supports up to 3.12. Luckily, Ruff does. As I dont have much care for Black, i'll replace it now. The main issue is updating the pre-commit hooks. Which is now done, an easy drop in replacement. Hooks are specified at pre-commit-config.yaml, the `pre-commit` package handles the rest. @devnotes, @formatting, @ruff, @black, @python.
+2024-05-23 11:57:51 - Whats next. Now I need to test the reconstruction, reporting, and deconvolution package as a whole.
+
+## Deconvolution Package Outline
+
+test strategies:
+       - assert execution: simply assert that the tested object exists. This method simply ensures that the code executes without error. A good first base, but very shallow.
+       - result inversion: first run an 'assert execution' test, save the output to clipboard, create a fixture containing the output as an independent object, then test equality between the fixture object and the output of the 'assert execution' test. Very specific, does not shed light on why a test might fail. The natural evolution of an 'assert execution' test.
+
+- PDF Computation:
+       - Description: Taking a number of skewnorm parameters describing peaks present in a time series, construct pdfs for each peak along the sampling points 'x'.
+       - parameters: skewnorm parameters for each peak as a 1d array in specific ordering
+       - subprocesses:
+              - bound computation TODO
+              - initial guess computation TODO
+              - failure handling TODO
+       - output: wide pdf tensor as a pl DataFrame containing only the pdf, excluding 'x'. User can choose to add 'x' afterwards.
+       - testing strategy: execution assertion, result inverion
+- Reconstruction:
+       - Description: Take a peak signal tensor and sum horizontally to produce a convoluted signal.
+       - parameters: pl DataFrame wide of peak pdfs. 1d arrays in a collection
+       - output: the summation of the input, a 1d polars Series named 'reconv'
+       - testing strategy: execution assertion, result inversion
+- Fit Assessment:
+       - Description: compare two signals for equality and compute a number of metrics to assess how closely the two arrays match. It can be broken down into a number of sub processes - equality by auc ratio, and missed peak detection through fano factor.
+       - parameters: two 1D arrays `left` and `right`, sampling points `x` and sampling windowing labels `window_type`, `window_idx`.
+       - output: report table containing fit metrics for each window.
+       - testing strategy: exection assertoin, result inversion. A good testing regeime would have one windowed signal and two reconstructions - one a almost perfect match, the other a poor match, and assert that the results match the expectations. But creating that mock data becomes in itself a pain. To generate a realistically poor match we would need to get the pdf parameters for each peak in the signal, the nmodify them slightly, generate the pdfs, and convolute. In this sense, this cycle of parameters -> pdfs -> convolution becomes a dependency of deconvolution testing through test data generation, and should have its own tests. And we already have the pdf scrambler which we used to generate p0, just have to modify the bounds, and extend it to include the reconstruction.
+
+Thus, deconvolution becomes:
+- Deconvolution:
+       - description: compute a tensor of peak signal pdfs from an input convoluted signal by first detecting the peaks to assemble pdf parameters, then optimize the pdf parameters by fitting the convoluted signal through least squares.
+       - input: an array containing a convoluted signal and an array of sampling points, 
+       - components:
+              - peak detection - TODO.
+              - pdf computation 
+                     - bound computation TODO
+                     - initial guess computation TODO
+                     - curve fit
+                            - failure handling TODO
+              - reconstruction - TODO.
+              - fit assessment - TODO.
+       - Description: Take an array of and an array of sampling points and output a tensor of the pdfs 
+       fitted to all detected peaks.
+
+- 2024-05-23 14:37:16 - pytest caching. As mentioned earlier, it is possible to cache fixtures across test runs. As explained [in the tutorial](https://docs.pytest.org/en/6.2.x/cache.html#the-new-config-cache-object), the cache is established through the request fixture, specifically `request.config.cache.set`, and accessed through `get` method of the same object. Handling cache updating is left for the user. The cachce can be viewed through `pytest --cache-show` on the CLI, and can be cleared through `pytest --cache-clear`. An immediate problem I can see is that it will not automatically update the cache if the inputs change. Could store a hash in one cache file, and acess the second one if the hash is the same, or replace it. In that case there is three scenarios: 1. no hash key present: write hash cache, write object cache. 2. hashes dont match: replace cashed hash, cached object, warn user. 3. hashes match: return cache. Or just raise an error, fail loudly. Either way, need to be able to hash the object. And Polars delivers - there is a hash_rows function. A trip hazard though - Pythons native hash method uses a random seed every run. The suggestion is to use hashlib. An example from [the docs](https://docs.python.org/3/library/hashlib.html#usage) is as follows: `hashlib.sha256(obj).hexdigest()` which outputs the expected hash string.
+2024-05-24 02:06:26 - finalising caching. bit of a headache, but the caching is good to go. Had an issue with dataframes not being directly serialisable, but its done. Had to create a hasher class, and functions to handle the IO as the json string is not directly convertable to dataframe. its now 02:13, and I am tired. Tomorrow I will move on to the reconstruction process.

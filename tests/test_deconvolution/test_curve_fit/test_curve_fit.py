@@ -2,8 +2,11 @@
 Test the curve fit submodule
 """
 
+from io import StringIO
+import hashlib
 import polars as pl
 import pytest
+import logging
 from wine_analysis_hplc_uv.signal_processing.deconvolution.deconvolution import (
     _compute_popt,
     check_in_bounds,
@@ -18,6 +21,7 @@ from wine_analysis_hplc_uv.signal_processing.deconvolution.types import (
     DataDict,
 )
 
+logger = logging.getLogger(__name__)
 pl.Config.set_tbl_width_chars(250).set_tbl_cols(100)
 
 
@@ -131,9 +135,112 @@ def _check_popt_in_threshold(df: ParamTbl, threshold: float = 0.05) -> ParamTbl:
     return df_
 
 
-def test_calculate_popt(
+class HashObjects:
+    def gen_hash(self, input) -> str:
+        return hashlib.sha256(input).hexdigest()
+
+    def _encode_str(self, string) -> bytes:
+        return string.encode(encoding="UTF-8", errors="strict")
+
+    def _df_to_hash_bytes(self, df: pl.DataFrame) -> bytes:
+        return self._encode_str(str(df.hash_rows()))
+
+    def df_to_hash(self, df: pl.DataFrame) -> str:
+        """
+        convert a polars dataframe to a deterministic hash string
+        """
+        return self.gen_hash(self._df_to_hash_bytes(df=df))
+
+    def dfs_to_hash(self, dfs: list[pl.DataFrame]) -> str:
+        """
+        convert a list of polars dataframes to a deterministic hash string
+        """
+        hashes = [self.df_to_hash(df) for df in dfs]
+        return hashlib.sha256(self._encode_str(str(hashes))).hexdigest()
+
+
+@pytest.fixture
+def popt(
     curve_fit_input_params: ParamTbl,
     two_peak_signal: DataDict,
+    request,
+):
+    """
+    provide the popt for the input params and signal
+    """
+
+    def df_from_str_json(json_str: str):
+        return pl.read_json(StringIO(json_str))
+
+    def df_to_json_str(df: pl.DataFrame) -> str:
+        return df.write_json()
+
+    def set_cache_initial_state(
+        x, y, request, input_params_hash: str, hash_key: str, df_key: str
+    ) -> pl.DataFrame:
+        # return a df as ParamTbl with the bounds and initial guess alongside the popt
+        df = curve_fit_input_params.pipe(_compute_popt, x=x, y=y)
+
+        logger.info("no popt cache detected, setting now..")
+        # set the hash
+        request.config.cache.set(hash_key, input_params_hash)
+
+        # set the object
+        request.config.cache.set(df_key, df_to_json_str(df))
+
+        return df
+
+    hash_key = "input_hash"
+    df_key = "popt_df"
+
+    # hash the output
+    hasher = HashObjects()
+
+    input_params_hash = hasher.dfs_to_hash(
+        dfs=[curve_fit_input_params, pl.DataFrame(two_peak_signal)]
+    )
+
+    # get the stored cache, if none, write to cache and continue
+    cached_hash = request.config.cache.get(hash_key, None)
+
+    # if no hash, set initial state
+
+    x = two_peak_signal["x"]
+    y = two_peak_signal["y"]
+
+    if not cached_hash:
+        df = set_cache_initial_state(
+            x=x,
+            y=y,
+            request=request,
+            input_params_hash=input_params_hash,
+            hash_key=hash_key,
+            df_key=df_key,
+        )
+        return df
+
+    else:
+        # compare the cached hash to the current hash, if they dont match, raise an error.
+        try:
+            if input_params_hash != cached_hash:
+                raise ValueError(
+                    "popt hashes dont match, hash generated from popt_df has changed!"
+                )
+            else:
+                logger.info("retrieving popt tbl from cache..")
+                json_str = request.config.cache.get(df_key, None)
+                df = df_from_str_json(json_str)
+        except ValueError as e:
+            e.add_note("clearing cache..")
+            request.config.cache.set(hash_key, None)
+            request.config.cache.set(df_key, None)
+            raise e
+
+    return df
+
+
+def test_calculate_popt(
+    popt: ParamTbl,
     skn_param_tbl: SkewNormParams2Peaks,
     threshold: float = 0.05,
 ):
@@ -143,13 +250,9 @@ def test_calculate_popt(
     the oob test needs to know which peak and param is oob. This space does not currently possess that information. Thus conversion to arrays should not happen until the same scope as the curve fit call.
     """
 
-    # compare the diff to see if within threshold. Taken as the proportion by which the actual is greater than the inferred
+    # compare the diff to see if within threshold. Takena as the proportion by which the actual is greater than the inferred
 
-    df_ = curve_fit_input_params.pipe(
-        _compute_popt, x=two_peak_signal["x"], y=two_peak_signal["y"]
-    )
-
-    compare_tbl = skn_param_tbl.with_columns(df_.get_column("popt")).rename(
+    compare_tbl = skn_param_tbl.with_columns(popt.get_column("popt")).rename(
         {"values": "actual"}
     )
 
