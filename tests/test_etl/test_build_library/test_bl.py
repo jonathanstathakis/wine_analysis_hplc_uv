@@ -20,8 +20,6 @@ import pytest
 from wine_analysis_hplc_uv import definitions
 from wine_analysis_hplc_uv.etl.build_library import build_library
 
-from tests.conftest import DataForTests, BLTestFilePaths
-
 logging.basicConfig(format="%(asctime)s %(message)s", datefmt="%m/%d/%Y %I:%M:%S %p")
 logger = logging.getLogger(__name__)
 
@@ -60,7 +58,7 @@ def assert_tbls_equal(
         raise
 
 
-def test_build_library(new_db_filepath: str = BLTestFilePaths.NEW_DB_PATH):
+def test_build_library(bl_test_filepaths, datapaths):
     """
     Test the build library process. test by retrieving all the tables as polars dataframes and checking if they have content, and schemas match expectation.
 
@@ -68,9 +66,9 @@ def test_build_library(new_db_filepath: str = BLTestFilePaths.NEW_DB_PATH):
     """
 
     try:
-        with db.connect(str(new_db_filepath)) as con:
+        with db.connect(str(bl_test_filepaths.NEW_DB_PATH)) as con:
             tbl_names = build_library.build_db_library(
-                data_lib_path=DataForTests.SAMPLESET,
+                data_lib_path=datapaths.SAMPLESET,
                 con=con,
                 sheet_title=definitions.GoogleSheetsAPIInfo.SHEET_TITLE,
                 gkey=definitions.GoogleSheetsAPIInfo.GKEY,
@@ -82,8 +80,8 @@ def test_build_library(new_db_filepath: str = BLTestFilePaths.NEW_DB_PATH):
 
         for tbl in tbl_names:
             assert_tbls_equal(
-                db_1_path=new_db_filepath,
-                db_2_path=BLTestFilePaths.COMPARISON,
+                db_1_path=bl_test_filepaths.NEW_DB_PATH,
+                db_2_path=bl_test_filepaths.COMPARISON,
                 tbl_db1=tbl,
                 tbl_db2=tbl,
             )
@@ -93,4 +91,4 @@ def test_build_library(new_db_filepath: str = BLTestFilePaths.NEW_DB_PATH):
 
     finally:
         # cleanup
-        Path(new_db_filepath).unlink()
+        Path(bl_test_filepaths.NEW_DB_PATH).unlink()

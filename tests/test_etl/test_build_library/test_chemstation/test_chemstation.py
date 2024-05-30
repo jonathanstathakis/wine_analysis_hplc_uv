@@ -10,14 +10,13 @@ from wine_analysis_hplc_uv.etl.build_library.chemstation.chemstationprocessor im
     ChemstationProcessor,
 )
 from pathlib import Path
-from tests.conftest import DataForTests
 
 logger = logging.getLogger(__name__)
 
 
 @pytest.fixture
-def single_filepath():
-    return str(Path(DataForTests.SAMPLESET) / "139.D")
+def single_filepath(datapaths):
+    return str(Path(datapaths.SAMPLESET) / "139.D")
 
 
 def test_read_single_file(single_filepath):
@@ -83,11 +82,11 @@ def test_data_to_db(
     )
 
 
-def test_chemstationProcessor():
+def test_chemstationProcessor(datapaths):
     """
     Test whether ChemstationProcessor initializes without error on the sample set.
     """
-    assert ChemstationProcessor(DataForTests.SAMPLESET)
+    assert ChemstationProcessor(datapaths.SAMPLESET)
 
 
 # 2023-08-16 14:23:15 currently broken as have moved dup test method somewhere else, need to fix call

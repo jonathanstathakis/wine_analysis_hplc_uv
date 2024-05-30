@@ -1,0 +1,5 @@
+This directory contains our efforts to normalize the time axes of the CUPRAC dataset in order to move toward a universal time index. This is needed as multivariate statistical models such as XGBoost require that the same feature (peak) is in the same column (time) for each sample. We will do this by treating the sample signals as time series.
+
+2024-05-29 13:27:50 - jupyter notebooks suck. They are messy, hard to format, cause depdency hell, and you cant even inline variablse with markdown. you can with qmd files. Convert all the jupyter notebooks to qmd files, code in seperate modules, then you can test the code. notebooks are legit only useful for prototyping, and even then pretty shitty.
+
+2024-05-29 14:42:25 - organising the dir. So I am breaking the subsections of the notebook down into individual qmd files and pulling as much code out of them as possible and into a module to manage dependencies. I am also inlining as many variables as possible into text to enable the text to stay up to date with possibly changing results.

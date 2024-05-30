@@ -27,16 +27,40 @@ CS_LONG_SHAPE_EXPECTED = (173_048_494, 5)
 SM_SHAPE_EXPECTED = (175, 8)
 
 
-@pytest.fixture
-def create_sm_query():
+@pytest.fixture(scope="module")
+def sql_scripts_dir():
+    return Path(definitions.PBL) / "queries"
+
+
+@pytest.fixture(scope="module")
+def create_cs_long_script_fpath(sql_scripts_dir: str) -> str:
+    return str(Path(sql_scripts_dir) / "create_cs_long.sql")
+
+
+@pytest.fixture(scope="module")
+def create_cs_query(create_cs_long_script_fpath: str):
     """
-    return the string representation of the create sample metadata query
+    return the create cs query string, replace the create with a select
     """
 
-    fpath = Path(definitions.PBL) / "create_sample_metadata.sql"
-    with open(fpath, "r") as f:
+    with open(create_cs_long_script_fpath, "r") as f:
         query = f.read()
+    return query
 
+
+@pytest.fixture(scope="module")
+def create_sm_script_fpath(sql_scripts_dir: str) -> str:
+    return str(Path(sql_scripts_dir) / "create_sample_metadata.sql")
+
+
+@pytest.fixture(scope="module")
+def create_sm_query(create_sm_script_fpath: str):
+    """
+    return the create cs query string, replace the create with a select
+    """
+
+    with open(create_sm_script_fpath, "r") as f:
+        query = f.read()
     return query
 
 
@@ -63,17 +87,6 @@ def test_create_sample_metadata(
         raise e
     finally:
         testcon.rollback()
-
-
-@pytest.fixture
-def create_cs_query():
-    """
-    return the create cs query string, replace the create with a select
-    """
-    fpath = Path(definitions.PBL) / "create_cs_long.sql"
-    with open(fpath, "r") as f:
-        query = f.read()
-    return query
 
 
 def test_create_cs_long(testcon: db.DuckDBPyConnection, create_cs_query: str):
@@ -133,7 +146,7 @@ def test_pbl_state_creation(testcon: db.DuckDBPyConnection):
         sm = testcon.sql(f"select * from {sm_in_db}")
         sm_shape = sm.shape
         logger.info(f"{sm_shape=}..")
-        logger.info(f"asserting that sm shape matches expectation..")
+        logger.info("asserting that sm shape matches expectation..")
 
         assert SM_SHAPE_EXPECTED == sm_shape
 
@@ -159,9 +172,9 @@ def test_pbl_state_creation_with_query_objs(testcon: db.DuckDBPyConnection):
 
     queries = [
         "drop schema pbl cascade;",
-        pbl_state_creation.create_pbl_schema(),
-        pbl_state_creation.sample_metadata_create_as_cte(),
-        pbl_state_creation.pbl_cs_long_as_cte(),
+        pbl_state_creation._create_pbl_schema(),
+        pbl_state_creation._sample_metadata_create_as_cte(),
+        pbl_state_creation._pbl_cs_long_as_cte(),
     ]
 
     # now, we're going to try this outside of a transaction. to do so we'll need to replace "pbl" with "test_sch".

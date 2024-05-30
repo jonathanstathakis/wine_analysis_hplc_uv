@@ -1,0 +1,382 @@
+---
+date: 2024-05-30 09:08:11
+title: "Investigating Time Ordering in Wine Chromato-spectral Data"
+---
+
+# Preface
+
+A short investigation into why when aggregating the first time value from all wines, a random assortment of times were returned. The cause was determined to be that the queries do not keep row order when grouping, and as such the use of `FIRST` and `LAST` is incorrect if expecting a sorted order, furthermore it was determined that they should only be used if the columns are also specified in the groupby. If ordering is required, use `MIN` and `MAX`.
+
+# Investigating Time Ordering in Wine Chromato-spectral Data
+
+While performing EDA on the time domain of the wine data I discovered that when selecting the 'first' value of each wine's 'mins' column, some samples possessed a value higher than 1. This was surprising as we would assume time ordering in this data. 
+
+```{python}
+#| echo: false
+from wine_analysis_hplc_uv import definitions
+from wine_analysis_hplc_uv.notes.lib_eda.sample_standardisation.characterising_and_normalizing_time_axis import (
+    data
+)
+import pandas as pd
+import duckdb as db
+import matplotlib.pyplot as plt
+import seaborn as sns
+import polars as pl
+
+# database connection
+con = db.connect(definitions.DB_PATH)
+```
+
+
+```{python}
+# a summary table containing the first and last minutes of each wine in the long cs table
+# as well as the range as the difference between these points
+con.sql("""
+-- get the first, last, and range of time values for each sample ordered by sample idx
+create or replace temp table times_first_last as
+select
+    first(idx) as idx_first,
+    last(idx) as idx_last,
+    first(wine) as wine,
+    first(mins) as mins_first,
+    last(mins) as mins_last,
+    (mins_last - mins_first) as range,
+from
+    (
+        select
+            cs.idx,
+            sm.wine,
+            cs.id,
+            cs.mins,
+            cs.wavelength,
+        from
+            pbl.chromatogram_spectra_long as cs
+        join
+            pbl.sample_metadata as sm
+        on
+            cs.id = sm.id
+        where
+            cs.wavelength=256
+        )
+group by
+    id
+order by
+    range ASC
+""")
+
+# display the table
+con.sql("select * from times_first_last").show(max_rows=5)
+```
+
+```{python}
+first_row_ = con.sql("select wine, mins_first, mins_last, range from times_first_last limit 1")
+first_row = first_row_.pl()
+first_row_.show()
+```
+
+The most extreme example is the first row, `{python} f"{first_row.get_column('wine').item()}"` which starts at `{python} f"{first_row.get_column('mins_first').item():.3G}"` and ends at `{python} f"{first_row.get_column('mins_last').item():.3G}"` with a range of `{python} f"{first_row.get_column('range').item():.3G}"`. Clearly there is a problem in the time ordering of the samples. To verify, we can replace 'first' and 'last' with 'min' and 'max'.
+
+alphabet
+
+```{python}
+# a summary table containingg the first and last minutes of each wine in the long cs table
+# as well as the range as the difference between these points, using min and max rather than first and last
+con.sql("""
+-- get the first, last, and range of time values for each sample ordered by sample idx
+create or replace temp table times_min_max as
+select
+    min(idx) as idx_min,
+    max(idx) as idx_max,
+    first(wine) as wine,
+    min(mins) as mins_min,
+    max(mins) as mins_max,
+    (mins_max - mins_min) as range,
+from
+    (
+        select
+            cs.idx,
+            sm.wine,
+            cs.id,
+            cs.mins,
+            cs.wavelength,
+        from
+            pbl.chromatogram_spectra_long as cs
+        join
+            pbl.sample_metadata as sm
+        on
+            cs.id = sm.id
+        where
+            cs.wavelength=256
+        )
+group by
+    id
+order by
+    range ASC
+""")
+
+# display the table
+con.sql("select * from times_min_max").show(max_rows=5)
+```
+
+And oddly, that did not produce the expected result. To clarify the situation, we should observe individual samples to discover whether there is a problem with the aggregation query, or the data. We shall first look at the sample with the most extreme range, which at the time of writing is '2021 koerner nielluccio sangiovese vivian vineyard'.
+
+```{python}
+# select sample '2021 koerner nielluccio sangiovese vivian vineyard'
+con.sql("""
+create or replace temp table
+    koerner_sang 
+as select
+    sm.wine,
+    cs.id,
+    sm.acq_date,
+    cs.mins,
+    cs.absorbance,
+from
+    pbl.chromatogram_spectra_long as cs
+join
+    pbl.sample_metadata as sm
+on
+    cs.id=sm.id
+where
+    sm.wine='2021 koerner nielluccio sangiovese vivian vineyard'
+and
+    cs.wavelength=256
+order by
+    cs.mins asc;
+select * from koerner_sang order by mins;
+""").show(max_rows=5)
+```
+
+As we can see, a normal looking table now. Some statistics:
+
+```{python}
+# table statistics of '2021 koerner nielluccio sangiovese vivian vineyard'
+con.sql("""
+select
+    first(wine) as wine,
+    min(mins) as mins_min,
+    max(mins) as mins_max,
+    count(wine) as n_rows,
+from
+    koerner_sang;
+""").show(max_rows=5)
+```
+
+So we can see that it does in fact contain the expected range of ~0 to ~52 mins, but rather than 6800 rows or so, it contains 21600. What does the chromatogram look like?
+
+```{python}
+# plot the '2021 koerner nielluccio sangiovese vivian vineyard' chromatogram
+(
+    con 
+    .sql("select mins, absorbance, id from koerner_sang")
+    .pl()
+    .plot(
+        x='mins',
+        y='absorbance',
+        title="2021 koerner nielluccio sangiovese vivian vineyard @ 256nm"
+        )
+)
+```
+
+its an overlap. If we instead group by id..
+
+```{python}
+# plot the '2021 koerner nielluccio sangiovese vivian vineyard' chromatogram, grouping by id
+(
+    con 
+    .sql("select mins, absorbance, id from koerner_sang")
+    .pl()
+    .plot(
+        x='mins',
+        y='absorbance',
+        title="2021 koerner nielluccio sangiovese vivian vineyard @ 256nm"
+        )
+)
+```
+
+```{python}
+# checking whether '2021 koerner nielluccio sangiovese vivian vineyard' has duplicate entries
+con.sql("select distinct(id) from koerner_sang").show()
+```
+
+As we can see, there are in fact 3 distinct ids under that wine name.
+
+So we can see now that the aggregation query appears to be responsible for the problem, as when an individual sample displaying a negative range in the aggregation is individually observed, and when identified by its unique id, displays the expected time ordering and full range. Observe the tabulation below:
+
+```{python}
+# aggregate the first, last and range of mins of '2021 koerner nielluccio sangiovese vivian vineyard', grouping by id
+con.sql(
+"""
+create or replace temp table
+    koerner_agg
+as select
+    first(sm.wine) as wine,
+    first(cs.id) as id,
+    min(cs.mins) as mins_first,
+    max(cs.mins) as mins_last,
+    (mins_last - mins_first) as range,
+    count(sm.wine) as n_rows,
+from
+    pbl.chromatogram_spectra_long as cs
+join
+    pbl.sample_metadata as sm
+on
+    cs.id=sm.id
+where
+    sm.wine='2021 koerner nielluccio sangiovese vivian vineyard'
+and
+    cs.wavelength=256
+group by
+    cs.id
+order by cs.id;
+select * from koerner_agg order by id;
+"""
+).show()
+```
+
+This produces the expected results - each sample contains the expected time bounds, starts at ~0, ends between ~40 and 50 mins, and contains the expected number of rows - 6000 - 8000.
+
+Now to find causes. If we swap 'min' and 'max' for 'first' and 'last', what happens?
+
+```{python}
+# aggregate the first, last and range of mins of '2021 koerner nielluccio sangiovese vivian vineyard', grouping by id
+con.sql(
+"""
+create or replace temp table
+    koerner_agg_first_last
+as select
+    first(sm.wine) as wine,
+    first(cs.id) as id,
+    first(cs.mins) as mins_first,
+    last(cs.mins) as mins_last,
+    (mins_last - mins_first) as range,
+    count(sm.wine) as n_rows,
+from
+    pbl.chromatogram_spectra_long as cs
+join
+    pbl.sample_metadata as sm
+on
+    cs.id=sm.id
+where
+    sm.wine='2021 koerner nielluccio sangiovese vivian vineyard'
+and
+    cs.wavelength=256
+group by
+    cs.id
+order by cs.id;
+select * from koerner_agg order by id;
+"""
+).show()
+```
+
+Aha! The problem arises again. The cs table is not inherently time ordered, and ordering matters. If we reproduce the same query but order by id and mins..
+
+```{python}
+# aggregate the first, last and range of mins of '2021 koerner nielluccio sangiovese vivian vineyard', grouping by id
+
+try:
+    con.sql(
+    """
+    create or replace temp table
+        koerner_agg_first_last_mins_ordered
+    as select
+        first(sm.wine) as wine,
+        first(cs.id) as id,
+        first(cs.mins) as mins_first,
+        last(cs.mins) as mins_last,
+        (mins_last - mins_first) as range,
+        count(sm.wine) as n_rows,
+    from
+        pbl.chromatogram_spectra_long as cs
+    join
+        pbl.sample_metadata as sm
+    on
+        cs.id=sm.id
+    where
+        sm.wine='2021 koerner nielluccio sangiovese vivian vineyard'
+    and
+        cs.wavelength=256
+    group by
+        cs.id
+    order by cs.id, cs.mins;
+    select * from koerner_agg order by id;
+    """
+    ).show()
+except db.InvalidInputException as e:
+    display(e)
+```
+
+I can't. I would need to group by mins as well. Thus `FIRST` and `LAST` should not be used in such contexts, unless you can order by the column.
+
+Lets move on to the original goal.
+
+```{python}
+con.sql(
+"""
+create or replace temp table
+    time_aggs_all_data
+as select
+    first(sm.wine) as wine,
+    first(cs.id) as id,
+    min(cs.mins) as mins_min,
+    max(cs.mins) as mins_max,
+    (mins_max - mins_min) as range,
+    count(sm.wine) as n_rows,
+from
+    pbl.chromatogram_spectra_long as cs
+join
+    pbl.sample_metadata as sm
+on
+    cs.id=sm.id
+and
+    cs.wavelength=256
+group by
+    cs.id
+order by cs.id;
+select * from time_aggs_all_data order by id;
+"""
+).show(max_rows=5)
+```
+
+Looking better, now to perform some checks on that aggregation.
+
+```{python}
+# get descriptive statistics for mins_min, mins_max, range, n_rows
+time_stats = con.sql(
+"""
+select
+    column_name,
+    round(cast(min as double), 3) as min,
+    round(cast(max as double), 3) as max,
+    round(cast(avg as double), 3) as avg,
+    count,
+    null_percentage
+from
+    (
+        summarize (
+            -- filtering 0 row samples
+            select
+                *
+            from
+                time_aggs_all_data
+            where
+                n_rows > 0
+            )
+        )
+where
+    column_name in ('mins_min','mins_max','range','n_rows')
+""" 
+)
+time_stats.show()
+
+mins_min = (
+    time_stats.pl()
+    .filter(
+        pl.col('column_name').eq('mins_min'))).select('min','max','avg').to_dict(as_series=False)
+mins_min_d = {k: v[0] for k, v in mins_min.items()}
+mins_min_d
+```
+
+And we have our expected result. Specifically, the first time value has a distribution with the following properties: `{python} f"min: {mins_min_d['min']}, max: {mins_min_d['max']}, and avg: {mins_min_d['avg']}"`.
+
+In addendum, it should be noted that the 'first' wine in the first query is random for every execution unless further ordering is specified.

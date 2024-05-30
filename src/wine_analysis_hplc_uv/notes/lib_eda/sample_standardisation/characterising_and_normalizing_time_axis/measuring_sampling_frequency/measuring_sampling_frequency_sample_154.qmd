@@ -1,0 +1,98 @@
+---
+title: Measuring Sampling Frequency of Sample 154
+jupyter: python3
+---
+
+```{python}
+from wine_analysis_hplc_uv import definitions
+from wine_analysis_hplc_uv.notes.lib_eda.sample_standardisation.characterising_and_normalizing_time_axis import (
+    data
+)
+import pandas as pd
+import duckdb as db
+import matplotlib.pyplot as plt
+import seaborn as sns
+import polars as pl
+```
+
+Many signal processing methods assume a regular sampling rate - the time difference $dx$ between observations, expressed either in time units or as frequency, hertz, $\frac{n \space \text{obs}}{m \space \text{seconds}}$. If this is not the case, it is best to resample the signal to the mean $dx$.
+
+```{python}
+df = data.df_154
+df.head()
+```
+
+```{python}
+#|echo: false
+def compute_mean_sampling_rate(df: pl.DataFrame):
+    """
+    Calculate the average sampling frequency for an input chromatogram
+    """
+    # TODO calculate the frequency in hertz, 1 / seconds * 1e6.(?)
+    # lag shifts the column back one relative to the column.
+    # lead shifts the column forward one relative to the column.
+    # to find the sampling frequency, use the foreward diff, i.e. diff between the column and the one ahead.
+    mean_hz = db.sql(
+        """--sql
+        -- First get the time dimension, expressed in seconds
+        CREATE OR REPLACE TEMP TABLE hz_tbl
+        AS (
+            SELECT
+                mins*60.0 AS seconds
+            FROM
+                df
+            ORDER BY seconds ASC
+        );
+        -- shift the seconds column forward one such that a row contains time, time+1
+        CREATE OR REPLACE TEMP TABLE hz_tbl
+        AS 
+        (
+        SELECT
+            seconds,
+            lag(seconds) OVER () as lag_seconds
+        FROM
+            hz_tbl
+        );
+        -- calculate the difference between time and time+1, the forward difference
+        CREATE OR REPLACE TEMP TABLE hz_tbl
+        AS
+        (
+        SELECT
+            seconds,
+            lag_seconds,
+            (seconds - lag_seconds) as forward_diff
+        FROM
+            hz_tbl
+        );
+        -- calculate the frequency of the difference, expressed in hertz
+        CREATE OR REPLACE TEMP TABLE hz_tbl
+        AS (
+            SELECT
+                seconds,
+                lag_seconds,
+                forward_diff,
+                (1 / forward_diff) as hz,
+            FROM
+                hz_tbl
+        );
+        -- express the average seconds difference and average hertz.
+        SELECT mean(forward_diff) as mean_diff, mean(hz) as mean_hertz FROM hz_tbl;
+        """
+    ).pl()
+
+    return mean_hz
+
+```
+
+```{python}
+mean_hz = compute_mean_sampling_rate(df=df)
+mean_hz
+```
+
+```{python}
+#| echo: false
+dx = mean_hz.get_column('mean_diff').item()
+dx_freq = 1/dx
+```
+
+So we can see that the sampling frequency is one observation per `{python} f"{dx:.3}"` seconds, or `{python} f"{dx_freq:.3}"` Hz, and that at least for this sample, the frequency is consistent.

@@ -14,12 +14,12 @@ logger = logging.getLogger(__name__)
 
 
 def compute_skewnorm(
-    x: Iterable, amp: float, loc: float, scale: float, alpha: float
+    x: Iterable, amp: float, loc: float, scale: float, skew: float
 ) -> NDArray[float64]:
     """
     Compute a single skewnorm distribution from input parameters and time interval
     """
-    dist = _compute_skewnorm(x=x, params=(amp, loc, scale, alpha))
+    dist = _compute_skewnorm(x=x, params=(amp, loc, scale, skew))
     return dist
 
 

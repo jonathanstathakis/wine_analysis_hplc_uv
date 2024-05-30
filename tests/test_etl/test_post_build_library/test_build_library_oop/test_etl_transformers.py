@@ -6,7 +6,6 @@
 """
 
 import logging
-from tests import conftest
 import duckdb as db
 import polars as pl
 import pytest
@@ -128,9 +127,7 @@ def sample_cs_wide(con: db.DuckDBPyConnection, tbl_name: str = "sample_cs", n: i
             USING
                 SAMPLE {n}
         """,
-    ).set_alias(
-        "cs_id_sample"
-    )  # type: ignore
+    ).set_alias("cs_id_sample")  # type: ignore
 
     cs_sample = con.sql(
         f"""--sql

@@ -14,6 +14,7 @@ DB_PATH: str = os.environ["DB_PATH"]
 LIB_DIR = "/Users/jonathan/uni/0_jono_data/mres_data_library/"
 
 
+# the names of the raw tables, the data prior to cleaning
 class Raw_tbls(StrEnum):
     CH_META = "chemstation_metadata"
     CH_DATA = "chromatogram_spectra"
@@ -21,12 +22,14 @@ class Raw_tbls(StrEnum):
     CT = "cellar_tracker"
 
 
+# the names of the clean tables - the names of the raw tables with a "c_" prefixed
 class Clean_tbls(StrEnum):
     CH_META = "c_" + Raw_tbls.CH_META
     ST = "c_" + Raw_tbls.ST
     CT = "c_" + Raw_tbls.CT
 
 
+# the login information required to access the Google Sheets API
 class GoogleSheetsAPIInfo(StrEnum):
     SHEET_TITLE = os.environ["SAMPLE_TRACKER_SHEET_TITLE"]
     GKEY = os.environ["SAMPLE_TRACKER_KEY"]
@@ -35,7 +38,6 @@ class GoogleSheetsAPIInfo(StrEnum):
 
 
 SUPER_TBL_NAME = "super_tbl"
-
 TEST_DB_PATH = os.path.join(os.getcwd(), "tests", "test.db")
 TEST_GKEY = os.environ.get("TEST_SAMPLE_TRACKER_KEY")
 

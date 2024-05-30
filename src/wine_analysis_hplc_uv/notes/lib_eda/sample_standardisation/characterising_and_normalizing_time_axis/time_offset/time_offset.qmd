@@ -1,0 +1,52 @@
+---
+date: '2023-08-23'
+title: Observing and Correcting Time Offset
+jupyter: python3
+---
+
+
+```{python}
+from wine_analysis_hplc_uv import definitions
+from wine_analysis_hplc_uv.notes.lib_eda.sample_standardisation.characterising_and_normalizing_time_axis import (
+    data
+)
+import pandas as pd
+import duckdb as db
+import matplotlib.pyplot as plt
+import seaborn as sns
+import polars as pl
+
+df = data.df_154
+```
+
+
+While we would expect a chromatogram to start at t = 0, it appears that sample 154 starts at `{python} df.get_column('mins').sort().item(0)`. We should now answer whether this is consistent throughout the samples. To do this we simply get the first observation value of each sample
+
+```{python}
+#| echo: false
+con = db.connect(definitions.DB_PATH)
+first_times = con.sql("""
+-- get the first time value for each sample ordered by sample idx
+select
+    first(idx) as idx,
+    first(mins) as mins,
+    first(wavelength) as wavelength
+from
+    pbl.chromatogram_spectra_long
+group by
+    id
+-- where
+    -- wavelength=256
+order by
+    idx
+""").pl()
+first_times
+
+# currently getting inconsistent results. I suspect that the wide to long transformation has messed up the time order
+```
+
+
+
+
+Ok, that's convincing enough for me. As of 2023-08-23 22:47:37 I am going to assume the full dataset follows the same pattern. In summary: all data time axes have a varying offset equal to the value of the first measurement. Subtracting the first value from the axis will align the data so that the first measurement is zero. The caveat is that the observation frequency must be the same for all samples.
+

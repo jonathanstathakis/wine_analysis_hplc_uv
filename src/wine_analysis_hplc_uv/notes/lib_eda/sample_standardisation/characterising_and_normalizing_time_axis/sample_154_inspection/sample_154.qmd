@@ -1,0 +1,22 @@
+
+jupyter: python3
+---
+
+
+The sample used to explore the fundamentals of the time series is sample 154 - 2020 leeuwin estate shiraz art series, an Australian Shiraz from Margaret River, Western Australia. A Shiraz has been selected because they, at least anecdotally, have the highest peak intensity and signal complexity, meaning that patterns in the data should be easy to detect.
+
+
+```{python}
+# get 154
+
+# setup
+
+import duckdb as db
+from wine_analysis_hplc_uv import definitions
+from wine_analysis_hplc_uv.notes.lib_eda.sample_standardisation.characterising_and_normalizing_time_axis import (
+    data,
+)
+
+data.df_154.plot(x="mins", y="absorbance", title="154")
+```
+        

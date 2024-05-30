@@ -1,0 +1,42 @@
+---
+date: '2023-08-23'
+title: Determining Maximum Time Precision
+jupyter: python3
+---
+## Creation of Universal Time Axis
+
+Now that the offset has been corrected for, and rounding to milliseconds, the sample on sample time columns are looking regular, and I suspect that we can now use 1 universal time column as an index. To determine whether this is true, we should compare all time columns and find any outliers. I will investigate this by treating each time element as a column and calculating the z-score for each row in that column.
+
+```{python}
+"""
+Select 'mins' column, convert to float (seconds), transpose, forward and backfill
+missing values to prepare for outlier detection
+"""
+
+adf = (
+    adf.stack(["samplecode", "wine"])["mins"]
+    .unstack(["samplecode", "wine"])
+    .apply(lambda x: x.dt.total_seconds())
+    .T.ffill()
+    .bfill()
+)
+```
+
+```{python}
+"""
+Calculate mean difference rounded to 3 decimal places (because floats), find those who 
+are not equal to zero, then the total sum of True values
+"""
+
+import numpy as np
+
+mask = (adfT.apply(lambda x: np.round(x - x.mean(), 3)) != 0).sum().sum()
+mask
+```
+
+Subtracting the mean of each column from its elements should act as a outlier detector, as we are expecting the values to be either all equal, or not. As we can see, useing the condition `!=0` results in a boolean frame, and calling `.sum().sum()` will calculate the total number of elements which are not equal to zero. As we can see, that number is zero, thus all the time columns are now equal, and we can use a universal time column, rather than a inter-sample column.
+
+## Conclusion
+
+Observing both sample 154 and the overall dataset has enabled me to investigate treating the signals as time series, normalization methods, and moving towards a universal time axis. Specifically, we found that `pd.timedelta` was an appropriate time series datatype. Firstly we observed that in sample 154 there was a sampling frequency of 2.5Hz, or one observation per 400 milliseconds and then later on found this consistant across the whole CUPRAC dataset. Initally the time axes of each sample looked unreconcilable, but after rounding to a millisecond scale and subtracting a scalar offset, we proved that there was infact a universal time scale that can be used for all samples. The only caveat is that the samples need to be recorded at the same frequency. That being said, simple resampling would rectify those differences. Finally, methods to move to the universal time axis (index) have been created in `m_index_signal_processing`.
+
