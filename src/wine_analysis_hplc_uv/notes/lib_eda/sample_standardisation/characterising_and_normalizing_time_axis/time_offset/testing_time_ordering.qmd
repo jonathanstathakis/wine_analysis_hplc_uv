@@ -5,6 +5,8 @@ title: "Investigating Time Ordering in Wine Chromato-spectral Data"
 
 # Preface
 
+See main document: "Observing and Correcting Time Offset: Observing the Value of Time Element Zero".
+
 A short investigation into why when aggregating the first time value from all wines, a random assortment of times were returned. The cause was determined to be that the queries do not keep row order when grouping, and as such the use of `FIRST` and `LAST` is incorrect if expecting a sorted order, furthermore it was determined that they should only be used if the columns are also specified in the groupby. If ordering is required, use `MIN` and `MAX`.
 
 # Investigating Time Ordering in Wine Chromato-spectral Data

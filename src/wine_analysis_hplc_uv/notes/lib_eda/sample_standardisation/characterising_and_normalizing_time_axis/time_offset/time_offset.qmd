@@ -17,36 +17,242 @@ import seaborn as sns
 import polars as pl
 
 df = data.df_154
+con = db.connect(definitions.DB_PATH)
 ```
 
+# Observing the Value of Time Element Zero
 
-While we would expect a chromatogram to start at t = 0, it appears that sample 154 starts at `{python} df.get_column('mins').sort().item(0)`. We should now answer whether this is consistent throughout the samples. To do this we simply get the first observation value of each sample
+While we would expect a chromatogram to start at t = 0, it appears that sample 154 starts at `{python} df.get_column('mins').sort().item(0)`. We should now answer whether this is consistent throughout the samples. To do this we simply get the first observation value of each sample[^1].
 
 ```{python}
 #| echo: false
-con = db.connect(definitions.DB_PATH)
+
+# create a temporary table containing the first, last and range of minute values of each sample
 first_times = con.sql("""
 -- get the first time value for each sample ordered by sample idx
+create temp table sample_times as
 select
-    first(idx) as idx,
-    first(mins) as mins,
-    first(wavelength) as wavelength
+    first(id) as id,
+    min(mins) as mins_min,
+    max(mins) as mins_max,
+    (mins_max - mins_min) as range,
 from
-    pbl.chromatogram_spectra_long
+    (
+        select
+            id,
+            mins,
+            absorbance,
+            wavelength,
+        from
+            pbl.chromatogram_spectra_long
+        where
+            wavelength=256
+    )
 group by
     id
--- where
-    -- wavelength=256
 order by
-    idx
-""").pl()
-first_times
+    id, mins_min;
+select * from sample_times
+""").show(max_rows=5)
+```
 
-# currently getting inconsistent results. I suspect that the wide to long transformation has messed up the time order
+And some statistics across the sample set:
+
+```{python}
+
+# calculate the distributions of each statistic
+mins_min = con.sql("""
+select
+    0 as row_order,
+    'min' as stat,
+    min(mins_min) as min,
+    max(mins_min) as max,
+    mean(mins_min) as avg,
+    stddev(mins_min) as stddev,
+from
+ sample_times
+ """)
+
+mins_max = con.sql("""
+select
+    1 as row_order,
+    'max' as stat,
+    min(mins_max) as min,
+    max(mins_max) as max,
+    mean(mins_max) as avg,
+    stddev(mins_max) as stddev,
+from
+ sample_times
+ """)
+
+range = con.sql(
+"""
+select
+    2 as row_order,
+    'range' as stat,
+    min(range) as min,
+    max(range) as max,
+    mean(range) as avg,
+    stddev(range) as stddev,
+from
+    sample_times
+ """
+ )
+```
+
+
+```{python}
+# concatenate all of the stats together for display
+stats_tbl = con.sql(
+"""
+select
+    * EXCLUDE (row_order)
+from
+    (
+        select
+            *
+        from
+            mins_min
+        union
+            select
+                *
+            from
+                mins_max
+        union
+            select
+                *
+            from
+            range
+        )
+order by row_order;
+"""
+ )
+stats_tbl.show()
+```
+
+```{python}
+#|echo: false
+# print strings for inline expressions.
+
+# the minimum of the sample time minimums
+min_mins_min_str = f"{mins_min.pl().select('min').item():.3E}"
+
+# the maximum of the sample time minimums
+min_mins_max_str = f"{mins_min.select('max').pl().item():.3E}"
+
+# the mean of the sample time minimums
+min_mins_avg_str = f"{mins_min.pl().select('avg').item():.3E}"
+
+# the minimum of the time maximums across the samples
+mins_max_min_str = f"{mins_max.select('min').pl().item():.2E}"
+
+# the maximum of the time maximums across the samples
+mins_max_max_str = f"{mins_max.pl().select('max').item():.3E}"
+
+# the mean of the time maximums across the samples
+mins_max_mean_str = f"{mins_max.pl().select('avg').item():.3E}"
+
+# the minimum of the sample time ranges
+range_min_str = f"{range.select('min').pl().item():.2E}"
+
+# the maximum of the sample time ranges
+range_max_str = f"{range.pl().select('max').item():.3E}"
+
+# the mean of the sample time ranges
+range_mean_str = f"{range.pl().select('avg').item():.3E}"
+```
+
+As we can see from the above table, the minimum minutes range from `{python} min_mins_min_str` to `{python} min_mins_max_str` with an average of `{python} ` minutes, the maximums range from `{python} mins_max_min_str` to `{python} mins_max_max_str` with an average of `{python} ` minutes, and the ranges range from `{python} ` to `{python} range_max_str` with an average of `{python} range_mean_str` minutes.
+
+This can be accomplished by subtracting the first value with the following query
+
+```{python}
+con.sql("describe pbl.chromatogram_spectra_long")
+```
+
+```{python}
+# attempting to create a faster query than the one below
+# try creating the subtracted column seperately then combining via union
+
+con.sql("""
+create or replace temp table cs_256 as
+with
+    -- get the first minute value (the minimum) for each sample
+    cs_256 as (
+        select
+            *
+        from
+            pbl.chromatogram_spectra_long as cs
+        where
+            cs.wavelength=256
+    ),
+    first_mins as (
+        select
+            first(id) as id,
+            min(mins) as first_min
+        from pbl.chromatogram_spectra_long
+        group by
+            id
+        order by
+            id
+        ),
+    -- get the corrected mins and id as a subquery
+    mins_corr as (
+        select
+            cs.idx,
+            cs.id,
+            cs.wavelength,
+            cs.absorbance,
+            cs.mins-fm.first_min as mins,
+        from
+            cs_256 as cs
+        join
+            first_mins as fm
+        on
+            cs.id=fm.id
+        order by
+            cs.id, cs.mins)
+select
+    *
+from
+    mins_corr;
+-- add a comment about the identity of the table
+comment on table cs_256 is 'the 256nm chromatograms with mins column corrected.';
+""")
+
 ```
 
 
 
+```{python}
+con.sql("select * from cs_256 order by id, wavelength, mins").show()
+```
 
-Ok, that's convincing enough for me. As of 2023-08-23 22:47:37 I am going to assume the full dataset follows the same pattern. In summary: all data time axes have a varying offset equal to the value of the first measurement. Subtracting the first value from the axis will align the data so that the first measurement is zero. The caveat is that the observation frequency must be the same for all samples.
+and to verify whether this worked, we repeat the statistics checks from earlier, expecting the minimum min for each id to be zero:
 
+```{python}
+avg_min_mins = con.sql(
+"""
+with mins_min as (
+    select
+        first(id) as id,
+        min(mins) as mins_min,
+    from
+        cs_256
+    group by
+        id
+    order by
+        mins_min
+        )
+select
+    mean(mins_min) as avg_min_mins,
+from
+    mins_min
+"""
+)
+avg_min_mins.show()
+```
+
+As we can see, the operation was successful, with an average minimum mins of `{python} avg_min_mins.pl().item()`.
+
+[^1]: I had some issues writing this query, see "Investigating Time Ordering in Wine Chromato-spectral Data" for more information
