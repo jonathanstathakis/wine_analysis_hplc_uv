@@ -2,13 +2,15 @@ import pytest
 from polars import testing as ptest
 import polars as pl
 import duckdb as db
-from wine_analysis_hplc_uv.sampletracker import sample_tracker_processor
+from wine_analysis_hplc_uv.etl.build_library.sampletracker import (
+    sample_tracker_processor,
+)
 from tests.my_test_tools.pandas_tools import verify_df
 from wine_analysis_hplc_uv.etl.build_library.my_sheetsinterface.gspread_methods import (
     WorkSheet,
 )
 import pandas as pd
-from wine_analysis_hplc_uv.sampletracker.st_cleaner import STCleaner
+from wine_analysis_hplc_uv.etl.build_library.sampletracker.st_cleaner import STCleaner
 import logging
 
 logging.basicConfig(level=logging.INFO)

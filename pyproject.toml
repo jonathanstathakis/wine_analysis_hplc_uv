@@ -93,14 +93,12 @@ pytest = "^7.4.4"
 sqlalchemy = "^2.0.30"
 duckdb-engine = "^0.9.0"
 openpyxl = "^3.1.2"
-jupyter = "^1.0.0"
 seaborn = "^0.12.2"
 kaleido = "0.2.1"
 xhtml2pdf = "^0.2.11"
 pdf-reports = "^0.3.4"
 jupyter-contrib-nbextensions = "^0.7.0"
 pyppeteer = "^1.0.2"
-nbconvert = {extras = ["qtpdf"], version = "^7.16.4"}
 pyqt6 = "^6.7.0"
 tabulate = "^0.9.0"
 pre-commit = "^3.7.1"
@@ -135,9 +133,8 @@ polars = "0.20.29"
 hvplot = "^0.10.0"
 ruff = "^0.4.5"
 quarto = "^0.1.0"
-
-[tool.poetry.group.dev.dependencies]
 jupyter = "^1.0.0"
+nbconvert = "^7.16.4"
 
 [tool.ruff]
 line-length = 88

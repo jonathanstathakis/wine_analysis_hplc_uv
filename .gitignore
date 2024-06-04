@@ -192,3 +192,4 @@ My Library.bib
 _output
 .quarto
 wines.db.tmp
+/.quarto/
