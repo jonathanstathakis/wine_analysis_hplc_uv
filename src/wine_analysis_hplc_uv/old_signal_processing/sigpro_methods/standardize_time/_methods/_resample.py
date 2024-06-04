@@ -10,7 +10,7 @@ def resample_to_mean_freq(
     df: pl.DataFrame, time_col: str, group_col: str | list[str]
 ) -> pl.DataFrame:
     """
-    resample an input dataframe on by 'time' col.
+    resample an input dataframe on by 'time' col. A convenience function wrapping `resample_groups_to_target`. Use that if a frequency other than the sample mean is required.
     """
 
     # get the mean frequency
@@ -27,7 +27,7 @@ def resample_to_mean_freq(
 def resample_groups_to_target(
     df: pl.DataFrame,
     time_col: str,
-    group_col: str,
+    group_col: str | list[str],
     target_freq: float,
 ) -> pl.DataFrame:
     """
@@ -58,6 +58,8 @@ def resample_frame_to_target(
     polars/duckdb does not have the same resampling capability as pandas, so atm am using pandas
 
     interpolation after upsampling doesnt handle string columns, so need to manually ffill. This may cause errors if the upsampled value should be something else, be warned.
+
+    The target frequency input is rounded to a precision of 9 prior to resampling.
     """
     td_time_col = time_col + "_td"
 
@@ -69,7 +71,7 @@ def resample_frame_to_target(
     import polars.selectors as cs
 
     # resample to the target freq
-    rule = f"{target_freq}min"
+    rule = f"{round(target_freq, 9)}min"
     df_ = (
         df_.set_index(td_time_col)
         .resample(rule=rule)

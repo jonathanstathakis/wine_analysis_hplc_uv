@@ -1,6 +1,7 @@
 """
 A cellartracker class inheriting from CellarTracker with cleaning and export functionality
 """
+
 from cellartracker import cellartracker
 import pandas as pd
 from wine_analysis_hplc_uv.etl.build_library.generic import Exporter

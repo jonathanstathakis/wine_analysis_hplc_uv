@@ -1,6 +1,5 @@
 import numpy as np
 import pandas as pd
-import plotly.io as pio
 from plotly import graph_objects as go
 
 from wine_analysis_hplc_uv.signal_processing import signal_data_treatment_methods as sdt
@@ -36,7 +35,7 @@ def plot_signal_in_series(series: pd.Series, x_key, y_key):
             xi, yi = row["peak_x"], row["peak_y"]
             peak_idx = idx + 1
 
-            customdata = np.array([[xi, yi]])
+            np.array([[xi, yi]])
 
             name = f"{sample_name} peak #{peak_idx}"
 
@@ -105,7 +104,7 @@ def get_peak_df(df: pd.DataFrame) -> go.Scatter:
     Take a dataframe signal of shape RangeIndex | mins | signal and return a plotly trace of that dataframe signal's peaks. To be used within plot_signal_in_series as option.
     """
     x, y = df[df.columns[0]], df[df.columns[1]]
-    x_range = x.max() - x.min()
+    x.max() - x.min()
     y_range = y.max() - y.min()
 
     min_height = y_range / len(y)
@@ -114,7 +113,7 @@ def get_peak_df(df: pd.DataFrame) -> go.Scatter:
 
     peak_x, peak_y = peak_df[peak_df.columns[0]], peak_df[peak_df.columns[1]]
 
-    peak_marker_trace = go.Scatter(x=peak_x, y=peak_y, marker_symbol=1)
+    go.Scatter(x=peak_x, y=peak_y, marker_symbol=1)
 
     # make this oen invisible
     # peak_trace = go.Scatter(x=peak_x, y=peak_y, mode='markers', showlegend=False, name = 'peak maxima', marker_symbol = 'x')

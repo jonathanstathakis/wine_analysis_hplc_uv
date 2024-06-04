@@ -44,12 +44,12 @@ def baseline_subtraction(df_series: pd.Series):
         )
 
         baseline_subtracted_signals[i] = pd.DataFrame()
-        baseline_subtracted_signals[i][
-            original_signal_time_axis.name
-        ] = original_signal_time_axis
-        baseline_subtracted_signals[i][
-            baseline_subtracted_y_axis_colname
-        ] = baseline_subtracted_y_axis
+        baseline_subtracted_signals[i][original_signal_time_axis.name] = (
+            original_signal_time_axis
+        )
+        baseline_subtracted_signals[i][baseline_subtracted_y_axis_colname] = (
+            baseline_subtracted_y_axis
+        )
 
     baseline_subtracted_signals_series = pd.Series(baseline_subtracted_signals)
     baseline_subtracted_signals_series.name = "baseline_subtracted"

@@ -4,7 +4,6 @@
 A module destined to replace [this one](./src/wine_analysis_hplc_uv/signal_processing/signal_data_treatment_methods.py). Primarily it differs in that it will have a class API, and expect a multiindexed dataframe as input.
 """
 
-import numpy as np
 import pandas as pd
 import logging
 from pybaselines import Baseline
@@ -72,134 +71,6 @@ class SignalProcessor:
 
         return df_
 
-    def test_adjust_timescale(self, df: pd.DataFrame) -> None:
-        """
-        test whether adjust_timescale resulted in all unique time values. Assumes that
-        all time observation points for a sample start off as unique values, and have
-        millisecond granularity.
-        TODO:
-        - [ ] add test dataset that is more precise (will fail this test as the
-        variance will be at a lower scale than millisecond)
-        """
-        size = (
-            df.stack(["samplecode", "wine"])
-            .groupby(["samplecode", "wine", "mins"])
-            .size()
-            .where(lambda s: s > 1)
-            .dropna()
-            .size
-        )
-
-        assert size == 0, f"expected size 0, instead {size}"
-        return df
-
-    def correct_offset(self, df: pd.DataFrame) -> pd.DataFrame:
-        """
-        Refer to
-        []().
-        All chromatograms contain a scalar offset determined by the value of the first
-        time point. A simple subtraction of that value from all time values of that
-        sample centers the sample so that the first time point is zero, and all sample
-        time axes are equal (for a given length and frequency).
-        """
-        df = (
-            df.pipe(self.validate_dataframe)
-            .stack(["samplecode", "wine"])
-            .assign(
-                mins=lambda df: df.groupby(["samplecode", "wine"])["mins"].transform(
-                    lambda x: x - x.iloc[0]
-                )
-            )  # adjust time axis by initial value so they all start at 1
-            .unstack(["samplecode", "wine"])
-            .reorder_levels(["samplecode", "wine", "vars"], axis=1)
-            .sort_index(level=0, axis=1, sort_remaining=True)
-            .pipe(self.validate_dataframe)
-            .pipe(self.test_correct_offset)
-        )
-        return df
-
-    def test_correct_offset(self, df: pd.DataFrame) -> pd.DataFrame:
-        """
-        Refer to
-        []().
-        Tests whether `self.correct_offset` results in the same time value for a given
-        observation by observing the number of unique values in a given row. If
-        num_unique > 1 (given by groupby size where groupby is on the row index) fails.
-
-
-        """
-        # test whether all first values are 0, i.e. offest is corrected. There is no
-        # convievable way that this would fail as x-x is always 0, however its a good
-        # redundancy
-        (
-            df.stack(["samplecode", "wine"])
-            .groupby(["samplecode", "wine"])["mins"]
-            .first()
-            .pipe(
-                lambda s: pd.testing.assert_series_equal(
-                    left=s,
-                    right=pd.Series(
-                        [0] * len(s),
-                        index=s.index,
-                        dtype="timedelta64[ns]",
-                        name="mins",
-                    ),
-                )
-            )
-        )
-
-        (
-            df.pipe(self.validate_dataframe)
-            .loc[:, pd.IndexSlice[:, :, "mins"]]
-            .dropna()  # make all series the same length
-            .agg([pd.unique], axis=1)  # get unique values in each row
-            # .pipe(lambda s: s if print(s) else s)
-            .explode(
-                "unique"
-            )  # expand on the index so each unique value per row now has multiple entries
-            .groupby("i")  # groupby index to see how many unique elements per row index
-            .size()
-            .where(
-                lambda s: s > 1
-            )  # filter out any row indexes where more than 1 unique value. If false, returns NaN
-            .dropna()  # remaining rows will be rows that had more than 1 unique value
-            # .pipe(lambda s: s if print(s) else s)
-            .pipe(
-                lambda s: pd.testing.assert_series_equal(
-                    s, pd.Series(dtype="float64").rename_axis("i")
-                )
-            )
-        )
-        return df
-
-    def tidy_format(self, df: pd.DataFrame) -> pd.DataFrame:
-        """
-        take a long format dataframe with at least 3 levels index matching the labels
-        and returns it to tidy, or wide format. To be used at the end of pipes, esp.
-        row-oriented groupbys. The reverse of `.long_format`
-        """
-        df = (
-            df.unstack(["wine", "samplecode"])
-            .reorder_levels(["samplecode", "wine", "vars"], axis=1)
-            .sort_index(axis=1)
-        )
-
-        return df
-
-    def long_format(self, df: pd.DataFrame) -> pd.DataFrame:
-        """
-        stack a multilevel column dataframe to prepare it for row-based groupbys and
-        other operations. The opening move of all my pipeline operations. Reversed
-        by `.tidy_format`.
-        """
-        df = (
-            df.stack(["wine", "samplecode"])
-            # .sort_index(level=["samplecode", "wine"])
-            # .reorder_levels(["samplecode", "wine"])
-        )
-
-        return df
-
     def subtract_baseline(self, df: pd.DataFrame) -> pd.DataFrame:
         """ """
 
@@ -262,13 +133,6 @@ class SignalProcessor:
 
         plt.show()
 
-        return df
-
-    def downsample_signal(self, df: pd.DataFrame, new_freq: str) -> pd.DataFrame:
-        """
-        downsample an return tidy frame with a time index to the frequency specifed in `new_freq`
-        """
-        df = df.resample(f"{new_freq}").mean()
         return df
 
     def vars_subplots(self, df: pd.DataFrame) -> pd.DataFrame:

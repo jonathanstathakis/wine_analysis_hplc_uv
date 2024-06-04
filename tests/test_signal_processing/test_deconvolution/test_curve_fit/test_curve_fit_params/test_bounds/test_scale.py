@@ -34,7 +34,7 @@ def expected_scale_ub(x: pl.Series, n_peaks_mock: int) -> pl.Series:
     """
     The expected scale ub calculated independent of the gen_bounds module
     """
-    x_ = pl.Series(name="x", values=x)
+    pl.Series(name="x", values=x)
 
     half_range = (x.max() - x.min()) / 2
     return pl.Series(name="lb", values=[half_range] * n_peaks_mock)

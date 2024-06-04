@@ -4,7 +4,6 @@ Currently (2024-05-13 12:45:01) `test_build_library` is testing on the samples a
 """
 
 import duckdb as db
-from pathlib import Path
 
 import logging
 

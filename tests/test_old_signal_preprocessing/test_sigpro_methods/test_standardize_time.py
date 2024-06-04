@@ -8,10 +8,7 @@ import polars as pl
 from wine_analysis_hplc_uv import definitions
 from wine_analysis_hplc_uv.old_signal_processing.sigpro_methods import standardize_time
 from wine_analysis_hplc_uv.old_signal_processing.sigpro_methods.standardize_time import (
-    methods as std_time_methods,
-)
-from wine_analysis_hplc_uv.old_signal_processing.sigpro_methods.standardize_time import (
-    resample,
+    _methods as std_time_methods,
 )
 
 
@@ -27,9 +24,11 @@ def test_standardize_time(test_data: pd.DataFrame):
     """
     test `sigpro_methods.standardize_time.standardize_time` by asserting that the output dataframe matches expectation.
     """
-    df_ = standardize_time.standardize_time(df=test_data)
+    df_ = standardize_time.standardize_time(
+        df=test_data, group_col="samplecode", time_col="mins", precision=6
+    )
 
-    assert isinstance(df_, pd.DataFrame)
+    assert isinstance(df_, pl.DataFrame)
 
 
 @pytest.fixture(scope="module")
@@ -51,7 +50,7 @@ def test_resample(test_data_l: pl.DataFrame) -> None:
     """
     test resampling routine
     """
-    df_ = resample.resample_to_mean_freq(
+    df_ = standardize_time.resample_to_mean_freq(
         df=test_data_l,
         time_col="mins",
         group_col="samplecode",

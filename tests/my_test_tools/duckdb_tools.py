@@ -1,7 +1,6 @@
 """ """
 
 import logging
-import warnings
 import duckdb as db
 
 logger = logging.getLogger(__name__)
@@ -57,9 +56,9 @@ def copy_tables_across_databases(
 
     for tbl in input_tblnames:
         if summarize:
-            output_tbl = main_con.sql(f"SUMMARIZE {tbl}")
+            main_con.sql(f"SUMMARIZE {tbl}")
         else:
-            output_tbl = main_con.sql(f"FROM {tbl}")
+            main_con.sql(f"FROM {tbl}")
 
         main_con.sql(
             f"CREATE TABLE {output_db_alias}.{str(tbl)} AS SELECT * FROM output_tbl"

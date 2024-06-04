@@ -56,7 +56,8 @@ BAD_CUPRAC_SAMPLES = ["128", "161", "163", "164", "165", "ca0101", "ca0301"]
 # the unprocesssed cupshz dataset
 
 RAW_PARQ_PATH = (
-    Path(ROOT_DIR).parent.parent / "tests/data/processing_test_set/cupshz_testset_raw.pq"
+    Path(ROOT_DIR).parent.parent
+    / "tests/data/processing_test_set/cupshz_testset_raw.pq"
 )
 
 XPRO_DOWNSAMPLED_PARQ_PATH = "/Users/jonathan/mres_thesis/wine_analysis_hplc_uv/tests/test_data/processing_test_set/cupshz_testset_x.pq"

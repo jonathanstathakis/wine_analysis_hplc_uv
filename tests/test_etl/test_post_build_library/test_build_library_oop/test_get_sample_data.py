@@ -287,7 +287,7 @@ def test_iterate_through_filter(
     """
     test query string assembly execution
     """
-    query_strings = gsd._iterate_through_filter(filter=sanitized_filter)
+    gsd._iterate_through_filter(filter=sanitized_filter)
 
 
 @pytest.fixture
@@ -304,7 +304,7 @@ def test_assemble_query(condition_strings: dict, gsd: queries.GetSampleData):
     TODO: come up with a method of validating the query
     """
 
-    query = gsd._assemble_query(condition_strings=condition_strings)
+    gsd._assemble_query(condition_strings=condition_strings)
 
     assert True
 

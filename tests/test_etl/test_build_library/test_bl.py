@@ -14,17 +14,15 @@ from scratch will take time.
 
 import logging
 from pathlib import Path
-
+from polars import testing as pl_testing
 import duckdb as db
 import pytest
 from wine_analysis_hplc_uv import definitions
 from wine_analysis_hplc_uv.etl.build_library import build_library
 
+
 logging.basicConfig(format="%(asctime)s %(message)s", datefmt="%m/%d/%Y %I:%M:%S %p")
 logger = logging.getLogger(__name__)
-
-
-from polars import testing as pl_testing
 
 
 @pytest.fixture

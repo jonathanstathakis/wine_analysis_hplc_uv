@@ -1,6 +1,7 @@
 """
 A file to contain all the general data treatment methods: baseline correction, mean centering, normalization, peak alignment, peak finding, etc.
 """
+
 import numpy as np
 import pandas as pd
 import streamlit as st

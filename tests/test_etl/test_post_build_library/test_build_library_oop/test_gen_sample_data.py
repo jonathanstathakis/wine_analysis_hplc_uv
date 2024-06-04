@@ -67,14 +67,10 @@ def test_sample_table_generator(
 
         sm_distinct_id_n = con.execute(
             f"SELECT COUNT(DISTINCT({join_key})) FROM {sm_sample_tblname}"
-        ).fetchone()[
-            0
-        ]  # type: ignore
+        ).fetchone()[0]  # type: ignore
         cs_distinct_id_n = con.execute(
             f"SELECT COUNT(DISTINCT({join_key})) FROM {cs_sample_tblname}"
-        ).fetchone()[
-            0
-        ]  # type: ignore
+        ).fetchone()[0]  # type: ignore
 
         assert sm_distinct_id_n == n
         assert cs_distinct_id_n == n

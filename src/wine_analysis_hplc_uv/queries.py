@@ -3,7 +3,7 @@ Methods for retrieval of data post-ETL.
 """
 
 from .etl.post_build_library.pbl_oop import generic
-from typing import Literal, TypedDict, get_args
+from typing import Literal, get_args
 import duckdb as db
 import pandas as pd
 import polars as pl
@@ -269,9 +269,9 @@ class GetSampleData:
         key: str
         for key, val in self.filter.items():
             if key in self.cs_range_fields and self.get_cs_data:
-                self.queries[
-                    key
-                ] = f"{self.cs_tblname}.{key} BETWEEN {val[0]} AND {val[1]}"
+                self.queries[key] = (
+                    f"{self.cs_tblname}.{key} BETWEEN {val[0]} AND {val[1]}"
+                )
             elif isinstance(val, list) or isinstance(val, tuple):
                 self.queries[key] = f"{self.metadata_tblname}.{key} IN {tuple(val)}"
             else:
@@ -340,13 +340,13 @@ class GetSampleData:
 
         for key, val in filter.items():
             if val[OPERATOR] != BETWEEN:
-                condition_strings[
-                    key
-                ] = f"{key} {operators[val[OPERATOR]]} {val[VALUE]}"
+                condition_strings[key] = (
+                    f"{key} {operators[val[OPERATOR]]} {val[VALUE]}"
+                )
             elif val[OPERATOR] == BETWEEN:
-                condition_strings[
-                    key
-                ] = f"{key} {operators[val[OPERATOR]]} {val[VALUE][0]} AND {val[VALUE][1]}"
+                condition_strings[key] = (
+                    f"{key} {operators[val[OPERATOR]]} {val[VALUE][0]} AND {val[VALUE][1]}"
+                )
 
         assert True
         return condition_strings

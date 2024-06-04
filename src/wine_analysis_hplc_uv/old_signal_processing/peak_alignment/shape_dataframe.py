@@ -12,7 +12,6 @@ from wine_analysis_hplc_uv.old_signal_processing.peak_alignment import (
     peak_alignment_pipe,
 )
 from wine_analysis_hplc_uv import definitions
-import duckdb as db
 import pandas as pd
 
 pd.options.display.width = None

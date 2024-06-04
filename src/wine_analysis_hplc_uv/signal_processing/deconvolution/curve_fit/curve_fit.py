@@ -74,3 +74,11 @@ def compute_in_bounds(df: ParamTbl):
     )
 
     return df_
+
+
+def _curve_fit():
+    pass
+
+
+def check_in_bounds(param_tbl: pl.DataFrame):
+    pass

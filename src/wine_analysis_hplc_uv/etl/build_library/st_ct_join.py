@@ -45,7 +45,7 @@ class FormForeignKeySTCT:
         """
         logger.info("joining st and fuzzy join tbl to add ct wine foreign key to st..")
 
-        join_df = self._get_fuzzy_join_df()
+        self._get_fuzzy_join_df()
 
         new_tbl = definitions.Clean_tbls.ST
 

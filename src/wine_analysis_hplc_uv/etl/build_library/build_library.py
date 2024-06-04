@@ -65,7 +65,7 @@ def build_db_library(
     # check that data lib path exists
     if not os.path.isdir(data_lib_path):
         if not isinstance(data_lib_path, str):
-            raise TypeError(f"data_lib_path must be a string")
+            raise TypeError("data_lib_path must be a string")
         else:
             raise ValueError("input path does not contain a directory")
 

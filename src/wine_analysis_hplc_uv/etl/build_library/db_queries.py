@@ -1,6 +1,7 @@
 """
 A module for writing db queries
 """
+
 from wine_analysis_hplc_uv.definitions import DB_PATH
 import duckdb as db
 

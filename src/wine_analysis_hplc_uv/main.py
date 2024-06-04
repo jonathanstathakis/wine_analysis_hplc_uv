@@ -7,7 +7,6 @@ as the overarching pipeline to get to final results.
 from wine_analysis_hplc_uv.etl.build_library import build_library
 import duckdb as db
 from wine_analysis_hplc_uv import definitions
-from wine_analysis_hplc_uv.etl.build_library import build_library
 import os
 
 

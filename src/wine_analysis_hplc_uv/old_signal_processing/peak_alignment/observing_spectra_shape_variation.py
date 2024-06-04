@@ -1,6 +1,7 @@
 """
 2023-05-06 00:29:02 A short program to observe the variation in chromatogram-spectrum matrix sizes which is causing errors in [signal_alignment_methods.calculate_distance_matrix](../../../users/jonathan/wine_analysis_hplc_uv/prototype_code/signal_alignment_methods.py) when certain pairs of samples have matrices of different sizes.
 """
+
 from wine_analysis_hplc_uv.old_signal_processing.peak_alignment import (
     peak_alignment_spectrum_chromatograms,
 )
@@ -40,7 +41,7 @@ def observe_sample_size_mismatch(df: pd.DataFrame) -> pd.DataFrame:
     df["reshaped_matrix"] = df.apply(
         lambda row: reshape_dataframe(row["spectra"], m_mode, n_mode), axis=1
     )
-    new_size_df_series = get_matrix_shapes(df["reshaped_matrix"])
+    get_matrix_shapes(df["reshaped_matrix"])
 
     # print deviating shapes report after resizing
     new_size_df_series_raw_report = report_deviating_shapes(df["reshaped_matrix"])
@@ -127,7 +128,7 @@ def reshape_dataframe(
     if desired_columns < df.shape[1]:
         df = df.iloc[:, :desired_columns]
     else:
-        new_columns = range(desired_columns)
+        range(desired_columns)
     #   df = df.reindex(columns=new_columns, fill_value=0)
 
     return df
