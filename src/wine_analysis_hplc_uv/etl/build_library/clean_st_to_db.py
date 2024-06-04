@@ -1,4 +1,4 @@
-from wine_analysis_hplc_uv.sampletracker.st_cleaner import STCleaner
+from wine_analysis_hplc_uv.etl.build_library.sampletracker.st_cleaner import STCleaner
 from wine_analysis_hplc_uv import definitions
 import duckdb as db
 import logging
