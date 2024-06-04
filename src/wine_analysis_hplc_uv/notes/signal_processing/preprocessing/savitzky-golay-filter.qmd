@@ -1,0 +1,11 @@
+---
+date: 2024-06-04 16:37:12
+title: Savitzy-Golay Filter
+format: html
+---
+
+# Preface
+
+Smoothing is commonly used in signal preprocessing to remove noise, or correct introduced roughness caused during sharpening. The most popular method of smoothing is the Savitzy-Golay filter. The following notes address the background and use of this method.
+
+# Background

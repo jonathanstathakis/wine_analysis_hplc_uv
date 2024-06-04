@@ -4,66 +4,22 @@
 A module destined to replace [this one](./src/wine_analysis_hplc_uv/signal_processing/signal_data_treatment_methods.py). Primarily it differs in that it will have a class API, and expect a multiindexed dataframe as input.
 """
 
+import polars as pl
 import pandas as pd
 import logging
 from pybaselines import Baseline
-import matplotlib.pyplot as plt
 from IPython.display import display
-import seaborn as sns
 from wine_analysis_hplc_uv.old_signal_processing.sigpro_methods.standardize_time import (
     standardize_time,
 )
+from wine_analysis_hplc_uv.old_signal_processing.sigpro_methods import subtract_baseline
+from wine_analysis_hplc_uv.old_signal_processing.sigpro_methods import smooth
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
 
 class SignalProcessor:
-    def validate_dataframe(self, df: pd.DataFrame) -> pd.DataFrame:
-        """
-        2023-08-23 09:56:10
-
-        Describes a dataframe of the shape:
-
-        samplecode 100       100       200       200
-        wine       2000 wine 2000 wine 1998 wine 1998 wine
-        vars       mins      value     mins      value
-        i
-        0           0           5       0           0
-
-        I.e. a 3 level multiindex of ('samplecode','wine','vars') and vars consists of
-        ['mins','value'] for each sample. Each samplecode should be unique, wine labels
-        are not and are there for human-readability.
-
-        """
-        assert df.columns.names[0] == "samplecode", df.columns.names[0]
-        assert df.columns.names[1] == "wine"
-        assert df.columns.names[2] == "vars"
-        assert df.index.name == "i"
-
-        vars_values = df.columns.get_level_values("vars").to_list()
-        pattern = ["mins", "value"]
-        pat_len = len(pattern)
-        assert len(vars_values) % pat_len == 0, "mismatched length of list"
-        assert (
-            pattern * (len(vars_values) // pat_len) == vars_values
-        ), f"incorrect pattern sequence: {vars_values[:4]}"
-
-        # because get_level_values returns 1 label value per sub column, end up with
-        # lots of duplicates for higher levels. `DataFrameGroupBy.size()` will be expected
-        # to return all groups of the same size. Any groups larger than the average will
-        # indicate duplicates.
-        df.columns.get_level_values(0).duplicated()
-
-        samplecode = df.columns.get_level_values(0)
-        samplecode.value_counts().mode()[0]
-        outlier_mask = samplecode.value_counts() > 2
-        duplicates = outlier_mask[outlier_mask is True].dropna().index.values
-
-        assert len(duplicates) == 0, duplicates
-
-        logger.info("df validated")
-        return df
-
     def standardize_time(
         self,
         df: pd.DataFrame,
@@ -88,143 +44,38 @@ class SignalProcessor:
 
         return df_
 
-    def subtract_baseline(self, df: pd.DataFrame) -> pd.DataFrame:
-        """ """
-
-        df = (
-            df.pipe(self.long_format)
-            .groupby(["samplecode", "wine"], as_index=False)
-            .apply(
-                lambda grp: grp.assign(
-                    baseline=Baseline(grp["mins"].dt.total_seconds()).asls(
-                        grp["value"]
-                    )[0]
-                )
-            )
-            .droplevel(0)
-            .groupby(["samplecode", "wine"], as_index=False)
-            .apply(lambda grp: grp.assign(value_bcorr=grp["value"] - grp["baseline"]))
-            .droplevel(0)
-            # .pipe(lambda df: df.groupby(['samplecode','wine'], as_index=False).apply(plot_baseline_correction))
-            .pipe(self.tidy_format)
-            .pipe(self.test_subtract_baseline)
-        )
-        return df
-
-    def test_subtract_baseline(self, df: pd.DataFrame) -> pd.DataFrame:
+    def subtract_baseline(
+        self,
+        df: pl.DataFrame,
+        x_data_col: str,
+        data_col: str,
+        group_col: str,
+        asls_kwargs: dict[str, Any],
+    ) -> tuple[pl.DataFrame, dict[str, Any]]:
         """
-        2023-08-24 16:34:16
-        Test the baseline subtraction by asserting that the area under the baseline
-        curve should be less than the area under the original curve. Should cover all
-        edge cases..
+        subtract baseline
         """
-        from scipy import integrate
 
-        # turn off matplotlib font mangaer debug messages
-
-        mpl_logger = logging.getLogger("matplotlib.font_manager")
-        mpl_logger.propagate = False
-
-        def plot_wine(grp: pd.DataFrame) -> pd.DataFrame:
-            fig, ax = plt.subplots(1)
-            grp.plot(x="mins", y="value", ax=ax, title=grp.index.get_level_values(2)[0])
-            grp.plot(x="mins", y="baseline", ax=ax, title="baseline")
-            grp.plot(x="mins", y="value_bcorr", ax=ax, title="corr")
-            return grp
-
-        def integrate_group(group):
-            results = {}
-            for col in ["value", "value_bcorr"]:
-                results[col] = integrate.trapz(x=group["baseline"], y=group[col])
-            return pd.Series(results)
-
-        df = (
-            df.pipe(self.long_format)
-            .groupby(["samplecode", "wine"])
-            .apply(plot_wine)
-            .groupby(["samplecode", "wine"])
-            .apply(integrate_group)
-            .reset_index()
-            .pipe(print)
+        df_, params = subtract_baseline.subtract_baseline_from_samples(
+            df=df,
+            x_data_col=x_data_col,
+            data_col=data_col,
+            group_col=group_col,
+            asls_kwargs=asls_kwargs,
         )
 
-        plt.show()
+        return df_, params
 
-        return df
-
-    def vars_subplots(self, df: pd.DataFrame) -> pd.DataFrame:
-        """
-        Produces an sns plot of the vars column level
-
-        As usual, requires a columnar multiindexed dataframe with a 0th level 'mins' index
-        """
-        (
-            df.reset_index()
-            .melt(id_vars="mins", value_name="v")
-            .assign(mins=lambda df: df.mins.dt.total_seconds() / 60)
-            .pipe(
-                lambda df: sns.FacetGrid(
-                    df,
-                    col="wine",
-                    col_wrap=2,
-                    hue="vars",
-                    aspect=2,
-                    legend_out=True,
-                )
-                .map(
-                    sns.lineplot,
-                    "mins",
-                    "v",
-                    alpha=0.95,
-                    # linewidth=1,
-                )
-                .add_legend()
-            )
-        )
-        return None
-
-    def relplot(self, df: pd.DataFrame) -> pd.DataFrame:
-        """
-        Construct a relplot from a 'value' column for all the samples.
-        """
-        (
-            df.stack(["samplecode", "wine"])
-            .reset_index()
-            .set_index(["samplecode", "wine", "mins"])
-            .drop("i", axis=1)
-            .unstack(["samplecode", "wine"])
-            .reorder_levels(["samplecode", "wine", "vars"], axis=1)
-            .sort_index(level="samplecode", axis=1)
-            .droplevel(0, axis=1)
-            .reset_index()
-            .melt("mins")
-            .pipe(sns.relplot, x="mins", y="value", hue="vars", kind="line")
-        )
-        return df
-
-    def savgol_smooth(self, df: pd.DataFrame) -> pd.DataFrame:
+    def savgol_smooth(
+        self, df: pl.DataFrame, value_col: str, group_col: str, savgol_kwargs: dict = {}
+    ) -> pd.DataFrame:
         """
         Apply a savitzy-golay smoothing algorithm as per [@cuadros-rodríguez_2021].
         5 point window, 2nd order polynomial.
         """
 
-        from scipy.signal import savgol_filter
-
-        df = (
-            df.stack(["samplecode", "wine"])
-            .pipe(
-                lambda df: df.assign(
-                    sval=lambda df: df.groupby(["samplecode"], group_keys=False)[
-                        "value"
-                    ].apply(
-                        lambda group: pd.DataFrame(
-                            savgol_filter(group, window_length=5, polyorder=2),
-                            index=group.index,
-                        )
-                    )
-                )
-            )
-            .unstack(["samplecode", "wine"])
+        smooth.savgol_smooth_samples(
+            df=df, value_col=value_col, group_col=group_col, savgol_kwargs=savgol_kwargs
         )
 
         return df
@@ -260,7 +111,6 @@ class SignalProcessor:
         [developing_baseline_subtraction](notebooks/developing_baseline_subtraction.ipynb),
         asls with a lam of 10000 was found to fit the sampleset best.
         """
-        from pybaselines import Baseline
 
         def aslsblinefunc(df: pd.DataFrame) -> pd.DataFrame:
             df = df.assign(
