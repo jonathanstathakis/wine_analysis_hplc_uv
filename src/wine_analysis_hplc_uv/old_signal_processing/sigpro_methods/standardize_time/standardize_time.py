@@ -1,20 +1,19 @@
 import pandas as pd
 import polars as pl
-from wine_analysis_hplc_uv.old_signal_processing.sigpro_methods.standardize_time._methods import (
+from wine_analysis_hplc_uv.old_signal_processing.sigpro_methods.standardize_time import (
     _resample,
 )
-from wine_analysis_hplc_uv.old_signal_processing.sigpro_methods.standardize_time._methods._methods import (
-    correct_float_error,
-    correct_zero_offset,
-    from_multiindex_col_to_long_df,
-    set_df_dtypes,
+from wine_analysis_hplc_uv.old_signal_processing.sigpro_methods.standardize_time import (
+    _methods,
 )
 
 
-def standardize_time(
+def time_std_pipe(
     df: pd.DataFrame,
     time_col: str,
+    val_col: str,
     group_col: str | list[str],
+    label_cols: list[str],
     precision: int,
 ) -> pl.DataFrame:
     """
@@ -38,18 +37,17 @@ def standardize_time(
 
     # store to test the transformation later
 
-    df_ = from_multiindex_col_to_long_df(df=df)
-    df_ = set_df_dtypes(df=df_)
-    df_ = correct_float_error(df=df_, time_col=time_col, precision=precision)
-    df_ = correct_zero_offset(df=df_)
+    df_ = _methods.from_multiindex_col_to_long_df(df=df)
+    df_ = _methods.set_df_dtypes(df=df_)
+    df_ = _methods.correct_float_error(df=df_, time_col=time_col, precision=precision)
+    df_ = _methods.correct_zero_offset(df=df_)
     # df_ = pl.from_pandas(df_)
     df_ = _resample.resample_to_mean_freq(
-        df=df_, time_col=time_col, group_col=group_col
+        df=df_,
+        time_col=time_col,
+        group_col=group_col,
+        value_col=val_col,
+        label_cols=label_cols,
     )
-
-    # a rudimentary transformation test. As we are expecting the same number of rows
-    # after the transformation, test that. We're also expecting the number of columns
-    # to be halved as we move from intra-sample 'mins' columns to 1 mins index which
-    # is replacing 'i'.
 
     return df_

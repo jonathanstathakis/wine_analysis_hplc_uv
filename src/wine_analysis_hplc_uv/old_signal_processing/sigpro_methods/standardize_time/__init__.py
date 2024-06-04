@@ -1,1 +1,1 @@
-from .standardize_time import standardize_time as standardize_time
+from .standardize_time import time_std_pipe as time_std_pipe

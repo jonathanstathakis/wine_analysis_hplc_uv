@@ -10,7 +10,9 @@ from pybaselines import Baseline
 import matplotlib.pyplot as plt
 from IPython.display import display
 import seaborn as sns
-from wine_analysis_hplc_uv.old_signal_processing import sigpro_methods
+from wine_analysis_hplc_uv.old_signal_processing.sigpro_methods.standardize_time import (
+    standardize_time,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -62,12 +64,27 @@ class SignalProcessor:
         logger.info("df validated")
         return df
 
-    def standardize_time(self, df: pd.DataFrame) -> pd.DataFrame:
+    def standardize_time(
+        self,
+        df: pd.DataFrame,
+        time_col: str,
+        group_col: str,
+        val_col: str,
+        label_cols: list[str],
+        precision: int = 6,
+    ) -> pd.DataFrame:
         """
         standardize time axis
         """
 
-        df_ = df.pipe(sigpro_methods.standardize_time.standardize_time)
+        df_ = standardize_time.time_std_pipe(
+            df=df,
+            time_col=time_col,
+            group_col=group_col,
+            label_cols=label_cols,
+            val_col=val_col,
+            precision=precision,
+        )
 
         return df_
 
