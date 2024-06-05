@@ -1,0 +1,25 @@
+---
+date: 2024-06-05
+---
+
+# Delta Function and Impulse Response
+
+- From [@smith.ChapterConvolution.1997, sec. 'The Delta Function and Impulse Response', pp. 107-109]
+    - Signals can be composed into *impulses*
+        - impulses are signals consisting entirely of zero except for 1 non-zero point.
+    - *impulse decomposition* enables analysts to observe individual samples in a signal.
+    - *fundamental concept of dsp* input signal is decomposed into simpler additive components forming a linear system upon which operations can be performed, and then *synthesized*
+        - *synthesis* is the act of adding individual components (signals) together to form a signal.
+    - Two forms of signal decomposition: *impulse decomposition* and *fourier decomposition*
+    - *Convolution* is the mathematical description of the process of *impulse decomposition*.
+    - Discussions of *convolution* in this section refer to *discrete* signals as opposed to continuous.
+    - delta function and impulse response
+        - the *delta function* $\delta[n]$ represents a *normalized impulse*, also known as *unit impulse* with sample number zero possessing a value of one and all other samples holding zero.
+        - the *impulse response* is the result from a system when a delta function is the input.
+        - If two systems differ, the *impulse response* will differ for the same *delta function* input.
+        - the input signal can be referred to as $x[n]$, the output signal can be referred to as $y[n]$. 
+        - the *impulse response* can be referred to as $h[n]$.
+        - a filter can be referred to as $f[n]$.
+        - Any impulse can be represented as a shifted and scaled delta function. This can be represented as $-3\delta[n-8]$ meaning that the delta function is scaled by 3 and shifted by eight to the right.[^notation]   
+        - in a linear system, shifting and scaling of $\delta[n]$ produces an equal amount in $h[n]$. For example, $-3\delta[n-8] \rightarrow -3h[n-8]$[^linear_systems].
+            - therefore by determining the system's impulse response, you can shift and scale it to predict the response to any impulse.

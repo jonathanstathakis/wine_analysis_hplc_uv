@@ -1,0 +1,7 @@
+---
+format: html
+---
+
+# Impulse Decomposition {#sec-impulse_decomposition}
+
+Some text.

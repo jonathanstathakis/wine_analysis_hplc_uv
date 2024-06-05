@@ -1,0 +1,11 @@
+---
+date: 2024-06-05 11:53:48
+---
+
+# Definitions
+
+From [@smith.ChapterLinearSystems.1997, sec. Signals and Systems, pp. 87]:
+    - "a signal is a description of how one parameter varies with another parameter".
+    - "a system is a process that produces an output signal in response to an input signal".
+    - a continuous system takes continuous input and produces continuous output.
+    - a discrete system takes continuout input and produces continuout output.

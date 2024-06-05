@@ -1,0 +1,136 @@
+---
+format: html
+---
+
+# Convolution
+
+Starting at [@smith.ChapterConvolution.1997, sec. Convolution, pp. 109]
+
+-   A summary of how a system changes an input signal to an output signal:
+    1.  input signal can be decomposed into a set of impulses, a scaled and shifted delta function.
+    2.  the output of each impulse is in turn depicted as scaled an shifted impulse response.
+    3.  the final output signal is synthesized from the addition of the scaled and shifted impulse response.
+-   if we know a systems impulse response, we can predict the output for any possible input signal. We know everything there is to know about the system.
+-   Impulse response is known by different names for different applications:
+    -   if the system is a filter:
+        -   filter kernel
+        -   convolution kernel
+        -   kernel
+    -   in image processing:
+        -   point spread function.
+-   Convolution is a mathematical operation of the same class as multiplication, addition, integration, etc.
+-   convolution is analogous to addition, where addition adds scalars, convolution adds signals (functions).
+-   The operation of convolution has wide use, especially in probability and statistics.
+-   In linear systems, convolution is useful in describing the relationship between the input signal, impulse response and output signal.
+-   The convolution notation is as follows: the equation of input signal $x[n]$ entering a linear system $h[n]$ resulting in an output signal of $y[n]$ is depicted as $x[n] * h[n] = y[n]$, and can be seen in @fig-convolution. The '\*' is the convolution operator.
+-   properties:
+    -   $h[n]$ can be any length relative to $x[n]$
+    -   $\text{length} (y[n]) = \text{length} (x[n]) + \text{length} (h[n]]) - 1$
+
+```{mermaid}
+%%|label: fig-convolution
+%%|layout-align: center
+%%|fig-cap: "diagrammatic representation of convolution"
+flowchart LR
+  A("x[n]") --> B["linear System \n h[n]"] --> C("y[n]")
+```
+
+-   Mathematics of Convolution:
+
+    -   convolution can be understood from the viewpoint of the input signal (1) or the viewpoint of the output signal (2)
+        -   \\1. involves observing how each sample in the input signal contributes to many points (?) in the output signal. It is useful for conceptual understanding of convolution.
+
+        -   \\2. involves observing how each sample in the output signal is informed by points in the input signal. It is useful for understanding the mathematics of convolution.
+    -   The Input Side Algorithm @fig-input-side-algorithm as an example:
+        -   In the diagram, $x[n]$ is a 9 point signal passing through a system $h[n]$ which has a 4 point impulse response, resulting in a 12 point output signal $y[n]$, this is put descriptively as "\$x\[n\] is convolved with $h[n]$ to produce $y[n]$.
+        -   What is happening is that each *input signal* sample contributes a shifted and scaled version of the *impulse response* to the *output signal*. The addition of the transformed impulse responses produces $y[n]$.
+        -   A closer look at each of the input signals (samples?):
+            -   $x[4]$:
+                -   In the example, it possesses an ordinate value of 1.4.
+                -   Once the signal is decomposed, it is represented as the delta function: $1.4 \delta[n-4]$.
+                -   The result of this sample is $1.4h[n-4]$
+            -   $x[0]$, $x[7]$ produce an impulse response of zeroes as their delta functions are zero.
+            -   (my interpretation) The impulse response is computed as the multiplication of the system with the delta function at its location, always foreward, then all the impulse responses are added together to form the superposition.
+        -   convolution is *commutative*, changing the system to the input signal and vice versa does not change the output. The author makes note that while this is possible, it is meaningless to *system theory*.
+        -   For each iteration, each sample in the impulse response is scaled to the value of the current input sample, then shifted to the location of the input sample + its abscissa.
+        -   the result of each iteration is then added together to calculate $y[n]$
+
+```{python}
+#|fig-caption: 
+import numpy as np
+import matplotlib.pyplot as plt
+
+# set up x, h and y
+def get_x():
+    n_x = np.arange(0, 80, 1)
+    return np.sin(n_x) + np.random.normal(scale=0.1, size=len(n_x))
+
+def get_h():
+    n_h = np.arange(0, 30, 1)
+    return np.sin(n_h) + np.random.normal(scale=0.1, size=len(n_h))
+
+def get_y(len_x, len_y):
+    len_y = len_x + len_y -1
+    return np.zeros(len_y)
+
+x = get_x()
+h = get_h()
+y = get_y(len(x), len(h))
+
+# convolution
+for i in range(len(x)):
+    for j in range(len(h)):
+        y[i+j] = y[i+j] + x[i] * h[j]
+
+fig, axs = plt.subplots(2,2)
+
+axs[0,0].plot(x, label='x', c= 'r')
+axs[1,0].plot(h, label='h', c='b')
+axs[1,1].plot(y, label='y', c='g')
+plt.suptitle("An example of convolution as code")
+fig.legend()
+```
+
+-   mathematics of convolution continued:
+    -   Output Side Algorithm
+        -   as opposed to the input side algorithm, the output side looks at the output..
+        -   This can be done by reversing (?) the view, and calculating the inputs from the outputs.
+        -   For $y[6]$:
+            -   $y[6]$ is equal to the sum of all of the sixth points in the nine output components. In @fig-decomposed-output-signal, the non-zero terms of that sum belong to output components corresponding to the following input samples - $x[3]\$\$, $x[4]$, $x[5]$, $x[6]$, or $y[6] = x[3]h[3] + x[4]h[2] + x[5]h[1] + x[6]h[0]$. As we can see, if we consider the input signal as stationary, then the impulse response moves right to left, as noted by the indexing of $h[]$.
+        -   The author expands on the depiction of the moving impulse response by modeling it as a "convolution machine", which can be seen in @fig-convolution-machine, and contains the impulse response. He describes the scenario as follows:
+            1. $x[n]$ and $y[n]$ are stationary
+            2. the convolution machine can move left or right.
+            3. the machine is positioned so its output is aligned with the output sample being calculated.
+            4. four samples fall into the inputs of the machine
+            5. values are multiplied by the indicated samples in the impulse response, and the results are added, producing the output signal.
+            6. the process continues for all points in the output signal that need to be calculated.
+        - in the convolution machine, the impulse response is flipped, as from the mathematics (not given), the effect of the input signal on the output signal is given by a weighted flipped impulse response.
+        - A problem arises at the end points where the convolution machine moves outside the the bounds of the input signal, attempting to perform operations with undefined values.
+            - one solution is to *pad* the input signal with zeros. As multiplying by zero equals zero, the padded values do not affect the output of the convolution.
+            - As the oob areas of the output signal are undefined, it is said that "the impulse response is not fully immersed in the input signal", meaning that the end values of the output signal are less well defined than the internal values. It is usual in DSP to ignore the end points as they often consist of meaningless noise, and is often referred to as *end effect*.
+        - the standard equation of convolution: 
+            - defined as $y[i] = \sum^{M-1}_{j=0}h[j]x[i-j]$
+                - where:
+                    - $x[n]$ is an $N$ point signal running from $0$ to $N-1$
+                    - $h[n]$ is an $M$ point signal running from $0$ to $M-1$
+            - $y[n]=x[n] * h[n]$ is the shorthand, also written as $y[] = x[] * h[]$.
+            - it is known as the *convolution sum*.
+            - $i$ is the index of the output signal, corresponding to the left-right position of the convolution machine.
+        - a programmatic expression of the output side algorithm iterates over the output signal.
+
+TODO: write code for an example of an output side algorithm.
+
+- Introduction to the concept of a sum of weighted inputs:
+    - think about the content of the convolution machine not as an impulse response but instead a set of weighting coefficients.
+    - in this case, each sample in the output signal is the sum of weighted inputs.
+    - each sample in the output is influenced by a region of samples in the input signal, determined by what the weighting coefficients are chosen to be.
+    - For example, if there are 10 weighting coefficients, then each sample of the output signal then becomes the average of ten samples from the input.
+    - Conversion to this analogy allows for a selection of weights symmetric around an output sample rather than leftward as in the impulse response model. This also enables the use of negative indexes.
+    - This is further discussed in chapter 7.
+
+
+![Taken from \@smith.ChapterConvolution.1997](images/input-side-algorithm.png){#input-side-algorithm}
+
+![Taken from \@smith.ChapterConvolution.1997](./images/decomposed_output_signal.png){#decomposed-output-signal}
+
+![Taken from \@smith.ChapterConvolution.1997](images/convolution_machine.png){#convolution-machine}

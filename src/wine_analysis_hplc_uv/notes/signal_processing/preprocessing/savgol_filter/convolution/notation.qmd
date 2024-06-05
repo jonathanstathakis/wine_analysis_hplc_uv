@@ -1,0 +1,13 @@
+---
+format: html
+date: 2024-06-05
+---
+
+# Notation {#sec-notation}
+
+Algebraic signal notation as used by @smith.scientistengineerguide.1997, described in [@smith.ChapterLinearSystems.1997, sec. Signals and Systems, pp. 87]:
+
+- continuous signals use parentheses - $x(t)$, $y(t)$, discrete signals use brackets - $x[n]$, $y[n]$.
+- signals use lower case letters, frequencies use upper case letters.
+- The letter used to represent a signal is descriptive of the thing the signal describes, for example voltage over time time based signals: $v(t)$ **v** for voltage, **t** for time.
+- Shifting a signal to the left requires a positive constant to be added to $n$, shifting right requires a negative constant @smith.ChapterLinearSystems.1997 [sec. Requirements for Linearity, pp. 91]

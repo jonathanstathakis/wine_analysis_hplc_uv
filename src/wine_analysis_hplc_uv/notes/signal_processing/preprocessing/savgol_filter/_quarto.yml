@@ -1,0 +1,26 @@
+# see https://quarto.org/docs/books/
+project:
+  type: book
+  output-dir: _output
+
+book:
+  title: Savitzy-Golay Filtering
+  author: Jonathan Stathakis
+  date: 2024-06-05
+  chapters:
+    - "index.qmd"
+    - "./convolution/delta_function_impulse_response.qmd"
+    - "./convolution/definitions.qmd"
+    - "./convolution/definition_of_a_linear_system.qmd"
+    - "./convolution/impulse_decomposition.qmd"
+    - "./convolution/convolution.qmd"
+    - "savitzky-golay-filter.qmd"
+    - "./convolution/outline.qmd"
+  appendices:
+    - convolution/notation.qmd
+
+bibliography: "./references.bib"
+
+format:
+  html:
+    theme: cosmo

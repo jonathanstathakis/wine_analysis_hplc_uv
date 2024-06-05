@@ -1,0 +1,11 @@
+---
+date: 2024-06-05 09:27:59
+title: Convolution Outline
+bibliography: ../references.bib
+---
+
+        - 
+
+[^notation]: See [Notation](./notation.qmd)
+[^linear_systems]: See [Definition of a Linear System](./definition_of_a_linear_system.qmd)
+
