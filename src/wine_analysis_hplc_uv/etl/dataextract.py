@@ -2,10 +2,6 @@
 2023-11-09
 
 Writing a SQL query to replace the functions 'melt_df', 'subset', and 'adjust_df' to decrease total runtime. It will first mantle the sql queries in '2023-10-24.creating_3d_dataset.ipynb' then go from there.
-
-TODO:
-- [x] add expression to exclude ('72','98') alongside other outliers.
-- [x] replace `get_data()` calls with the new query
 """
 
 import duckdb as db

@@ -23,8 +23,6 @@ class FormForeignKeySTCT:
         """
         Replace `c_sample_tracker` table in database, but with forein key 'ct_wine_name', enabling joins with cellar tracker table.
 
-        # TODO: replace this with an update rather than CREATE
-
         :returns: newly created sample tracker table name
         :type return: str
 

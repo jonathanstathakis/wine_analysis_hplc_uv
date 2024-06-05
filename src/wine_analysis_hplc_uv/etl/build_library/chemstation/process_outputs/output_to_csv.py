@@ -1,9 +1,5 @@
 """
 Output chemstation process data to csv.
-
-TODO:
-- [ ] write tests
-- [ ] clean up pickling and other dev artifacts.
 """
 
 from typing import List

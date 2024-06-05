@@ -19,9 +19,6 @@ logger = logging.getLogger(__name__)
 class ChemstationProcessor:
     """
     Chemstation data processor
-
-    TODO: docstring
-    TODO: add datatype specification to metadata df. Is currently all 'object' dtype
     """
 
     def __init__(self, lib_path: str):

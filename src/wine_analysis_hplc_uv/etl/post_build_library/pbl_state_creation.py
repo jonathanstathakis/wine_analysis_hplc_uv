@@ -1,11 +1,6 @@
 """
 move the library state forward by running a series of sql queries
-
-TODO: set up the state
-TODO: run the queries
-TODO: verify the outcome
 """
-# TODO: establish the main function
 
 from wine_analysis_hplc_uv import definitions
 import duckdb as db
