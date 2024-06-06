@@ -1,0 +1,64 @@
+---
+title: "Notes From: 'Smoothing and Differentiation of Data by Simplified Least Squares Procedures' by Abraham Savitzky and Marcel J. E. Golay"
+date_read: 2024-06-06
+---
+
+An outline of reading notes from the article follows.
+
+# Abstract
+
+- the scale of data from automated scientific experiments is too large to use intuitive methods, rather, it is necessary to develop mathematical methods to do the same thing unsupervised.
+  - differentiation and filtering main examples of this.
+- filtering can be achieved through signal processing methods, but least squares can be applied also and is considered simpler.
+- least squares methods are applied by convolution of samples with sets of integers possessing normalizing factors.
+- This has applications in spectroscopy.
+- the authors demonstrate the program in FORTRAN.
+
+# introduction
+
+- Noise is present in any quantitative information and is indistinguishable from information
+- it is important to remove the noise.
+- most experiments involve univariate data
+- The authors are addressing how to automate the removal of random noise and evaluation of the first few derivatives with respect to the abscissa ($x$).
+- requirements of the technique:
+  - constant dx.
+  - curves must be continuous and smooth.
+
+## Alternative Methods
+
+- The moving average is a method of smoothing data.
+  - procedure:
+    1. select a window
+    2. add the ordinates
+    3. divide by number of points - gives the ordinate of the center of the group
+    4. store that value
+    5. move the window foreward one sample, perform again.
+- another is through the 'convolute' and of a 'convolution function'
+  - two set of numbers are placed parallel on a space, see @convolution_operation:
+    - the left are the ordinates
+    - the right the abscissa.
+    - through the middle moves a window, which contains:
+      - a set of abscissa ranging from -2 to +2 on its left side
+      - a set of convoluting integers on the right $C$
+    - for the moving average, each $C=1$ (?)
+    - a convolution of the ordinate numbers with the set of convoluting integers is performed by:
+      - each number in the block is multiplied by the corresponding number in the table of data
+      - the results are added
+      - sum is divided by 5.
+    - ergo the moving average is calculated by convolution
+    - In this example, $C$ can be referred to as the *convoluting function*, and the denominator is the *normalizing factor*.
+    - in the same manner as earlier, the window is moved through the data, convoluting all of it.
+  - this concept can be generalised.
+  - any convolution function has an associated normalizing (scaling) factor.
+  - formal definition:
+    - $Y_j^*=\frac{\sum^{i=m}_{i=-m}C_iY_{j+1}}{N}$
+      - where $j$ is the index of the ordinate in the input data
+  - The set of all ones as the convoluting function IS the moving average.
+  - but the moving average is not ideal in all cases - for example it will degrade sharp peaks.
+  - Other common smoothing functions include the exponential function, symmetrical triangular function, symmetrical exponential function.
+    - all of these work by giving the weights different values according to a function. For example the exponential function allocates weighting according to exponential decay away from the sample in question.
+
+
+
+
+[Convolution Operation, from [@savitzky.SmoothingDifferentiationData.1964](./savgol_convolution_operation_fig.png){#convolution_operation}

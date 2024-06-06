@@ -107,7 +107,7 @@ fig.legend()
         - in the convolution machine, the impulse response is flipped, as from the mathematics (not given), the effect of the input signal on the output signal is given by a weighted flipped impulse response.
         - A problem arises at the end points where the convolution machine moves outside the the bounds of the input signal, attempting to perform operations with undefined values.
             - one solution is to *pad* the input signal with zeros. As multiplying by zero equals zero, the padded values do not affect the output of the convolution.
-            - As the oob areas of the output signal are undefined, it is said that "the impulse response is not fully immersed in the input signal", meaning that the end values of the output signal are less well defined than the internal values. It is usual in DSP to ignore the end points as they often consist of meaningless noise, and is often referred to as *end effect*.
+            - As the oob areas of the output signal are undefined, it is said that "the impulse response is not fully immersed in the input signal", meaning that the end values of the output signal are less well defined than the internal values. It is usual in DSP to ignore the end points as they often consist of meaningless noise, and is referred to as *end effect*.
         - the standard equation of convolution: 
             - defined as $y[i] = \sum^{M-1}_{j=0}h[j]x[i-j]$
                 - where:
@@ -134,3 +134,6 @@ TODO: write code for an example of an output side algorithm.
 ![Taken from \@smith.ChapterConvolution.1997](./images/decomposed_output_signal.png){#decomposed-output-signal}
 
 ![Taken from \@smith.ChapterConvolution.1997](images/convolution_machine.png){#convolution-machine}
+
+TODO: rewrite as more abstracted outline
+TODO: parse savgol article
