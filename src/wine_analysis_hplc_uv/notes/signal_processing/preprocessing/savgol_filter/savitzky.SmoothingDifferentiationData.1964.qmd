@@ -58,7 +58,7 @@ An outline of reading notes from the article follows.
   - Other common smoothing functions include the exponential function, symmetrical triangular function, symmetrical exponential function.
     - all of these work by giving the weights different values according to a function. For example the exponential function allocates weighting according to exponential decay away from the sample in question.
 
-
+TODO: continue taking notes!!
 
 
 [Convolution Operation, from [@savitzky.SmoothingDifferentiationData.1964](./savgol_convolution_operation_fig.png){#convolution_operation}
