@@ -56,7 +56,24 @@ An outline of reading notes from the article follows.
   - The set of all ones as the convoluting function IS the moving average.
   - but the moving average is not ideal in all cases - for example it will degrade sharp peaks.
   - Other common smoothing functions include the exponential function, symmetrical triangular function, symmetrical exponential function.
-    - all of these work by giving the weights different values according to a function. For example the exponential function allocates weighting according to exponential decay away from the sample in question.
+    - all of these work by giving the weights different values according to a function.
+  - The exponential function:
+      - An example is the exponential function allocates weighting according to exponential decay away from the sample in question.
+    - The exponential function does not interpret future points, only past. This is analogous to the **RC** filter.
+  - When dealing with a collected dataset, we can use both the future and past data, thus a symmetic exponential function is possible. an "idealized lead-lag network".
+  - Spectrophotometric spectra are the result of two convolutions:
+    1. the slit function of the instrument. Similar to a triangle convolute, see figure 2.
+    2. The time constant of the instrument.
+  - the triangle convolute will produce similar results to the symmetric exponential in most cases.
+
+## Method of Least Squares
+
+- least squares is the best numerical definition of 'best fit'.
+  - minimise the square of differences between a curve and a set of fitted points.
+  - error is assumed to be in the ordinate, not abscissa.
+- the least squares operation can be reduced to the finding of an optimum set of weights defining a weighting function.
+- 
+
 
 TODO: continue taking notes!!
 
