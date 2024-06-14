@@ -27,7 +27,7 @@ def testdbpath():
     return ":memory:"
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def testcon():
     """
     Return a duckdb connection object initialised with the DB_PATH constant
