@@ -1,0 +1,23 @@
+# Preface {.unnumbered}
+
+This chapter describes the experiment inspiration, background, acquisition and a cursory observation of results.
+
+Hypothesis: the chromatographic signals collected from wines will be significantly different under raw and cuprac detection methods, where cuprac will contain more sample-to-sample variance than raw. Variance will be described through clustering (PCA?) where varietal classes will cluster together, with CUPRAC producing tighter clusters compared to raw.
+
+<!-- TODO:
+ 1. [ ] Abstract
+    1. [ ] preface
+    2. [ ] acknowledgements
+2. [ ] Introduction
+  1. [ ] wine
+  2. [ ] The Data
+3. [ ] Experimental
+  1. [ ] Method Development
+    1. [ ] Instrumentation
+    2. [ ] sample preparation
+  2. [ ] Data Acquisition
+    2. [ ] acquisition details
+4. [ ] Results
+5. [ ] Discussion
+6. [ ] Conclusion
+ -->

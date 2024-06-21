@@ -1,0 +1,8 @@
+\contentsline {chapter}{Preface}{3}{chapter*.2}%
+\contentsline {part}{\numberline {I}Introduction}{4}{part.1}%
+\contentsline {chapter}{\numberline {1}Wine}{5}{chapter.1}%
+\contentsline {section}{\numberline {1.1}Wine}{5}{section.1.1}%
+\contentsline {chapter}{\numberline {2}The Data}{6}{chapter.2}%
+\contentsline {chapter}{\numberline {3}Dev Outline}{7}{chapter.3}%
+\contentsline {chapter}{References}{8}{chapter*.3}%
+\providecommand \tocbasic@end@toc@file {}\tocbasic@end@toc@file 
