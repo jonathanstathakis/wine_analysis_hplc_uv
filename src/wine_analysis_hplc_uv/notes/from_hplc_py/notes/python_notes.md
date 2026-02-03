@@ -1,1 +1,0 @@
-1. 2024-04-24 11:07:18: class docstrings should be under the `__init__` function. see: [stack overflow](https://stackoverflow.com/a/57926574/18650135)

@@ -137,6 +137,8 @@ jupyter = "^1.0.0"
 nbconvert = "^7.16.4"
 plotly = "^5.22.0"
 plotnine-prism = "^0.3.0"
+regex = "^2024.5.15"
+pyarrow = "^17.0.0"
 
 [tool.ruff]
 line-length = 88

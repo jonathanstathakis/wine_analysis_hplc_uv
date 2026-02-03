@@ -1,6 +1,0 @@
-<!-- the file that contains the generated bibliography -->
-
-# References {.unnumbered}
-
-::: {#refs}
-::: 

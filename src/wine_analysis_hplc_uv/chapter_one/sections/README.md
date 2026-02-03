@@ -1,1 +1,0 @@
-Notebooks making up the sections of Chapter 1.
